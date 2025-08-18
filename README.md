@@ -1,0 +1,223 @@
+# Cross Write - Multi-platform Writing & Publishing App
+
+Cross Write is a modern, AI-assisted writing and publishing application that helps content creators write once and publish everywhere. Built with Next.js 15, TypeScript, and DaisyUI, it provides a seamless experience for managing content across multiple platforms.
+
+## 🚀 Features
+
+- **AI-Assisted Editor**: Get real-time writing suggestions and improvements
+- **Multi-Platform Publishing**: Support for dev.to, Medium, Hashnode, and Beehiiv
+- **Smart Scheduling**: Schedule posts for optimal publishing times
+- **Analytics Dashboard**: Track performance across all platforms
+- **Command Palette**: Quick access to all features with keyboard shortcuts
+- **Responsive Design**: Works beautifully on desktop, tablet, and mobile
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js 15 (App Router, TypeScript, edge-safe)
+- **Styling**: Tailwind CSS v4 + DaisyUI (peachsorbet theme)
+- **Icons**: lucide-react
+- **Charts**: recharts
+- **State Management**: Zustand
+- **Forms**: react-hook-form + zod (UI only)
+- **Animations**: CSS transitions and micro-interactions
+
+## 📦 Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd cross-write
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Run the development server:
+```bash
+npm run dev
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## 🎨 Design System
+
+The application uses the **DaisyUI "peachsorbet"** theme with a dark-first approach:
+
+- **Primary Color**: Coral Pink (#f4978e)
+- **Secondary Color**: Apricot (#fbc4ab)
+- **Accent Color**: Melon (#f8ad9d)
+- **Dark Surfaces**: Sophisticated dark backgrounds with subtle contrast
+
+## 📱 Pages & Features
+
+### Dashboard (`/`)
+- Quick stats cards (Drafts, Scheduled, Published)
+- Sparkline charts for analytics
+- Recent activity feed
+- Continue drafting section
+
+### Editor (`/editor`)
+- Split-pane layout with AI suggestions
+- Rich text toolbar with formatting options
+- Real-time word count and reading time
+- Preview modal with device frame toggles
+
+### Drafts (`/drafts`)
+- Data table with search and filtering
+- Bulk actions (delete, schedule)
+- Status badges and platform indicators
+- Empty states for new users
+
+### Scheduler (`/scheduler`)
+- Interactive calendar view
+- Drag-to-reschedule functionality
+- Best time recommendations
+- Scheduling form with platform selection
+
+### Integrations (`/integrations`)
+- Platform connection cards
+- API key management
+- Publishing defaults configuration
+- Connection status indicators
+
+### Analytics (`/analytics`)
+- KPI cards with trend indicators
+- Area charts for time series data
+- Bar charts for platform breakdowns
+- Pie charts for success rates
+- Top posts table
+
+### Settings (`/settings`)
+- Profile configuration
+- Writing defaults
+- Publishing preferences
+- Notification settings
+- Keyboard shortcuts reference
+
+### Onboarding (`/onboarding`)
+- 3-step wizard for new users
+- Platform selection
+- Writing preferences setup
+- Progress indicators
+
+## ⌨️ Keyboard Shortcuts
+
+- `N` - New draft
+- `⌘K` - Command palette
+- `⌘S` - Save draft
+- `⌘D` - Go to dashboard
+- `⌘E` - Go to editor
+- `⌘B` - Toggle sidebar
+
+## 🗂 Project Structure
+
+```
+app/
+├── app/          # Main app routes
+│   ├── page.tsx          # Dashboard
+│   ├── editor/           # AI-assisted editor
+│   ├── drafts/           # Drafts management
+│   ├── scheduler/        # Content scheduling
+│   ├── integrations/     # Platform connections
+│   ├── analytics/        # Performance metrics
+│   └── settings/         # User preferences
+├── onboarding/           # New user setup
+└── layout.tsx            # Root layout with app shell
+
+components/
+├── layout/               # App shell components
+│   ├── AppSidebar.tsx    # Collapsible sidebar
+│   ├── Topbar.tsx        # Top navigation bar
+│   └── CommandPalette.tsx # Command palette modal
+├── editor/               # Editor components
+│   ├── EditorToolbar.tsx # Formatting toolbar
+│   ├── MarkdownEditor.tsx # Text editor
+│   ├── AiSuggestionsPanel.tsx # AI suggestions
+│   └── PreviewModal.tsx  # Content preview
+├── ui/                   # Reusable UI components
+│   ├── StatCard.tsx      # Statistics cards
+│   └── EmptyState.tsx    # Empty state component
+└── charts/               # Chart components
+    └── Sparkline.tsx     # Mini charts
+
+lib/
+├── mock.ts               # Mock data and types
+├── utils.ts              # Utility functions
+└── store.ts              # Zustand store
+
+hooks/
+└── use-shortcuts.ts      # Keyboard shortcuts
+```
+
+## 📊 Mock Data
+
+The application uses comprehensive mock data located in `/lib/mock.ts`:
+
+- **Drafts**: Sample content with different statuses and platforms
+- **Activities**: Recent user actions and system events
+- **Analytics**: Performance metrics and time series data
+- **Integrations**: Platform connection states and settings
+
+All data is realistic and demonstrates the full functionality of the application.
+
+## 🎯 Key Features
+
+### AI-Assisted Writing
+- Real-time writing suggestions
+- Tone adjustment recommendations
+- Content improvement tips
+- Grammar and style suggestions
+
+### Multi-Platform Publishing
+- Support for major developer platforms
+- Automatic formatting for each platform
+- Scheduled publishing with timezone support
+- Cross-platform analytics
+
+### Smart Analytics
+- Performance tracking across platforms
+- Engagement metrics and trends
+- Success rate monitoring
+- Top content identification
+
+### User Experience
+- Responsive design for all devices
+- Keyboard shortcuts for power users
+- Command palette for quick navigation
+- Smooth animations and transitions
+
+## 🚀 Getting Started
+
+1. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+2. **Navigate to the dashboard** at `http://localhost:3000`
+
+3. **Explore the features**:
+   - Create a new draft in the editor
+   - Connect platforms in integrations
+   - Schedule content in the scheduler
+   - View analytics and performance
+
+4. **Try keyboard shortcuts**:
+   - Press `⌘K` to open the command palette
+   - Use `N` to create a new draft
+   - Navigate with `⌘D` and `⌘E`
+
+## 🔧 Development
+
+The application is built with modern React patterns:
+
+- **Server Components**: Used where possible for better performance
+- **Client Components**: Only for interactive features
+- **TypeScript**: Full type safety throughout
+- **DaisyUI**: Consistent component library
+- **Tailwind CSS**: Utility-first styling
+
+---
+
+**Cross Write** - Write once, publish everywhere. 🚀
