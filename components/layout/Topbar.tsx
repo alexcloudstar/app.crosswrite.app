@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
+import Image from 'next/image';
 import {
   Search,
   Plus,
@@ -19,6 +21,7 @@ import { getPlatformShortcut } from '@/lib/utils';
 
 export function Topbar() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { openCommandPalette } = useAppStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -47,7 +50,10 @@ export function Topbar() {
     setShowUserMenu(false);
   };
 
-  const handleSignOut = () => setShowUserMenu(false);
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/auth/sign-in' });
+    setShowUserMenu(false);
+  };
 
   const handleViewAllNotifications = () => {
     setShowNotifications(false);
@@ -240,20 +246,34 @@ export function Topbar() {
               onClick={onToggleUserMenu}
               className='flex items-center space-x-2 p-2 rounded-lg hover:bg-base-200 transition-colors'
             >
-              <div className='w-8 h-8 bg-primary rounded-full flex items-center justify-center'>
-                <span className='text-primary-content font-medium text-sm'>
-                  AJ
-                </span>
-              </div>
+              {session?.user?.image ? (
+                <Image
+                  src={session.user.image}
+                  alt={session.user.name || 'User'}
+                  width={32}
+                  height={32}
+                  className='w-8 h-8 rounded-full object-cover'
+                />
+              ) : (
+                <div className='w-8 h-8 bg-primary rounded-full flex items-center justify-center'>
+                  <span className='text-primary-content font-medium text-sm'>
+                    {session?.user?.name?.charAt(0)?.toUpperCase() ||
+                      session?.user?.email?.charAt(0)?.toUpperCase() ||
+                      'U'}
+                  </span>
+                </div>
+              )}
               <User size={16} />
             </button>
 
             {showUserMenu && (
               <div className='absolute right-0 mt-2 w-48 bg-base-200 rounded-lg shadow-lg border border-base-300 py-1 z-50'>
                 <div className='px-4 py-2 border-b border-base-300'>
-                  <p className='text-sm font-medium'>Alex Johnson</p>
+                  <p className='text-sm font-medium'>
+                    {session?.user?.name || 'User'}
+                  </p>
                   <p className='text-xs text-base-content/70'>
-                    alex@example.com
+                    {session?.user?.email || 'No email'}
                   </p>
                 </div>
                 <button
