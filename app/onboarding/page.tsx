@@ -101,12 +101,13 @@ export default function OnboardingPage() {
     }));
   };
 
-  const updateFormData = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const updateFormData =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData(prev => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+    };
 
   const isStepValid = () => {
     switch (currentStep) {
@@ -182,7 +183,7 @@ export default function OnboardingPage() {
                   <input
                     type='text'
                     value={formData.name}
-                    onChange={e => updateFormData('name', e.target.value)}
+                    onChange={updateFormData.bind(null, 'name')}
                     placeholder='Enter your full name'
                     className='input input-bordered w-full'
                   />
@@ -194,7 +195,7 @@ export default function OnboardingPage() {
                   <input
                     type='text'
                     value={formData.handle}
-                    onChange={e => updateFormData('handle', e.target.value)}
+                    onChange={updateFormData('handle')}
                     placeholder='Choose a unique handle'
                     className='input input-bordered w-full'
                   />
@@ -216,7 +217,7 @@ export default function OnboardingPage() {
                   {platforms.map(platform => (
                     <div
                       key={platform.id}
-                      onClick={() => handlePlatformToggle(platform.id)}
+                      onClick={handlePlatformToggle.bind(null, platform.id)}
                       className={`card border-2 cursor-pointer transition-all ${
                         formData.platforms.includes(platform.id)
                           ? 'border-primary bg-primary/5'
@@ -252,7 +253,7 @@ export default function OnboardingPage() {
                   </label>
                   <select
                     value={formData.tone}
-                    onChange={e => updateFormData('tone', e.target.value)}
+                    onChange={updateFormData.bind(null, 'tone')}
                     className='select select-bordered w-full'
                   >
                     <option value='professional'>Professional</option>
@@ -268,7 +269,7 @@ export default function OnboardingPage() {
                   <input
                     type='text'
                     value={formData.tags}
-                    onChange={e => updateFormData('tags', e.target.value)}
+                    onChange={updateFormData.bind(null, 'tags')}
                     placeholder='javascript, react, web-development'
                     className='input input-bordered w-full'
                   />

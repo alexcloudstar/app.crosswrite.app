@@ -140,6 +140,12 @@ export default function DraftsPage() {
     );
   };
 
+  const onScheduleDateChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setScheduleDate(e.target.value);
+
+  const onScheduleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setScheduleTime(e.target.value);
+
   return (
     <div className='p-6 max-w-7xl mx-auto'>
       <div className='flex items-center justify-between mb-8'>
@@ -365,7 +371,7 @@ export default function DraftsPage() {
                 <input
                   type='date'
                   value={scheduleDate}
-                  onChange={e => setScheduleDate(e.target.value)}
+                  onChange={onScheduleDateChange}
                   className='input input-bordered w-full'
                   min={new Date().toISOString().split('T')[0]}
                 />
@@ -378,7 +384,7 @@ export default function DraftsPage() {
                 <input
                   type='time'
                   value={scheduleTime}
-                  onChange={e => setScheduleTime(e.target.value)}
+                  onChange={onScheduleTimeChange}
                   className='input input-bordered w-full'
                 />
               </div>

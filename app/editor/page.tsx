@@ -60,6 +60,9 @@ Happy writing! 🚀`);
   const handleToggleThumbnailGenerator = () =>
     setShowThumbnailGenerator(prev => !prev);
 
+  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+    setContent(e.target.value);
+
   return (
     <div className='h-full flex flex-col'>
       <div className='flex items-center justify-between p-4 border-b border-base-300 bg-base-100'>
@@ -122,7 +125,7 @@ Happy writing! 🚀`);
         <div className='flex-1 flex flex-col'>
           <MarkdownEditor
             value={content}
-            onChange={setContent}
+            onChangeContent={onChangeContent}
             placeholder='Start writing your content...'
           />
 

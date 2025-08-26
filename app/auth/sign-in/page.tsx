@@ -34,6 +34,9 @@ export default function SignInPage() {
     }
   };
 
+  const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setEmail(e.target.value);
+
   return (
     <div className='min-h-screen flex items-center justify-center bg-base-100'>
       <div className='card w-full max-w-md bg-base-200 shadow-xl'>
@@ -111,7 +114,7 @@ export default function SignInPage() {
                     autoComplete='email'
                     required
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={onChangeEmail}
                     className='input input-bordered w-full'
                     placeholder='Enter your email'
                   />

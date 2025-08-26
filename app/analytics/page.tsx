@@ -32,6 +32,9 @@ export default function AnalyticsPage() {
     { value: 'custom', label: 'Custom range' },
   ];
 
+  const onDateRangeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    setDateRange(e.target.value);
+
   return (
     <div className='p-6 max-w-7xl mx-auto'>
       <div className='flex items-center justify-between mb-8'>
@@ -44,7 +47,7 @@ export default function AnalyticsPage() {
         <div className='flex items-center space-x-2'>
           <select
             value={dateRange}
-            onChange={e => setDateRange(e.target.value)}
+            onChange={onDateRangeChange}
             className='select select-bordered select-sm'
           >
             {dateRangeOptions.map(option => (

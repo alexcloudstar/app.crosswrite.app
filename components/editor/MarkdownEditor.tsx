@@ -4,13 +4,13 @@ import { useEffect, useRef } from 'react';
 
 interface MarkdownEditorProps {
   value: string;
-  onChange: (value: string) => void;
+  onChangeContent: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
 }
 
 export function MarkdownEditor({
   value,
-  onChange,
+  onChangeContent,
   placeholder,
 }: MarkdownEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -27,7 +27,7 @@ export function MarkdownEditor({
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={onChangeContent}
         placeholder={placeholder}
         className='w-full h-full bg-transparent border-none outline-none resize-none text-base leading-relaxed font-mono'
         style={{ minHeight: '400px' }}
