@@ -22,10 +22,7 @@ export const userUsage = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  table => ({
-    userMonthYearIdx: uniqueIndex('user_month_year_idx').on(
-      table.userId,
-      table.monthYear
-    ),
-  })
+  table => [
+    uniqueIndex('user_month_year_idx').on(table.userId, table.monthYear),
+  ]
 );

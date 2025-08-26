@@ -22,8 +22,8 @@ export const draftVersions = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     createdBy: text('created_by').references(() => users.id),
   },
-  table => ({
-    draftIdIdx: index('draft_versions_draft_id_idx').on(table.draftId),
-    createdAtIdx: index('draft_versions_created_at_idx').on(table.createdAt),
-  })
+  table => [
+    index('draft_versions_draft_id_idx').on(table.draftId),
+    index('draft_versions_created_at_idx').on(table.createdAt),
+  ]
 );

@@ -30,9 +30,9 @@ export const integrations = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
-  table => ({
-    userIdIdx: index('integrations_user_id_idx').on(table.userId),
-    platformIdx: index('integrations_platform_idx').on(table.platform),
-    statusIdx: index('integrations_status_idx').on(table.status),
-  })
+  table => [
+    index('integrations_user_id_idx').on(table.userId),
+    index('integrations_platform_idx').on(table.platform),
+    index('integrations_status_idx').on(table.status),
+  ]
 );

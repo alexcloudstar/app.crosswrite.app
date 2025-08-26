@@ -22,9 +22,9 @@ export const analytics = pgTable(
     shares: integer('shares').default(0),
     recordedAt: timestamp('recorded_at').defaultNow().notNull(),
   },
-  table => ({
-    draftIdIdx: index('analytics_draft_id_idx').on(table.draftId),
-    platformIdx: index('analytics_platform_idx').on(table.platform),
-    recordedAtIdx: index('analytics_recorded_at_idx').on(table.recordedAt),
-  })
+  table => [
+    index('analytics_draft_id_idx').on(table.draftId),
+    index('analytics_platform_idx').on(table.platform),
+    index('analytics_recorded_at_idx').on(table.recordedAt),
+  ]
 );

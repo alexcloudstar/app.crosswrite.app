@@ -19,12 +19,10 @@ export const scheduledPosts = pgTable(
     errorMessage: text('error_message'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  table => ({
-    draftIdIdx: index('scheduled_posts_draft_id_idx').on(table.draftId),
-    userIdIdx: index('scheduled_posts_user_id_idx').on(table.userId),
-    scheduledAtIdx: index('scheduled_posts_scheduled_at_idx').on(
-      table.scheduledAt
-    ),
-    statusIdx: index('scheduled_posts_status_idx').on(table.status),
-  })
+  table => [
+    index('scheduled_posts_draft_id_idx').on(table.draftId),
+    index('scheduled_posts_user_id_idx').on(table.userId),
+    index('scheduled_posts_scheduled_at_idx').on(table.scheduledAt),
+    index('scheduled_posts_status_idx').on(table.status),
+  ]
 );
