@@ -322,10 +322,7 @@ function NotificationSettings() {
 }
 
 function BillingSettings() {
-  const { userPlan, setByokKey } = useAppStore();
-
-  const onSetByokKey = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setByokKey(e.target.value);
+  const { userPlan } = useAppStore();
 
   return (
     <div className='space-y-6'>
@@ -344,35 +341,17 @@ function BillingSettings() {
             </div>
           </div>
 
-          {userPlan.planId === 'FREE' && (
-            <div>
-              <label className='label'>
-                <span className='label-text'>OpenAI API Key (BYOK)</span>
-                <span className='label-text-alt'>Required for AI features</span>
-              </label>
-              <input
-                type='password'
-                placeholder='sk-...'
-                className='input input-bordered w-full'
-                value={userPlan.byokKey || ''}
-                onChange={onSetByokKey}
-              />
-              <label className='label'>
-                <span className='label-text-alt'>
-                  Your API key is stored securely and never shared
-                </span>
-              </label>
-            </div>
-          )}
-
-          {userPlan.planId === 'PRO' && (
+          <div>
+            <label className='label'>
+              <span className='label-text'>AI Configuration</span>
+            </label>
             <div className='alert alert-info'>
               <span>
-                AI features are provided by Cross Write using our server-side
+                AI features are provided by Cross Write using server-side
                 API keys. No additional setup required.
               </span>
             </div>
-          )}
+          </div>
 
           <div className='flex justify-end'>
             <a href='/settings/billing' className='btn btn-primary'>

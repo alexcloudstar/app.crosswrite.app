@@ -3,7 +3,6 @@ import { PlanId, PLAN_LIMITS } from './plans';
 
 interface UserPlan {
   planId: PlanId;
-  byokKey?: string;
   usage: {
     articlesThisMonth: number;
     thumbnailsThisMonth: number;
@@ -22,7 +21,6 @@ interface AppState {
 
   userPlan: UserPlan;
   setUserPlan: (plan: Partial<UserPlan>) => void;
-  setByokKey: (key: string) => void;
 
   incrementArticleUsage: () => void;
   incrementThumbnailUsage: () => void;
@@ -49,7 +47,6 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   userPlan: {
     planId: 'FREE',
-    byokKey: 'sk-test-key-for-demo',
     usage: {
       articlesThisMonth: 2,
       thumbnailsThisMonth: 1,
@@ -61,10 +58,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       userPlan: { ...state.userPlan, ...plan },
     })),
 
-  setByokKey: key =>
-    set(state => ({
-      userPlan: { ...state.userPlan, byokKey: key },
-    })),
+
 
   incrementArticleUsage: () =>
     set(state => ({
@@ -94,8 +88,6 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     if (!limits.aiEnabled) return false;
 
-    if (userPlan.planId === 'FREE' && !userPlan.byokKey) return false;
-
     return true;
   },
 
@@ -104,8 +96,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     const limits = PLAN_LIMITS[userPlan.planId];
 
     if (!limits.aiEnabled) return false;
-
-    if (userPlan.planId === 'FREE' && !userPlan.byokKey) return false;
 
     if (limits.monthlyThumbGen === 0) return false;
 

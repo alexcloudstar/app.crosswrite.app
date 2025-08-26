@@ -92,7 +92,6 @@ export function ThumbnailGeneratorModal({
           size,
           planId: userPlan.planId,
           usage: userPlan.usage,
-          byokKey: userPlan.byokKey,
         }),
       });
 
