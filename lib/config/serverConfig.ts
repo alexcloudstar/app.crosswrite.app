@@ -32,9 +32,11 @@ export function isSelfHost(): boolean {
 export function getHostedAppKey(): string {
   if (cachedHostedAppKey === null) {
     const key = process.env.OPENAI_API_KEY_APP;
+
     if (!key) {
       throw new Error('OPENAI_API_KEY_APP is required in HOSTED mode');
     }
+
     cachedHostedAppKey = key;
   }
   return cachedHostedAppKey;
@@ -54,9 +56,9 @@ export function getSelfHostKey(): string {
 export function getApiKeyForGeneration(): string {
   if (isHosted()) {
     return getHostedAppKey();
-  } else {
-    return getSelfHostKey();
   }
+
+  return getSelfHostKey();
 }
 
 export function getKeySource(): 'hosted-app-key' | 'self-host-env-key' {
