@@ -8,6 +8,20 @@
       "when": 1755627719786,
       "tag": "0000_slow_silhouette",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1756230846943,
+      "tag": "0001_icy_frog_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1756230928697,
+      "tag": "0002_lyrical_shooting_star",
+      "breakpoints": true
     }
   ]
 }
