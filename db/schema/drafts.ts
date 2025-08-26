@@ -29,9 +29,9 @@ export const drafts = pgTable(
     publishedAt: timestamp('published_at'),
     scheduledAt: timestamp('scheduled_at'),
   },
-  table => ({
-    userIdIdx: index('drafts_user_id_idx').on(table.userId),
-    statusIdx: index('drafts_status_idx').on(table.status),
-    createdAtIdx: index('drafts_created_at_idx').on(table.createdAt),
-  })
+  table => [
+    index('drafts_user_id_idx').on(table.userId),
+    index('drafts_status_idx').on(table.status),
+    index('drafts_created_at_idx').on(table.createdAt),
+  ]
 );
