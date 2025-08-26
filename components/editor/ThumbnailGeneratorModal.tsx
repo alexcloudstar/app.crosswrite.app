@@ -92,7 +92,6 @@ export function ThumbnailGeneratorModal({
           size,
           planId: userPlan.planId,
           usage: userPlan.usage,
-          byokKey: userPlan.byokKey,
         }),
       });
 
@@ -112,9 +111,16 @@ export function ThumbnailGeneratorModal({
     }
   };
 
-  const handleSelectImage = (imageUrl: string) => {
-    setSelectedImage(imageUrl);
-  };
+  const onChangeCustomPrompt = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+    setCustomPrompt(e.target.value);
+
+  const onChangeAspectRatio = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    setAspectRatio(e.target.value);
+
+  const onSetSize = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    setSize(e.target.value);
+
+  const handleSelectImage = (imageUrl: string) => setSelectedImage(imageUrl);
 
   const handleUseImage = () => {
     if (selectedImage) {
@@ -165,7 +171,7 @@ export function ThumbnailGeneratorModal({
               </label>
               <textarea
                 value={customPrompt}
-                onChange={e => setCustomPrompt(e.target.value)}
+                onChange={onChangeCustomPrompt}
                 placeholder='Describe the thumbnail you want to generate...'
                 className='textarea textarea-bordered w-full'
                 rows={3}
@@ -178,7 +184,7 @@ export function ThumbnailGeneratorModal({
               </label>
               <select
                 value={aspectRatio}
-                onChange={e => setAspectRatio(e.target.value)}
+                onChange={onChangeAspectRatio}
                 className='select select-bordered w-full'
               >
                 {ASPECT_RATIOS.map(ratio => (
@@ -195,7 +201,7 @@ export function ThumbnailGeneratorModal({
               </label>
               <select
                 value={size}
-                onChange={e => setSize(e.target.value)}
+                onChange={onSetSize}
                 className='select select-bordered w-full'
               >
                 {SIZES.map(sizeOption => (

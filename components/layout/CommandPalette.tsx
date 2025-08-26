@@ -197,6 +197,9 @@ export function CommandPalette() {
     closeCommandPalette();
   };
 
+  const onSetQuery = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setQuery(e.target.value);
+
   if (!commandPaletteOpen) return null;
 
   return (
@@ -210,7 +213,7 @@ export function CommandPalette() {
               type='text'
               placeholder='Search commands...'
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={onSetQuery}
               className='flex-1 bg-transparent border-none outline-none text-lg'
               autoFocus
             />

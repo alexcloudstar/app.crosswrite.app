@@ -37,7 +37,7 @@ export default function BillingPage() {
     { name: 'Platforms', free: '1 platform', pro: 'All platforms' },
     { name: 'AI Articles', free: '5/month', pro: '200/month' },
     { name: 'AI Thumbnails', free: '3/month', pro: '50/month' },
-    { name: 'AI Provider', free: 'BYOK required', pro: 'Cross Write' },
+    { name: 'AI Provider', free: 'Cross Write', pro: 'Cross Write' },
     { name: 'Analytics', free: 'Basic', pro: 'Advanced' },
     { name: 'Support', free: 'Community', pro: 'Priority' },
     { name: 'Scheduling', free: 'Basic', pro: 'Custom' },
@@ -218,11 +218,11 @@ export default function BillingPage() {
           </h3>
           <div className='space-y-6'>
             <div>
-              <h4 className='font-medium mb-2'>What is BYOK?</h4>
+              <h4 className='font-medium mb-2'>How does AI work?</h4>
               <p className='text-sm text-base-content/70'>
-                BYOK (Bring Your Own Key) means you provide your own OpenAI API
-                key for AI features. This gives you full control over your AI
-                usage and costs.
+                AI features are powered by Cross Write using our server-side API keys. 
+                This ensures secure, reliable AI generation without requiring you to 
+                manage your own API keys.
               </p>
             </div>
             <div>

@@ -2,6 +2,36 @@
 
 Cross Write is a modern, AI-assisted writing and publishing application that helps content creators write once and publish everywhere. Built with Next.js 15, TypeScript, and DaisyUI, it provides a seamless experience for managing content across multiple platforms.
 
+## 🚀 Deployment Modes & Keys (ENV-ONLY)
+
+Cross Write supports two deployment modes with environment-only API key management:
+
+### HOSTED Mode
+For hosted deployments (free & paid plans):
+```bash
+CROSSWRITE_DEPLOYMENT_MODE=HOSTED
+OPENAI_API_KEY_APP=sk-hosted-...  # Cross Write's server app key
+```
+
+### SELF_HOST Mode
+For self-hosted deployments:
+```bash
+CROSSWRITE_DEPLOYMENT_MODE=SELF_HOST
+OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
+```
+
+**Key Features:**
+- **No client-side secrets**: All API keys stay server-side
+- **No in-app BYOK forms**: Keys are managed via environment variables only
+- **Automatic key selection**: Server picks the appropriate key based on deployment mode
+- **Client key rejection**: Any client-supplied keys are rejected with 400 error
+
+**Why ENV-ONLY?**
+- Enhanced security through server-side key management
+- Simplified deployment and configuration
+- No risk of key exposure in browser
+- Consistent behavior across all deployment scenarios
+
 ## 🚀 Features
 
 - **AI-Assisted Editor**: Get real-time writing suggestions and improvements
@@ -14,6 +44,8 @@ Cross Write is a modern, AI-assisted writing and publishing application that hel
 ## 🛠 Tech Stack
 
 - **Framework**: Next.js 15 (App Router, TypeScript, edge-safe)
+- **Authentication**: Auth.js (NextAuth.js v5) with Drizzle adapter
+- **Database**: Neon Postgres with Drizzle ORM
 - **Styling**: Tailwind CSS v4 + DaisyUI (peachsorbet theme)
 - **Icons**: lucide-react
 - **Charts**: recharts
@@ -34,12 +66,36 @@ cd cross-write
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+Create a `.env.local` file with the following variables:
+```bash
+DATABASE_URL=your_neon_postgres_url
+AUTH_SECRET=your_auth_secret
+AUTH_TRUST_HOST=true
+AUTH_GOOGLE_ID=your_google_oauth_id
+AUTH_GOOGLE_SECRET=your_google_oauth_secret
+RESEND_API_KEY=your_resend_api_key
+EMAIL_FROM=noreply@yourdomain.com
+AUTH_DEBUG=true
+
+# Deployment Mode & API Keys (ENV-ONLY)
+CROSSWRITE_DEPLOYMENT_MODE=HOSTED
+OPENAI_API_KEY_APP=sk-hosted-...  # For HOSTED mode
+# OPENAI_API_KEY=sk-selfhost-...  # For SELF_HOST mode
+```
+
+4. Set up the database:
+```bash
+npm run db:generate
+npm run db:push
+```
+
+5. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## 🎨 Design System
 
@@ -50,9 +106,35 @@ The application uses the **DaisyUI "peachsorbet"** theme with a dark-first appro
 - **Accent Color**: Melon (#f8ad9d)
 - **Dark Surfaces**: Sophisticated dark backgrounds with subtle contrast
 
+## 🔐 Authentication
+
+The app uses Auth.js (NextAuth.js v5) with the following features:
+
+- **OAuth Providers**: Google (conditionally loaded)
+- **Magic Link Authentication**: Passwordless email sign-in
+- **Database Sessions**: Persistent sessions stored in PostgreSQL
+- **Protected Routes**: Automatic redirect to sign-in for unauthenticated users
+- **User Management**: Extended user model with plan tiers (free/pro)
+
+### Authentication Flow
+
+1. **Sign In**: Users can sign in with Google OAuth or magic link email
+2. **Magic Link**: Users enter their email and receive a secure sign-in link
+3. **Session Management**: Sessions are stored in the database with automatic refresh
+4. **Route Protection**: Middleware protects all routes except auth pages
+5. **Sign Out**: Users can sign out and are redirected to sign-in page
+
+### Protected Layout
+
+The app includes a protected layout (`app/(protected)/layout.tsx`) that:
+- Checks for valid session on every request
+- Redirects to `/auth/sign-in` if not authenticated
+- Displays user information and sign-out button
+- Provides a clean, authenticated interface
+
 ## 📱 Pages & Features
 
-### Dashboard (`/`)
+### Dashboard (`/dashboard`)
 - Quick stats cards (Drafts, Scheduled, Published)
 - Sparkline charts for analytics
 - Recent activity feed

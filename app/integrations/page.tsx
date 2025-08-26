@@ -1,22 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  Settings,
-  Eye,
-  EyeOff,
-  Copy,
-} from 'lucide-react';
+import { CheckCircle, XCircle, ExternalLink, Settings } from 'lucide-react';
 import { mockIntegrations } from '@/lib/mock';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState(mockIntegrations);
   const [showSettings, setShowSettings] = useState<string | null>(null);
-  const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
+
   const [connecting, setConnecting] = useState<string | null>(null);
 
   const [setAsCanonical, setSetAsCanonical] = useState(false);
@@ -120,22 +112,6 @@ export default function IntegrationsPage() {
       console.error('Failed to connect to', platform, error);
     } finally {
       setConnecting(null);
-    }
-  };
-
-  const toggleApiKeyVisibility = (platform: string) => {
-    setShowApiKey(prev => ({
-      ...prev,
-      [platform]: !prev[platform],
-    }));
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      console.log('Copied to clipboard');
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
     }
   };
 
@@ -289,52 +265,14 @@ export default function IntegrationsPage() {
                 <div className='space-y-4'>
                   <div>
                     <label className='label'>
-                      <span className='label-text'>API Key</span>
+                      <span className='label-text'>API Configuration</span>
                     </label>
-                    <div className='relative'>
-                      <input
-                        type={showApiKey[showSettings] ? 'text' : 'password'}
-                        value='sk_test_1234567890abcdef'
-                        readOnly
-                        className='input input-bordered w-full pr-20'
-                      />
-                      <div className='absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1'>
-                        <button
-                          onClick={toggleApiKeyVisibility.bind(
-                            null,
-                            showSettings
-                          )}
-                          className='btn btn-ghost btn-sm btn-circle'
-                        >
-                          {showApiKey[showSettings] ? (
-                            <EyeOff size={16} />
-                          ) : (
-                            <Eye size={16} />
-                          )}
-                        </button>
-                        <button
-                          onClick={copyToClipboard.bind(
-                            null,
-                            'sk_test_1234567890abcdef'
-                          )}
-                          className='btn btn-ghost btn-sm btn-circle'
-                        >
-                          <Copy size={16} />
-                        </button>
-                      </div>
+                    <div className='alert alert-info'>
+                      <span>
+                        API keys are managed securely by Cross Write. No
+                        additional configuration required.
+                      </span>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className='label'>
-                      <span className='label-text'>API Secret</span>
-                    </label>
-                    <input
-                      type='password'
-                      value='••••••••••••••••'
-                      readOnly
-                      className='input input-bordered w-full'
-                    />
                   </div>
                 </div>
               </div>
