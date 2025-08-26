@@ -21,15 +21,11 @@ function getDeploymentMode(): DeploymentMode {
   return cachedDeploymentMode;
 }
 
-export function isHosted(): boolean {
-  return getDeploymentMode() === 'HOSTED';
-}
+export const isHosted = (): boolean => getDeploymentMode() === 'HOSTED';
 
-export function isSelfHost(): boolean {
-  return getDeploymentMode() === 'SELF_HOST';
-}
+export const isSelfHost = (): boolean => getDeploymentMode() === 'SELF_HOST';
 
-export function getHostedAppKey(): string {
+export const getHostedAppKey = (): string => {
   if (cachedHostedAppKey === null) {
     const key = process.env.OPENAI_API_KEY_APP;
 
@@ -40,9 +36,9 @@ export function getHostedAppKey(): string {
     cachedHostedAppKey = key;
   }
   return cachedHostedAppKey;
-}
+};
 
-export function getSelfHostKey(): string {
+export const getSelfHostKey = (): string => {
   if (cachedSelfHostKey === null) {
     const key = process.env.OPENAI_API_KEY;
     if (!key) {
@@ -51,16 +47,15 @@ export function getSelfHostKey(): string {
     cachedSelfHostKey = key;
   }
   return cachedSelfHostKey;
-}
+};
 
-export function getApiKeyForGeneration(): string {
+export const getApiKeyForGeneration = (): string => {
   if (isHosted()) {
     return getHostedAppKey();
   }
 
   return getSelfHostKey();
-}
+};
 
-export function getKeySource(): 'hosted-app-key' | 'self-host-env-key' {
-  return isHosted() ? 'hosted-app-key' : 'self-host-env-key';
-}
+export const getKeySource = (): 'hosted-app-key' | 'self-host-env-key' =>
+  isHosted() ? 'hosted-app-key' : 'self-host-env-key';

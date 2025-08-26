@@ -16,10 +16,12 @@ export async function getDeploymentConfig() {
       if (isHosted()) {
         getHostedAppKey();
         hasRequiredKey = true;
-      } else {
-        getSelfHostKey();
-        hasRequiredKey = true;
+
+        return;
       }
+
+      getSelfHostKey();
+      hasRequiredKey = true;
     } catch {
       hasRequiredKey = false;
     }
@@ -28,11 +30,10 @@ export async function getDeploymentConfig() {
       mode,
       hasRequiredKey,
     };
-      } catch {
-      // Fallback to HOSTED mode if there's any error
-      return {
-        mode: 'HOSTED' as const,
-        hasRequiredKey: false,
-      };
-    }
+  } catch {
+    return {
+      mode: 'HOSTED' as const,
+      hasRequiredKey: false,
+    };
+  }
 }
