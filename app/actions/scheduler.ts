@@ -47,7 +47,11 @@ export async function listScheduledPosts() {
 export async function createScheduledPost(input: unknown) {
   try {
     const session = await requireAuth();
-    const validated = createScheduledPostSchema.parse(input);
+    const validated = createScheduledPostSchema.parse(input) as {
+      draftId: string;
+      platforms: string[];
+      scheduledAt: string;
+    };
 
     const [draft] = await db
       .select()
@@ -96,7 +100,12 @@ export async function createScheduledPost(input: unknown) {
 export async function updateScheduledPost(input: unknown) {
   try {
     const session = await requireAuth();
-    const validated = updateScheduledPostSchema.parse(input);
+    const validated = updateScheduledPostSchema.parse(input) as {
+      id: string;
+      platforms?: string[];
+      scheduledAt?: string;
+      status?: 'pending' | 'published' | 'cancelled' | 'failed';
+    };
     const { id, ...updateData } = validated;
 
     const [existing] = await db
@@ -142,7 +151,7 @@ export async function updateScheduledPost(input: unknown) {
 export async function cancelScheduledPost(input: unknown) {
   try {
     const session = await requireAuth();
-    const { id } = scheduledPostIdSchema.parse(input);
+    const { id } = scheduledPostIdSchema.parse(input) as { id: string };
 
     const [scheduledPost] = await db
       .update(scheduledPosts)

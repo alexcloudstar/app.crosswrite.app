@@ -9,24 +9,24 @@ export const connectIntegrationSchema = z.object({
   apiSecret: z.string().optional(),
   accessToken: z.string().optional(),
   refreshToken: z.string().optional(),
-  webhookUrl: z.url().optional().or(z.literal('')),
+  webhookUrl: z.string().url().optional().or(z.literal('')),
   publicationId: z.string().optional(),
 });
 
 export const updateIntegrationSchema = z.object({
-  id: z.uuid('Invalid integration ID'),
+  id: z.string().uuid('Invalid integration ID'),
   autoPublish: z.boolean().optional(),
   syncInterval: z.number().min(30).max(1440).optional(),
-  webhookUrl: z.url().optional().or(z.literal('')),
+  webhookUrl: z.string().url().optional().or(z.literal('')),
   publicationId: z.string().optional(),
 });
 
 export const integrationIdSchema = z.object({
-  id: z.uuid('Invalid integration ID'),
+  id: z.string().uuid('Invalid integration ID'),
 });
 
 export const publishToPlatformsSchema = z.object({
-  draftId: z.uuid('Invalid draft ID'),
+  draftId: z.string().uuid('Invalid draft ID'),
   platforms: z
     .array(z.enum(supportedPlatforms))
     .min(1, 'At least one platform required'),
@@ -41,13 +41,13 @@ export const publishToPlatformsSchema = z.object({
 
 export const syncPlatformSchema = z.object({
   platform: z.enum(supportedPlatforms).optional(),
-  since: z.iso.datetime().optional(),
+  since: z.string().datetime().optional(),
   limit: z.number().min(1).max(100).optional(),
 });
 
 export const testPlatformConnectionSchema = z.object({
   platform: z.enum(supportedPlatforms),
-  integrationId: z.uuid('Invalid integration ID'),
+  integrationId: z.string().uuid('Invalid integration ID'),
 });
 
 export const hashnodePublishOptionsSchema = z.object({

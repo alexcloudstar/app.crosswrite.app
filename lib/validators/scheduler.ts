@@ -3,11 +3,11 @@ import { supportedPlatforms } from '@/lib/config/platforms';
 
 export const createScheduledPostSchema = z
   .object({
-    draftId: z.uuid('Invalid draft ID'),
+    draftId: z.string().uuid('Invalid draft ID'),
     platforms: z
       .array(z.enum(supportedPlatforms))
       .min(1, 'At least one platform required'),
-    scheduledAt: z.iso.datetime('Invalid scheduled date'),
+    scheduledAt: z.string().datetime('Invalid scheduled date'),
   })
   .refine(data => new Date(data.scheduledAt) > new Date(), {
     message: 'Scheduled date must be in the future',
@@ -16,9 +16,9 @@ export const createScheduledPostSchema = z
 
 export const updateScheduledPostSchema = z
   .object({
-    id: z.uuid('Invalid scheduled post ID'),
+    id: z.string().uuid('Invalid scheduled post ID'),
     platforms: z.array(z.enum(supportedPlatforms)).optional(),
-    scheduledAt: z.iso.datetime('Invalid scheduled date').optional(),
+    scheduledAt: z.string().datetime('Invalid scheduled date').optional(),
     status: z.enum(['pending', 'published', 'cancelled', 'failed']).optional(),
   })
   .refine(
@@ -35,5 +35,5 @@ export const updateScheduledPostSchema = z
   );
 
 export const scheduledPostIdSchema = z.object({
-  id: z.uuid('Invalid scheduled post ID'),
+  id: z.string().uuid('Invalid scheduled post ID'),
 });

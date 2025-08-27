@@ -294,8 +294,8 @@ export async function getPlatformPublications(input: unknown) {
     const session = await requireAuth();
     const { platform, integrationId } = z
       .object({
-        platform: z.enum(['hashnode']),
-        integrationId: z.uuid(),
+        platform: z.enum(supportedPlatforms),
+        integrationId: z.string().uuid(),
       })
       .parse(input);
 
@@ -356,7 +356,7 @@ export async function syncPlatformAnalytics(input: unknown) {
     const { platform, integrationId } = z
       .object({
         platform: z.enum(supportedPlatforms),
-        integrationId: z.uuid(),
+        integrationId: z.string().uuid(),
       })
       .parse(input);
 
