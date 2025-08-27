@@ -28,7 +28,7 @@ export async function listIntegrations() {
 
     return successResult(results);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -65,7 +65,7 @@ export async function connectIntegration(input: unknown) {
     revalidateDashboard();
     return successResult(integration);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -91,7 +91,7 @@ export async function updateIntegration(input: unknown) {
     revalidateDashboard();
     return successResult(integration);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -120,7 +120,7 @@ export async function disconnectIntegration(input: unknown) {
     revalidateDashboard();
     return successResult({ disconnected: true });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -145,7 +145,7 @@ export async function testIntegration(input: unknown) {
       platform: integration.platform,
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -179,6 +179,6 @@ export async function syncIntegration(input: unknown) {
       lastSync: new Date(),
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }

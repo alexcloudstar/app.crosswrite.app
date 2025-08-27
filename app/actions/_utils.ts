@@ -9,11 +9,11 @@ export type ActionResult<T = unknown> = {
   error?: string;
 };
 
-export function successResult<T>(data: T): ActionResult<T> {
+export async function successResult<T>(data: T): Promise<ActionResult<T>> {
   return { success: true, data };
 }
 
-export function errorResult(message: string): ActionResult {
+export async function errorResult(message: string): Promise<ActionResult> {
   return { success: false, error: message };
 }
 
@@ -28,15 +28,15 @@ export async function requireAuth(): Promise<{ id: string; email?: string }> {
   };
 }
 
-export function revalidateDashboard() {
+export async function revalidateDashboard() {
   revalidatePath('/dashboard');
 }
 
-export function revalidatePathHelper(path: string) {
+export async function revalidatePathHelper(path: string) {
   revalidatePath(path);
 }
 
-export function handleDatabaseError(error: unknown): string {
+export async function handleDatabaseError(error: unknown): Promise<string> {
   console.error('Database error:', error);
 
   if (error instanceof Error) {
