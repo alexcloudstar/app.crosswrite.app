@@ -25,8 +25,9 @@ import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft } from '@/lib/types/drafts';
 import { Integration, PublishResult } from '@/lib/types/integrations';
+import { Suggestion } from '@/lib/types/ai';
 
-type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | null;
+type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | 'saving' | null;
 
 export default function EditorPage() {
   const { userPlan } = useAppStore();
@@ -43,16 +44,7 @@ export default function EditorPage() {
   ]);
   const [publishing, setPublishing] = useState(false);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
-  const [suggestions, setSuggestions] = useState<
-    Array<{
-      id: string;
-      type: string;
-      title: string;
-      description: string;
-      suggestion: string;
-      applied: boolean;
-    }>
-  >([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
@@ -139,14 +131,7 @@ export default function EditorPage() {
       if (result.success && result.data) {
         const suggestionsData = (
           result.data as {
-            suggestions: Array<{
-              id: string;
-              type: string;
-              title: string;
-              description: string;
-              suggestion: string;
-              applied: boolean;
-            }>;
+            suggestions: Suggestion[];
           }
         ).suggestions;
         setSuggestions(suggestionsData);
@@ -178,7 +163,7 @@ export default function EditorPage() {
   const handleSaveDraft = async () => {
     if (!title.trim() || !content.trim() || isLoading) return;
 
-    setLoadingType('ai');
+    setLoadingType('saving');
     try {
       const result = await createDraft({
         title: title.trim(),
@@ -310,6 +295,11 @@ export default function EditorPage() {
           title: 'Generating thumbnail...',
           subtitle: 'Please wait while we create your thumbnail',
         };
+      case 'saving':
+        return {
+          title: 'Saving draft...',
+          subtitle: 'Please wait while we save your content',
+        };
       default:
         return {
           title: 'Processing...',
@@ -420,7 +410,7 @@ export default function EditorPage() {
                 disabled={isLoading}
               >
                 <Save size={16} className='mr-2' />
-                {isLoading ? 'Saving...' : 'Save Draft'}
+                {loadingType === 'saving' ? 'Saving...' : 'Save Draft'}
               </button>
               <button
                 onClick={handlePublish}
