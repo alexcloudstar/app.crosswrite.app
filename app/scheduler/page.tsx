@@ -141,14 +141,14 @@ export default function SchedulerPage() {
 
                 {days.map((day, index) => {
                   if (!day) {
-                    return <div key={index} className='p-2' />;
+                    return <div key={`empty-${index}`} className='p-2' />;
                   }
 
                   const scheduledPosts = getScheduledPostsForDate(day);
 
                   return (
                     <div
-                      key={index}
+                      key={day.toISOString()}
                       onClick={setSelectedDate.bind(null, day)}
                       className={`
                         p-2 min-h-[80px] border border-base-300 cursor-pointer hover:bg-base-200 transition-colors

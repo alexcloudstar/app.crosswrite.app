@@ -92,7 +92,10 @@ export default function BillingPage() {
 
             <div className='space-y-3 mb-6'>
               {PLAN_FEATURES[PLAN_VALUES.FREE].map((feature, index) => (
-                <div key={index} className='flex items-center space-x-3'>
+                <div
+                  key={`free-${index}`}
+                  className='flex items-center space-x-3'
+                >
                   <Check size={16} className='text-success flex-shrink-0' />
                   <span className='text-sm'>{feature}</span>
                 </div>
@@ -142,7 +145,10 @@ export default function BillingPage() {
 
             <div className='space-y-3 mb-6'>
               {PLAN_FEATURES[PLAN_VALUES.PRO].map((feature, index) => (
-                <div key={index} className='flex items-center space-x-3'>
+                <div
+                  key={`pro-${index}`}
+                  className='flex items-center space-x-3'
+                >
                   <Check
                     size={16}
                     className='text-primary-content flex-shrink-0'
