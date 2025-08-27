@@ -22,6 +22,13 @@
       "when": 1756230928697,
       "tag": "0002_lyrical_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1756294676599,
+      "tag": "0003_dashing_boomer",
+      "breakpoints": true
     }
   ]
 }

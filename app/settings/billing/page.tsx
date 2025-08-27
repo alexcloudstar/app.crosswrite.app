@@ -10,10 +10,8 @@ import { PLAN_FEATURES, PLAN_PRICING } from '@/lib/plans';
 export default function BillingPage() {
   const {
     userPlan,
-    planId,
     updatePlan,
     getPricing,
-    getFeatures,
     isFree,
     isPro,
     PlanId,

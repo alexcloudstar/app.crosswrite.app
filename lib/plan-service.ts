@@ -6,8 +6,7 @@ import {
   type DatabasePlanTier,
   type UserPlan,
   type UserUsage,
-  PlanId as PlanIdEnum,
-  DatabasePlanTier as DatabasePlanTierEnum,
+  DatabasePlanTierEnum,
   databasePlanToPlanId,
   planIdToDatabasePlan,
   canUseAI,
@@ -17,7 +16,6 @@ import {
   getUsageStatus,
   isProPlan,
   isFreePlan,
-  isSelfHostedPlan,
   getUpgradeablePlans,
   getDowngradeablePlans,
 } from './plans';
@@ -56,7 +54,10 @@ export class PlanService {
   static async updateUserPlan(userId: string, planId: PlanId): Promise<void> {
     const planTier = planIdToDatabasePlan(planId);
 
-    await db.update(users).set({ planTier }).where(eq(users.id, userId));
+    await db
+      .update(users)
+      .set({ planTier: planTier as DatabasePlanTierEnum })
+      .where(eq(users.id, userId));
   }
 
   /**

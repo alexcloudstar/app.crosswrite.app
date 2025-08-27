@@ -18,6 +18,8 @@ import {
   generateSuggestions,
 } from '@/app/actions/ai';
 
+type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | null;
+
 export default function EditorPage() {
   const { userPlan } = useAppStore();
   const [title, setTitle] = useState('Untitled Draft');
@@ -51,12 +53,12 @@ Happy writing! 🚀`);
   const [showRewriteSettings, setShowRewriteSettings] = useState(false);
   const [showThumbnailGenerator, setShowThumbnailGenerator] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
-  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
+  const [loadingType, setLoadingType] = useState<LoadingType>(null);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
+
+  const isLoading = loadingType !== null;
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTitle(e.target.value);
@@ -73,9 +75,9 @@ Happy writing! 🚀`);
     setContent(e.target.value);
 
   const handleRewrite = async () => {
-    if (!content.trim() || isAiLoading) return;
+    if (!content.trim() || isLoading) return;
 
-    setIsAiLoading(true);
+    setLoadingType('ai');
     try {
       const result = await improveText({ text: content });
       if (result.success && result.data) {
@@ -87,14 +89,14 @@ Happy writing! 🚀`);
     } catch (error) {
       console.error('Rewrite error:', error);
     } finally {
-      setIsAiLoading(false);
+      setLoadingType(null);
     }
   };
 
   const handleTone = async () => {
-    if (!content.trim() || isAiLoading) return;
+    if (!content.trim() || isLoading) return;
 
-    setIsAiLoading(true);
+    setLoadingType('ai');
     try {
       const result = await adjustTone({ text: content, tone: 'professional' });
       if (result.success && result.data) {
@@ -106,14 +108,14 @@ Happy writing! 🚀`);
     } catch (error) {
       console.error('Tone adjustment error:', error);
     } finally {
-      setIsAiLoading(false);
+      setLoadingType(null);
     }
   };
 
   const handleSummarize = async () => {
-    if (!content.trim() || isAiLoading) return;
+    if (!content.trim() || isLoading) return;
 
-    setIsAiLoading(true);
+    setLoadingType('ai');
     try {
       const result = await summarizeText({ text: content, style: 'paragraph' });
       if (result.success && result.data) {
@@ -125,14 +127,14 @@ Happy writing! 🚀`);
     } catch (error) {
       console.error('Summarize error:', error);
     } finally {
-      setIsAiLoading(false);
+      setLoadingType(null);
     }
   };
 
   const handleGenerateSuggestions = async () => {
-    if (!content.trim() || isGeneratingSuggestions) return;
+    if (!content.trim() || isLoading) return;
 
-    setIsGeneratingSuggestions(true);
+    setLoadingType('suggestions');
     try {
       const result = await generateSuggestions({ content, maxSuggestions: 4 });
       if (result.success && result.data) {
@@ -160,7 +162,7 @@ Happy writing! 🚀`);
     } catch (error) {
       console.error('Generate suggestions error:', error);
     } finally {
-      setIsGeneratingSuggestions(false);
+      setLoadingType(null);
     }
   };
 
@@ -171,54 +173,60 @@ Happy writing! 🚀`);
     setContent(prev => prev + suggestionNote);
   };
 
+  const getLoadingMessage = () => {
+    switch (loadingType) {
+      case 'ai':
+        return {
+          title: 'AI is processing your content...',
+          subtitle: 'Please wait while we improve your text',
+        };
+      case 'suggestions':
+        return {
+          title: 'Generating suggestions...',
+          subtitle: 'Please wait while we analyze your content',
+        };
+      case 'thumbnail':
+        return {
+          title: 'Generating thumbnail...',
+          subtitle: 'Please wait while we create your thumbnail',
+        };
+      default:
+        return {
+          title: 'Processing...',
+          subtitle: 'Please wait',
+        };
+    }
+  };
+
+  const loadingMessage = getLoadingMessage();
+
   return (
     <div
       className={`h-full flex flex-col relative ${
-        isAiLoading || isGeneratingThumbnail ? 'cursor-wait' : ''
+        isLoading ? 'cursor-wait' : ''
       }`}
     >
-      {isAiLoading && (
+      {isLoading && (
         <div className='absolute inset-0 bg-base-300/50 backdrop-blur-sm z-50 flex items-center justify-center'>
           <div className='flex flex-col items-center space-y-4'>
             <div className='loading loading-spinner loading-lg text-primary'></div>
-            <p className='text-lg font-medium'>
-              AI is processing your content...
-            </p>
+            <p className='text-lg font-medium'>{loadingMessage.title}</p>
             <p className='text-sm text-base-content/70'>
-              Please wait while we improve your text
+              {loadingMessage.subtitle}
             </p>
           </div>
         </div>
       )}
 
-      {(isAiLoading || isGeneratingThumbnail) && (
-        <div className='absolute inset-0 bg-base-300/50 backdrop-blur-sm z-50 flex items-center justify-center'>
-          <div className='flex flex-col items-center space-y-4'>
-            <div className='loading loading-spinner loading-lg text-primary'></div>
-            <p className='text-lg font-medium'>
-              {isGeneratingThumbnail
-                ? 'Generating thumbnail...'
-                : 'AI is processing your content...'}
-            </p>
-            <p className='text-sm text-base-content/70'>
-              {isGeneratingThumbnail
-                ? 'Please wait while we create your thumbnail'
-                : 'Please wait while we improve your text'}
-            </p>
-          </div>
-        </div>
-      )}
       <div className='flex items-center justify-between p-4 border-b border-base-300 bg-base-100'>
         <div className='flex items-center space-x-4 flex-1'>
           <input
             type='text'
             value={title}
             onChange={handleTitleChange}
-            disabled={isAiLoading || isGeneratingThumbnail}
+            disabled={isLoading}
             className={`text-xl font-semibold bg-transparent border-none outline-none flex-1 ${
-              isAiLoading || isGeneratingThumbnail
-                ? 'cursor-not-allowed opacity-50'
-                : ''
+              isLoading ? 'cursor-not-allowed opacity-50' : ''
             }`}
             placeholder='Enter title...'
           />
@@ -246,7 +254,7 @@ Happy writing! 🚀`);
             onClick={handleToggleRewriteSettings}
             className='btn btn-ghost btn-sm'
             title='AI Rewrite Settings'
-            disabled={isAiLoading || isGeneratingThumbnail}
+            disabled={isLoading}
           >
             <Settings size={16} />
           </button>
@@ -254,7 +262,7 @@ Happy writing! 🚀`);
             onClick={handleTogglePreview}
             className='btn btn-ghost btn-sm'
             title='Preview'
-            disabled={isAiLoading || isGeneratingThumbnail}
+            disabled={isLoading}
           >
             <Eye size={16} />
           </button>
@@ -266,7 +274,7 @@ Happy writing! 🚀`);
         onRewrite={handleRewrite}
         onTone={handleTone}
         onSummarize={handleSummarize}
-        isAiLoading={isAiLoading || isGeneratingThumbnail}
+        isAiLoading={isLoading}
       />
 
       <div className='flex-1 flex overflow-hidden'>
@@ -276,7 +284,7 @@ Happy writing! 🚀`);
               value={content}
               onChangeContent={onChangeContent}
               placeholder='Start writing your content...'
-              disabled={isAiLoading || isGeneratingThumbnail}
+              disabled={isLoading}
             />
           </div>
 
@@ -286,17 +294,11 @@ Happy writing! 🚀`);
               <span>{readingTime} min read</span>
             </div>
             <div className='flex items-center space-x-2'>
-              <button
-                className='btn btn-ghost btn-sm'
-                disabled={isAiLoading || isGeneratingThumbnail}
-              >
+              <button className='btn btn-ghost btn-sm' disabled={isLoading}>
                 <Save size={16} className='mr-2' />
                 Save Draft
               </button>
-              <button
-                className='btn btn-primary btn-sm'
-                disabled={isAiLoading || isGeneratingThumbnail}
-              >
+              <button className='btn btn-primary btn-sm' disabled={isLoading}>
                 <Send size={16} className='mr-2' />
                 Publish
               </button>
@@ -308,7 +310,7 @@ Happy writing! 🚀`);
           <AiSuggestionsPanel
             content={content}
             onGenerateSuggestions={handleGenerateSuggestions}
-            isGenerating={isGeneratingSuggestions}
+            isGenerating={loadingType === 'suggestions'}
             onApplySuggestion={handleApplySuggestion}
           />
         </div>
@@ -327,7 +329,9 @@ Happy writing! 🚀`);
           isOpen={showThumbnailGenerator}
           onClose={handleToggleThumbnailGenerator}
           onSelect={setThumbnailUrl}
-          onGeneratingChange={setIsGeneratingThumbnail}
+          onGeneratingChange={isGenerating =>
+            setLoadingType(isGenerating ? 'thumbnail' : null)
+          }
         />
       )}
 

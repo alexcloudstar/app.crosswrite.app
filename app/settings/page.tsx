@@ -14,7 +14,7 @@ import {
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { useAppStore } from '@/lib/store';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
-import { PlanId } from '@/lib/plans';
+import { PlanIdEnum } from '@/lib/plans';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -337,7 +337,7 @@ function BillingSettings() {
             <div className='flex items-center space-x-2'>
               <PlanBadge planId={userPlan.planId} />
               <span className='text-sm text-base-content/50'>
-                {userPlan.planId === PlanId.FREE ? 'Free Plan' : 'Pro Plan'}
+                {userPlan.planId === PlanIdEnum.FREE ? 'Free Plan' : 'Pro Plan'}
               </span>
             </div>
           </div>
@@ -348,8 +348,8 @@ function BillingSettings() {
             </label>
             <div className='alert alert-info'>
               <span>
-                AI features are provided by Cross Write using server-side
-                API keys. No additional setup required.
+                AI features are provided by Cross Write using server-side API
+                keys. No additional setup required.
               </span>
             </div>
           </div>

@@ -1,9 +1,7 @@
 import { create } from 'zustand';
 import {
-  type PlanId,
   type UserPlan,
-  type UserUsage,
-  PlanId as PlanIdEnum,
+  PlanIdEnum,
   canUseAI,
   canGenerateThumbnail,
   canPublishArticle,

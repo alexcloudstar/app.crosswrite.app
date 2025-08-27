@@ -18,7 +18,6 @@ import {
 } from '@/lib/validators/ai';
 import { db } from '@/db/client';
 import { userUsage } from '@/db/schema/user-usage';
-import { users } from '@/db/schema/auth';
 import { planService } from '@/lib/plan-service';
 
 async function trackAIUsage(

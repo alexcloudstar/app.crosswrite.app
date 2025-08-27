@@ -1,13 +1,38 @@
-export enum PlanId {
-  SELF_HOSTED = 'SELF_HOSTED',
-  FREE = 'FREE',
-  PRO = 'PRO',
-}
+// Single source of truth for plan values
+export const PLAN_VALUES = {
+  FREE: 'free',
+  PRO: 'pro',
+  SELF_HOSTED: 'self_hosted',
+} as const;
 
-export enum DatabasePlanTier {
+export const DATABASE_PLAN_VALUES = {
+  FREE: 'free',
+  PRO: 'pro',
+} as const;
+
+export type PlanId = (typeof PLAN_VALUES)[keyof typeof PLAN_VALUES];
+export type DatabasePlanTier =
+  (typeof DATABASE_PLAN_VALUES)[keyof typeof DATABASE_PLAN_VALUES];
+
+// String enums for backward compatibility and type safety
+export enum PlanIdEnum {
+  SELF_HOSTED = 'self_hosted',
   FREE = 'free',
   PRO = 'pro',
 }
+
+export enum DatabasePlanTierEnum {
+  FREE = 'free',
+  PRO = 'pro',
+}
+
+// TypeScript utility types for type-safe conversions
+export type UppercaseString<T extends string> = Uppercase<T>;
+export type LowercaseString<T extends string> = Lowercase<T>;
+
+// Type-safe conversion utilities
+export type PlanIdToDatabase = UppercaseString<PlanId>;
+export type DatabaseToPlanId = PlanId;
 
 export type MonthlyLimit = number | 'UNLIMITED';
 
@@ -29,19 +54,19 @@ export type UserPlan = {
 };
 
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
-  [PlanId.SELF_HOSTED]: {
+  [PLAN_VALUES.SELF_HOSTED]: {
     aiEnabled: false,
     monthlyArticles: 'UNLIMITED',
     monthlyThumbGen: 0,
     maxPlatforms: 'ALL',
   },
-  [PlanId.FREE]: {
+  [PLAN_VALUES.FREE]: {
     aiEnabled: true,
     monthlyArticles: 5,
     monthlyThumbGen: 3,
     maxPlatforms: 1,
   },
-  [PlanId.PRO]: {
+  [PLAN_VALUES.PRO]: {
     aiEnabled: true,
     monthlyArticles: 200,
     monthlyThumbGen: 50,
@@ -50,19 +75,19 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
 };
 
 export const PLAN_PRICING = {
-  [PlanId.FREE]: '$0 / mo',
-  [PlanId.PRO]: '$14 / mo',
+  [PLAN_VALUES.FREE]: '$0 / mo',
+  [PLAN_VALUES.PRO]: '$14 / mo',
 } as const;
 
 export const PLAN_FEATURES = {
-  [PlanId.FREE]: [
+  [PLAN_VALUES.FREE]: [
     '1 platform',
     '5 articles/month',
     '3 AI thumbnails/month',
     'AI provided by Cross Write',
     'Basic analytics',
   ],
-  [PlanId.PRO]: [
+  [PLAN_VALUES.PRO]: [
     'All platforms',
     '200 AI articles/month',
     '50 AI thumbnails/month',
@@ -76,17 +101,17 @@ export const PLAN_FEATURES = {
 // Plan conversion utilities
 export function databasePlanToPlanId(planTier: DatabasePlanTier): PlanId {
   const planMap: Record<DatabasePlanTier, PlanId> = {
-    [DatabasePlanTier.FREE]: PlanId.FREE,
-    [DatabasePlanTier.PRO]: PlanId.PRO,
+    [DATABASE_PLAN_VALUES.FREE]: PLAN_VALUES.FREE,
+    [DATABASE_PLAN_VALUES.PRO]: PLAN_VALUES.PRO,
   };
-  return planMap[planTier] || PlanId.FREE;
+  return planMap[planTier] || PLAN_VALUES.FREE;
 }
 
 export function planIdToDatabasePlan(planId: PlanId): DatabasePlanTier {
   const planMap: Record<PlanId, DatabasePlanTier> = {
-    [PlanId.FREE]: DatabasePlanTier.FREE,
-    [PlanId.PRO]: DatabasePlanTier.PRO,
-    [PlanId.SELF_HOSTED]: DatabasePlanTier.FREE, // Default to free for self-hosted
+    [PLAN_VALUES.FREE]: DATABASE_PLAN_VALUES.FREE,
+    [PLAN_VALUES.PRO]: DATABASE_PLAN_VALUES.PRO,
+    [PLAN_VALUES.SELF_HOSTED]: DATABASE_PLAN_VALUES.FREE, // Default to free for self-hosted
   };
   return planMap[planId];
 }
@@ -94,18 +119,18 @@ export function planIdToDatabasePlan(planId: PlanId): DatabasePlanTier {
 // Plan display utilities
 export function getPlanDisplayName(planId: PlanId): string {
   const names: Record<PlanId, string> = {
-    [PlanId.FREE]: 'Free',
-    [PlanId.PRO]: 'Pro',
-    [PlanId.SELF_HOSTED]: 'Self-hosted',
+    [PLAN_VALUES.FREE]: 'Free',
+    [PLAN_VALUES.PRO]: 'Pro',
+    [PLAN_VALUES.SELF_HOSTED]: 'Self-hosted',
   };
   return names[planId];
 }
 
 export function getPlanColor(planId: PlanId): string {
   const colors: Record<PlanId, string> = {
-    [PlanId.FREE]: 'bg-base-300 text-base-content',
-    [PlanId.PRO]: 'bg-primary text-primary-content',
-    [PlanId.SELF_HOSTED]: 'bg-secondary text-secondary-content',
+    [PLAN_VALUES.FREE]: 'bg-base-300 text-base-content',
+    [PLAN_VALUES.PRO]: 'bg-primary text-primary-content',
+    [PLAN_VALUES.SELF_HOSTED]: 'bg-secondary text-secondary-content',
   };
   return colors[planId];
 }
@@ -173,40 +198,40 @@ export function getUsageStatus(planId: PlanId, usage: UserUsage) {
 
 // Plan comparison utilities
 export function isProPlan(planId: PlanId): boolean {
-  return planId === PlanId.PRO;
+  return planId === PLAN_VALUES.PRO;
 }
 
 export function isFreePlan(planId: PlanId): boolean {
-  return planId === PlanId.FREE;
+  return planId === PLAN_VALUES.FREE;
 }
 
 export function isSelfHostedPlan(planId: PlanId): boolean {
-  return planId === PlanId.SELF_HOSTED;
+  return planId === PLAN_VALUES.SELF_HOSTED;
 }
 
 // Plan upgrade/downgrade utilities
 export function getUpgradeablePlans(currentPlanId: PlanId): PlanId[] {
   switch (currentPlanId) {
-    case PlanId.FREE:
-      return [PlanId.PRO];
-    case PlanId.PRO:
+    case PLAN_VALUES.FREE:
+      return [PLAN_VALUES.PRO];
+    case PLAN_VALUES.PRO:
       return [];
-    case PlanId.SELF_HOSTED:
-      return [PlanId.PRO];
+    case PLAN_VALUES.SELF_HOSTED:
+      return [PLAN_VALUES.PRO];
     default:
-      return [PlanId.PRO];
+      return [PLAN_VALUES.PRO];
   }
 }
 
 export function getDowngradeablePlans(currentPlanId: PlanId): PlanId[] {
   switch (currentPlanId) {
-    case PlanId.FREE:
+    case PLAN_VALUES.FREE:
       return [];
-    case PlanId.PRO:
-      return [PlanId.FREE];
-    case PlanId.SELF_HOSTED:
-      return [PlanId.FREE];
+    case PLAN_VALUES.PRO:
+      return [PLAN_VALUES.FREE];
+    case PLAN_VALUES.SELF_HOSTED:
+      return [PLAN_VALUES.FREE];
     default:
-      return [PlanId.FREE];
+      return [PLAN_VALUES.FREE];
   }
 }
