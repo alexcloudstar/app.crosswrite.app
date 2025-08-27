@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
           }>;
           setAnalyticsData(prev => ({
             ...prev,
-            publishSuccess: successData.data.breakdown || [],
+            publishSuccess: successData?.data?.breakdown || [],
           }));
         }
       } catch (error) {
