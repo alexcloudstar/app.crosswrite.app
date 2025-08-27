@@ -23,6 +23,7 @@ import {
   updateNotificationSettings,
 } from '@/app/actions/user-settings';
 import toast from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
 
 interface UserSettings {
   userId: string;
@@ -55,6 +56,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { update: updateSession } = useSession();
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
@@ -200,6 +202,7 @@ function ProfileSettings({
   isSaving: boolean;
   setIsSaving: (saving: boolean) => void;
 }) {
+  const { update: updateSession } = useSession();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     bio: settings?.bio || '',
@@ -222,6 +225,7 @@ function ProfileSettings({
       if (result.success) {
         toast.success('Profile updated successfully');
         onSave();
+        updateSession();
       } else {
         toast.error(result.error || 'Failed to update profile');
       }
@@ -237,7 +241,7 @@ function ProfileSettings({
       <div>
         <h2 className='text-xl font-semibold mb-4'>Profile Settings</h2>
         <div className='space-y-4'>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Display Name</span>
             </label>
@@ -250,7 +254,7 @@ function ProfileSettings({
               className='input input-bordered w-full'
             />
           </div>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Email</span>
             </label>
@@ -264,7 +268,7 @@ function ProfileSettings({
               <span className='label-text-alt'>Email cannot be changed</span>
             </label>
           </div>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Bio</span>
             </label>
@@ -277,7 +281,7 @@ function ProfileSettings({
               rows={3}
             />
           </div>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Website</span>
             </label>
@@ -378,7 +382,7 @@ function WritingSettings({
       <div>
         <h2 className='text-xl font-semibold mb-4'>Writing Defaults</h2>
         <div className='space-y-4'>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Preferred Tone</span>
             </label>
@@ -402,7 +406,7 @@ function WritingSettings({
               <option value='academic'>Academic</option>
             </select>
           </div>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Default Tags</span>
             </label>
@@ -499,7 +503,7 @@ function PublishingSettings({
       <div>
         <h2 className='text-xl font-semibold mb-4'>Publishing Settings</h2>
         <div className='space-y-4'>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Default Publish Time</span>
             </label>
@@ -697,7 +701,7 @@ function BillingSettings() {
       <div>
         <h2 className='text-xl font-semibold mb-4'>Billing & Plan Settings</h2>
         <div className='space-y-4'>
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>Current Plan</span>
             </label>
@@ -709,7 +713,7 @@ function BillingSettings() {
             </div>
           </div>
 
-          <div>
+          <div className='flex flex-col gap-2'>
             <label className='label'>
               <span className='label-text'>AI Configuration</span>
             </label>

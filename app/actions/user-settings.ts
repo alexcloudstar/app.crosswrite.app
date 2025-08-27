@@ -5,6 +5,7 @@ import { userSettings, users } from '@/db/schema/auth';
 import { requireAuth, successResult, errorResult } from './_utils';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 
 const updateProfileSchema = z.object({
   name: z.string().optional(),
@@ -119,6 +120,9 @@ export async function updateProfile(
         })
         .where(eq(userSettings.userId, session.id));
     }
+
+    // Revalidate the session to reflect changes
+    revalidatePath('/', 'layout');
 
     return successResult('Profile updated successfully');
   } catch (error) {
