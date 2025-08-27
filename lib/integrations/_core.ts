@@ -62,12 +62,10 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     supportsCoverImages: true,
     rateLimit: { requests: 10, windowMs: 60000 },
   },
-
 };
 
 export function normalizeError(error: unknown): string {
   if (error instanceof Error) {
-    // Don't leak sensitive information
     const message = error.message.toLowerCase();
     if (
       message.includes('api key') ||

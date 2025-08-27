@@ -22,6 +22,7 @@ import {
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { createDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
+import { supportedPlatforms } from '@/lib/config/platforms';
 
 interface Draft {
   id: string;
@@ -102,8 +103,7 @@ Happy writing! 🚀`);
   const [loadingType, setLoadingType] = useState<LoadingType>(null);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
-    'devto',
-    'hashnode',
+    ...supportedPlatforms,
   ]);
   const [publishing, setPublishing] = useState(false);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
@@ -580,7 +580,7 @@ Happy writing! 🚀`);
                   <span className='label-text'>Select Platforms</span>
                 </label>
                 <div className='space-y-2'>
-                  {['devto', 'hashnode'].map(platform => {
+                  {supportedPlatforms.map(platform => {
                     const isConnected = connectedPlatforms.includes(platform);
                     return (
                       <CustomCheckbox

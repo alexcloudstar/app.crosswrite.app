@@ -155,7 +155,6 @@ export class HashnodeClient implements IntegrationClient {
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }> {
     return retryWithBackoff(async () => {
-      // Validate title length
       const titleValidation = validateTitle(content.title, 'hashnode');
       if (!titleValidation.valid) {
         throw new Error(titleValidation.error);

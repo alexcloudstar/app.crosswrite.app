@@ -18,6 +18,7 @@ import {
   getPlatformPublications,
   syncPlatformAnalytics,
 } from '@/app/actions/integrations';
+import { platformConfig } from '@/lib/config/platforms';
 
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<
@@ -50,34 +51,8 @@ export default function IntegrationsPage() {
     }>
   >([]);
   const [showPublicationSelector, setShowPublicationSelector] = useState(false);
-  const [selectedPublicationName, setSelectedPublicationName] =
+    const [selectedPublicationName, setSelectedPublicationName] =
     useState<string>('');
-
-  const platformConfig: Record<
-    string,
-    {
-      name: string;
-      description: string;
-      color: string;
-      icon: string;
-      url: string;
-    }
-  > = {
-    devto: {
-      name: 'Dev.to',
-      description: 'Connect your dev.to account to publish articles directly',
-      color: 'bg-purple-500',
-      icon: 'DEV',
-      url: 'https://dev.to',
-    },
-    hashnode: {
-      name: 'Hashnode',
-      description: "Share your content on Hashnode's developer community",
-      color: 'bg-purple-600',
-      icon: 'H',
-      url: 'https://hashnode.com',
-    },
-  };
 
   // Load integrations on component mount
   useEffect(() => {

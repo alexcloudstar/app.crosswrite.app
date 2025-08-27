@@ -1,4 +1,4 @@
-export type Platform = 'devto' | 'hashnode';
+import { Platform } from '@/lib/config/platforms';
 export type DraftStatus = 'draft' | 'scheduled' | 'published';
 export type ActivityType =
   | 'draft_created'

@@ -94,13 +94,11 @@ export class DevtoClient implements IntegrationClient {
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }> {
     return retryWithBackoff(async () => {
-      // Validate title length
       const titleValidation = validateTitle(content.title, 'devto');
       if (!titleValidation.valid) {
         throw new Error(titleValidation.error);
       }
 
-      // Input validation
       if (!content.title?.trim()) {
         throw new Error('Title is required for Dev.to publishing');
       }

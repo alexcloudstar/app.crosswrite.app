@@ -16,6 +16,7 @@ import {
   integrationIdSchema,
 } from '@/lib/validators/integrations';
 import { z } from 'zod';
+import { supportedPlatforms } from '@/lib/config/platforms';
 
 export async function listIntegrations() {
   try {
@@ -354,7 +355,7 @@ export async function syncPlatformAnalytics(input: unknown) {
     const session = await requireAuth();
     const { platform, integrationId } = z
       .object({
-        platform: z.enum(['devto', 'hashnode']),
+        platform: z.enum(supportedPlatforms),
         integrationId: z.uuid(),
       })
       .parse(input);

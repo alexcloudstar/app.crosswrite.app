@@ -25,6 +25,7 @@ import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { listDrafts } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
+import { supportedPlatforms } from '@/lib/config/platforms';
 
 interface Draft {
   id: string;
@@ -64,8 +65,7 @@ export default function DraftsPage() {
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
-    'devto',
-    'hashnode',
+    ...supportedPlatforms,
   ]);
   const [publishingDraft, setPublishingDraft] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -264,7 +264,7 @@ export default function DraftsPage() {
     setScheduleDraftId(null);
     setScheduleDate('');
     setScheduleTime('');
-    setSelectedPlatforms(['devto', 'hashnode']);
+          setSelectedPlatforms([...supportedPlatforms]);
 
     if (!scheduleDraftId) {
       setSelectedDrafts([]);
@@ -656,7 +656,7 @@ export default function DraftsPage() {
                   <span className='label-text'>Platforms</span>
                 </label>
                 <div className='flex flex-wrap gap-3'>
-                  {['devto', 'hashnode'].map(platform => (
+                  {supportedPlatforms.map(platform => (
                     <CustomCheckbox
                       key={platform}
                       size='sm'

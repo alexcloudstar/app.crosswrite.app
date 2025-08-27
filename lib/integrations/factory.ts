@@ -1,6 +1,7 @@
 import { IntegrationClient } from './_core';
 import { createDevtoClient } from './devto';
 import { createHashnodeClient } from './hashnode';
+import { supportedPlatforms, Platform } from '@/lib/config/platforms';
 
 export interface IntegrationData {
   platform: string;
@@ -31,17 +32,11 @@ export function createPlatformClient(
         publicationId: integration.publicationId,
       });
 
-
-
     default:
       throw new Error(`Unsupported platform: ${integration.platform}`);
   }
 }
 
-export function getSupportedPlatforms(): string[] {
-  return ['devto', 'hashnode'];
-}
-
 export function isPlatformSupported(platform: string): boolean {
-  return getSupportedPlatforms().includes(platform);
+  return supportedPlatforms.includes(platform as Platform);
 }

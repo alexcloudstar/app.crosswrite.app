@@ -6,6 +6,7 @@ import { Clock, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { mockDrafts } from '@/lib/mock';
 import { formatDateTime, getPlatformDisplayName } from '@/lib/utils';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
+import { supportedPlatforms } from '@/lib/config/platforms';
 
 export default function SchedulerPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -301,7 +302,7 @@ export default function SchedulerPage() {
                   <span className='label-text'>Platforms</span>
                 </label>
                 <div className='space-y-2'>
-                  {['devto', 'hashnode'].map(platform => (
+                  {supportedPlatforms.map(platform => (
                     <CustomCheckbox
                       key={platform}
                       size='sm'

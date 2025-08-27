@@ -1,6 +1,5 @@
 import { z } from 'zod';
-
-export const supportedPlatforms = ['devto', 'hashnode'] as const;
+import { supportedPlatforms } from '@/lib/config/platforms';
 
 export const connectIntegrationSchema = z.object({
   platform: z.enum(supportedPlatforms, {
