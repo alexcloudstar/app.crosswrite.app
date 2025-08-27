@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Check, Crown, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
 import { usePlan } from '@/hooks/use-plan';
@@ -14,7 +15,7 @@ export default function BillingPage() {
 
   const handleUpgrade = async () => {
     setIsUpgrading(true);
-    // Mock upgrade process
+
     await new Promise(resolve => setTimeout(resolve, 2000));
     updatePlan(PlanId.PRO);
     setIsUpgrading(false);
@@ -22,15 +23,14 @@ export default function BillingPage() {
 
   const handleDowngrade = async () => {
     setIsDowngrading(true);
-    // Mock downgrade process
+
     await new Promise(resolve => setTimeout(resolve, 1500));
     updatePlan(PlanId.FREE);
     setIsDowngrading(false);
   };
 
   const handleManageSubscription = () => {
-    // Mock subscription management - in real app this would open a modal or redirect
-    alert('Subscription management portal would open here. This is a demo.');
+    toast('Subscription management portal would open here. This is a demo.');
   };
 
   const features = [
@@ -45,7 +45,6 @@ export default function BillingPage() {
 
   return (
     <div className='p-6 max-w-6xl mx-auto'>
-      {/* Header */}
       <div className='mb-8'>
         <h1 className='text-3xl font-bold mb-2'>Billing & Plans</h1>
         <p className='text-base-content/70'>
@@ -53,7 +52,6 @@ export default function BillingPage() {
         </p>
       </div>
 
-      {/* Current Plan Status */}
       <div className='card bg-base-100 border border-base-300 shadow-sm mb-8'>
         <div className='card-body'>
           <div className='flex items-center justify-between'>
@@ -74,9 +72,7 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* Plan Comparison */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-        {/* Free Plan */}
         <div className='card bg-base-100 border border-base-300 shadow-sm'>
           <div className='card-body'>
             <div className='text-center mb-6'>
@@ -121,7 +117,6 @@ export default function BillingPage() {
           </div>
         </div>
 
-        {/* Pro Plan */}
         <div className='card bg-primary text-primary-content border border-primary shadow-sm relative'>
           <div className='absolute -top-3 left-1/2 transform -translate-x-1/2'>
             <div className='badge badge-secondary flex items-center space-x-1'>
@@ -185,7 +180,6 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* Feature Comparison Table */}
       <div className='card bg-base-100 border border-base-300 shadow-sm mt-8'>
         <div className='card-body'>
           <h3 className='text-xl font-semibold mb-6'>
@@ -214,7 +208,6 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* FAQ Section */}
       <div className='card bg-base-100 border border-base-300 shadow-sm mt-8'>
         <div className='card-body'>
           <h3 className='text-xl font-semibold mb-6'>

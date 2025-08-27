@@ -15,6 +15,7 @@ import {
   Send,
 } from 'lucide-react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   formatDate,
@@ -182,7 +183,7 @@ export default function DraftsPage() {
         if (data.summary) {
           const { successful, total } = data.summary;
           if (successful > 0) {
-            alert(
+            toast.success(
               `Successfully published to ${successful} out of ${total} platforms!`
             );
           } else {
@@ -192,12 +193,14 @@ export default function DraftsPage() {
                 let message = `${r.platform}: ${r.error}`;
                 if (r.error?.includes('Publication ID is required')) {
                   message +=
-                    '\n  → Go to Integrations page and click &quot;Select Publication&quot; to set up your publication ID';
+                    '\n  → Go to Integrations page and click "Select Publication" to set up your publication ID';
                 }
                 return message;
               })
               .join('\n\n');
-            alert(`Failed to publish to any platforms:\n\n${errorMessages}`);
+            toast.error(
+              `Failed to publish to any platforms:\n\n${errorMessages}`
+            );
           }
         }
 
@@ -210,11 +213,11 @@ export default function DraftsPage() {
         }
       } else {
         console.error('Publish failed:', result.error);
-        alert(`Publish failed: ${result.error}`);
+        toast.error(`Publish failed: ${result.error}`);
       }
     } catch (error) {
       console.error('Publish error:', error);
-      alert(
+      toast.error(
         `Publish error: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
@@ -238,7 +241,7 @@ export default function DraftsPage() {
     setScheduleDraftId(null);
     setScheduleDate('');
     setScheduleTime('');
-          setSelectedPlatforms([...supportedPlatforms]);
+    setSelectedPlatforms([...supportedPlatforms]);
 
     if (!scheduleDraftId) {
       setSelectedDrafts([]);

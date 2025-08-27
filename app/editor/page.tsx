@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Save, Eye, Send, Settings, X } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { EditorToolbar } from '@/components/editor/EditorToolbar';
 import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
 import { AiSuggestionsPanel } from '@/components/editor/AiSuggestionsPanel';
@@ -75,7 +76,7 @@ export default function EditorPage() {
         setContent((result.data as { improvedText: string }).improvedText);
       } else {
         console.error('Rewrite failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to rewrite content. Please try again.');
       }
     } catch (error) {
       console.error('Rewrite error:', error);
@@ -94,7 +95,7 @@ export default function EditorPage() {
         setContent((result.data as { adjustedText: string }).adjustedText);
       } else {
         console.error('Tone adjustment failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to adjust tone. Please try again.');
       }
     } catch (error) {
       console.error('Tone adjustment error:', error);
@@ -113,7 +114,7 @@ export default function EditorPage() {
         setContent((result.data as { summary: string }).summary);
       } else {
         console.error('Summarize failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to summarize content. Please try again.');
       }
     } catch (error) {
       console.error('Summarize error:', error);
@@ -137,7 +138,7 @@ export default function EditorPage() {
         setSuggestions(suggestionsData);
       } else {
         console.error('Generate suggestions failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to generate suggestions. Please try again.');
       }
     } catch (error) {
       console.error('Generate suggestions error:', error);
@@ -175,15 +176,14 @@ export default function EditorPage() {
       });
 
       if (result.success) {
-        alert('Draft saved successfully!');
-
+        toast.success('Draft saved successfully!');
         window.location.href = '/drafts';
       } else {
-        alert(`Failed to save draft: ${result.error}`);
+        toast.error(`Failed to save draft: ${result.error}`);
       }
     } catch (error) {
       console.error('Save draft error:', error);
-      alert('Failed to save draft. Please try again.');
+      toast.error('Failed to save draft. Please try again.');
     } finally {
       setLoadingType(null);
     }
@@ -191,7 +191,7 @@ export default function EditorPage() {
 
   const handlePublish = () => {
     if (selectedPlatforms.length === 0) {
-      alert('Please select at least one platform to publish to.');
+      toast.error('Please select at least one platform to publish to.');
       return;
     }
     setShowPublishModal(true);
@@ -213,7 +213,7 @@ export default function EditorPage() {
 
       if (!draftResult.success) {
         console.error('Failed to save draft:', draftResult.error);
-        // TODO: Show error message
+        toast.error('Failed to save draft before publishing.');
         return;
       }
 
@@ -231,7 +231,7 @@ export default function EditorPage() {
         console.log('Published successfully:', result.data);
         setShowPublishModal(false);
 
-        alert(
+        toast.success(
           `Successfully published to ${
             (result.data as PublishResult).summary.successful
           } platforms! Redirecting to drafts...`
@@ -239,7 +239,7 @@ export default function EditorPage() {
         window.location.href = '/drafts';
       } else {
         console.error('Publish failed:', result.error);
-        alert(`Publish failed: ${result.error}`);
+        toast.error(`Publish failed: ${result.error}`);
       }
     } catch (error) {
       console.error('Publish error:', error);
