@@ -6,6 +6,7 @@ import {
   integer,
   pgEnum,
   boolean,
+  json,
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from '@auth/core/adapters';
 
@@ -18,6 +19,34 @@ export const users = pgTable('user', {
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
   planTier: planTierEnum('plan_tier').default('free').notNull(),
+});
+
+export const userSettings = pgTable('user_settings', {
+  userId: text('userId')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' })
+    .primaryKey(),
+  bio: text('bio'),
+  website: text('website'),
+  preferredTone: text('preferred_tone').default('professional'),
+  defaultTags: text('default_tags').array().default([]),
+  autoGenerateUrls: boolean('auto_generate_urls').default(true),
+  includeReadingTime: boolean('include_reading_time').default(false),
+  defaultPublishTime: text('default_publish_time').default('09:00'),
+  autoSchedule: boolean('auto_schedule').default(true),
+  notifications: json('notifications').$type<{
+    publishSuccess: boolean;
+    publishErrors: boolean;
+    dailyDigest: boolean;
+    weeklyReport: boolean;
+  }>().default({
+    publishSuccess: true,
+    publishErrors: true,
+    dailyDigest: false,
+    weeklyReport: true,
+  }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
 export const accounts = pgTable(

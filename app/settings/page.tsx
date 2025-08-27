@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   User,
   Edit3,
@@ -15,9 +15,46 @@ import { PlanBadge } from '@/components/ui/PlanBadge';
 import { useAppStore } from '@/lib/store';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { PlanIdEnum } from '@/lib/plans';
+import {
+  getUserSettings,
+  updateProfile,
+  updateWritingDefaults,
+  updatePublishingSettings,
+  updateNotificationSettings,
+} from '@/app/actions/user-settings';
+import toast from 'react-hot-toast';
+
+interface UserSettings {
+  userId: string;
+  bio?: string;
+  website?: string;
+  preferredTone: string;
+  defaultTags: string[];
+  autoGenerateUrls: boolean;
+  includeReadingTime: boolean;
+  defaultPublishTime: string;
+  autoSchedule: boolean;
+  notifications: {
+    publishSuccess: boolean;
+    publishErrors: boolean;
+    dailyDigest: boolean;
+    weeklyReport: boolean;
+  };
+}
+
+interface User {
+  id: string;
+  name?: string;
+  email: string;
+  image?: string;
+}
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
@@ -27,6 +64,44 @@ export default function SettingsPage() {
     { id: 'billing', name: 'Billing', icon: CreditCard },
     { id: 'shortcuts', name: 'Shortcuts', icon: Keyboard },
   ];
+
+  useEffect(() => {
+    loadUserSettings();
+  }, []);
+
+  async function loadUserSettings() {
+    try {
+      setIsLoading(true);
+      const result = await getUserSettings();
+      
+      if (result.success && result.data) {
+        setUser((result.data as any).user);
+        setSettings((result.data as any).settings);
+      } else {
+        toast.error('Failed to load user settings');
+      }
+    } catch (error) {
+      toast.error('Failed to load user settings');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className='p-6 max-w-4xl mx-auto'>
+        <div className='mb-8'>
+          <h1 className='text-3xl font-bold mb-2'>Settings</h1>
+          <p className='text-base-content/70'>
+            Configure your Cross Write experience
+          </p>
+        </div>
+        <div className='flex justify-center items-center h-64'>
+          <span className='loading loading-spinner loading-lg'></span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='p-6 max-w-4xl mx-auto'>
@@ -67,10 +142,39 @@ export default function SettingsPage() {
         <div className='flex-1'>
           <div className='card bg-base-100 border border-base-300 shadow-sm'>
             <div className='card-body'>
-              {activeTab === 'profile' && <ProfileSettings />}
-              {activeTab === 'writing' && <WritingSettings />}
-              {activeTab === 'publishing' && <PublishingSettings />}
-              {activeTab === 'notifications' && <NotificationSettings />}
+              {activeTab === 'profile' && (
+                <ProfileSettings 
+                  user={user} 
+                  settings={settings} 
+                  onSave={loadUserSettings}
+                  isSaving={isSaving}
+                  setIsSaving={setIsSaving}
+                />
+              )}
+              {activeTab === 'writing' && (
+                <WritingSettings 
+                  settings={settings} 
+                  onSave={loadUserSettings}
+                  isSaving={isSaving}
+                  setIsSaving={setIsSaving}
+                />
+              )}
+              {activeTab === 'publishing' && (
+                <PublishingSettings 
+                  settings={settings} 
+                  onSave={loadUserSettings}
+                  isSaving={isSaving}
+                  setIsSaving={setIsSaving}
+                />
+              )}
+              {activeTab === 'notifications' && (
+                <NotificationSettings 
+                  settings={settings} 
+                  onSave={loadUserSettings}
+                  isSaving={isSaving}
+                  setIsSaving={setIsSaving}
+                />
+              )}
               {activeTab === 'billing' && <BillingSettings />}
               {activeTab === 'shortcuts' && <ShortcutSettings />}
             </div>
@@ -81,7 +185,51 @@ export default function SettingsPage() {
   );
 }
 
-function ProfileSettings() {
+function ProfileSettings({ 
+  user, 
+  settings, 
+  onSave, 
+  isSaving, 
+  setIsSaving 
+}: { 
+  user: User | null; 
+  settings: UserSettings | null; 
+  onSave: () => void;
+  isSaving: boolean;
+  setIsSaving: (saving: boolean) => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    bio: settings?.bio || '',
+    website: settings?.website || '',
+  });
+
+  useEffect(() => {
+    setFormData({
+      name: user?.name || '',
+      bio: settings?.bio || '',
+      website: settings?.website || '',
+    });
+  }, [user, settings]);
+
+  async function handleSave() {
+    try {
+      setIsSaving(true);
+      const result = await updateProfile(formData);
+      
+      if (result.success) {
+        toast.success('Profile updated successfully');
+        onSave();
+      } else {
+        toast.error(result.error || 'Failed to update profile');
+      }
+    } catch (error) {
+      toast.error('Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <div className='space-y-6'>
       <div>
@@ -93,7 +241,8 @@ function ProfileSettings() {
             </label>
             <input
               type='text'
-              defaultValue='Alex Johnson'
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className='input input-bordered w-full'
             />
           </div>
@@ -103,16 +252,21 @@ function ProfileSettings() {
             </label>
             <input
               type='email'
-              defaultValue='alex@example.com'
-              className='input input-bordered w-full'
+              value={user?.email || ''}
+              disabled
+              className='input input-bordered w-full opacity-50'
             />
+            <label className='label'>
+              <span className='label-text-alt'>Email cannot be changed</span>
+            </label>
           </div>
           <div>
             <label className='label'>
               <span className='label-text'>Bio</span>
             </label>
             <textarea
-              defaultValue='Full-stack developer and content creator passionate about sharing knowledge with the developer community.'
+              value={formData.bio}
+              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
               className='textarea textarea-bordered w-full'
               rows={3}
             />
@@ -123,25 +277,80 @@ function ProfileSettings() {
             </label>
             <input
               type='url'
-              defaultValue='https://'
+              value={formData.website}
+              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
               className='input input-bordered w-full'
             />
           </div>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button className='btn btn-primary'>
-          <Save size={16} className='mr-2' />
-          Save Changes
+        <button 
+          className='btn btn-primary' 
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <span className='loading loading-spinner loading-sm'></span>
+          ) : (
+            <Save size={16} className='mr-2' />
+          )}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>
   );
 }
 
-function WritingSettings() {
-  const [autoGenerateUrls, setAutoGenerateUrls] = useState(true);
-  const [includeReadingTime, setIncludeReadingTime] = useState(false);
+function WritingSettings({ 
+  settings, 
+  onSave, 
+  isSaving, 
+  setIsSaving 
+}: { 
+  settings: UserSettings | null; 
+  onSave: () => void;
+  isSaving: boolean;
+  setIsSaving: (saving: boolean) => void;
+}) {
+  const [formData, setFormData] = useState({
+    preferredTone: (settings?.preferredTone as 'professional' | 'casual' | 'friendly' | 'academic') || 'professional',
+    defaultTags: settings?.defaultTags || [],
+    autoGenerateUrls: settings?.autoGenerateUrls ?? true,
+    includeReadingTime: settings?.includeReadingTime ?? false,
+  });
+
+  useEffect(() => {
+    setFormData({
+      preferredTone: (settings?.preferredTone as 'professional' | 'casual' | 'friendly' | 'academic') || 'professional',
+      defaultTags: settings?.defaultTags || [],
+      autoGenerateUrls: settings?.autoGenerateUrls ?? true,
+      includeReadingTime: settings?.includeReadingTime ?? false,
+    });
+  }, [settings]);
+
+  async function handleSave() {
+    try {
+      setIsSaving(true);
+      const result = await updateWritingDefaults(formData);
+      
+      if (result.success) {
+        toast.success('Writing defaults updated successfully');
+        onSave();
+      } else {
+        toast.error(result.error || 'Failed to update writing defaults');
+      }
+    } catch (error) {
+      toast.error('Failed to update writing defaults');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleTagsChange(value: string) {
+    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    setFormData(prev => ({ ...prev, defaultTags: tags }));
+  }
 
   return (
     <div className='space-y-6'>
@@ -152,11 +361,15 @@ function WritingSettings() {
             <label className='label'>
               <span className='label-text'>Preferred Tone</span>
             </label>
-            <select className='select select-bordered w-full'>
-              <option>Professional</option>
-              <option>Casual</option>
-              <option>Friendly</option>
-              <option>Academic</option>
+            <select 
+              className='select select-bordered w-full'
+              value={formData.preferredTone}
+              onChange={(e) => setFormData(prev => ({ ...prev, preferredTone: e.target.value as 'professional' | 'casual' | 'friendly' | 'academic' }))}
+            >
+              <option value='professional'>Professional</option>
+              <option value='casual'>Casual</option>
+              <option value='friendly'>Friendly</option>
+              <option value='academic'>Academic</option>
             </select>
           </div>
           <div>
@@ -165,6 +378,8 @@ function WritingSettings() {
             </label>
             <input
               type='text'
+              value={formData.defaultTags.join(', ')}
+              onChange={(e) => handleTagsChange(e.target.value)}
               placeholder='javascript, react, web-development'
               className='input input-bordered w-full'
             />
@@ -173,42 +388,77 @@ function WritingSettings() {
             </label>
           </div>
           <CustomCheckbox
-            checked={autoGenerateUrls}
-            onChange={setAutoGenerateUrls}
+            checked={formData.autoGenerateUrls}
+            onChange={(checked) => setFormData(prev => ({ ...prev, autoGenerateUrls: checked }))}
           >
             Auto-generate canonical URLs
           </CustomCheckbox>
           <CustomCheckbox
-            checked={includeReadingTime}
-            onChange={setIncludeReadingTime}
+            checked={formData.includeReadingTime}
+            onChange={(checked) => setFormData(prev => ({ ...prev, includeReadingTime: checked }))}
           >
             Include reading time estimates
           </CustomCheckbox>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button className='btn btn-primary'>
-          <Save size={16} className='mr-2' />
-          Save Changes
+        <button 
+          className='btn btn-primary' 
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <span className='loading loading-spinner loading-sm'></span>
+          ) : (
+            <Save size={16} className='mr-2' />
+          )}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>
   );
 }
 
-function PublishingSettings() {
-  const [selectedPlatforms, setSelectedPlatforms] = useState(['dev.to']);
-  const [autoSchedule, setAutoSchedule] = useState(true);
+function PublishingSettings({ 
+  settings, 
+  onSave, 
+  isSaving, 
+  setIsSaving 
+}: { 
+  settings: UserSettings | null; 
+  onSave: () => void;
+  isSaving: boolean;
+  setIsSaving: (saving: boolean) => void;
+}) {
+  const [formData, setFormData] = useState({
+    defaultPublishTime: settings?.defaultPublishTime || '09:00',
+    autoSchedule: settings?.autoSchedule ?? true,
+  });
 
-  const platforms = ['dev.to', 'Hashnode'];
+  useEffect(() => {
+    setFormData({
+      defaultPublishTime: settings?.defaultPublishTime || '09:00',
+      autoSchedule: settings?.autoSchedule ?? true,
+    });
+  }, [settings]);
 
-  const handlePlatformToggle = (platform: string) => {
-    setSelectedPlatforms(prev =>
-      prev.includes(platform)
-        ? prev.filter(p => p !== platform)
-        : [...prev, platform]
-    );
-  };
+  async function handleSave() {
+    try {
+      setIsSaving(true);
+      const result = await updatePublishingSettings(formData);
+      
+      if (result.success) {
+        toast.success('Publishing settings updated successfully');
+        onSave();
+      } else {
+        toast.error(result.error || 'Failed to update publishing settings');
+      }
+    } catch (error) {
+      toast.error('Failed to update publishing settings');
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
     <div className='space-y-6'>
@@ -217,46 +467,86 @@ function PublishingSettings() {
         <div className='space-y-4'>
           <div>
             <label className='label'>
-              <span className='label-text'>Default Platforms</span>
-            </label>
-            <div className='space-y-2'>
-              {platforms.map(platform => (
-                <CustomCheckbox
-                  key={platform}
-                  checked={selectedPlatforms.includes(platform)}
-                  onChange={handlePlatformToggle.bind(null, platform)}
-                >
-                  {platform}
-                </CustomCheckbox>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className='label'>
               <span className='label-text'>Default Publish Time</span>
             </label>
             <input
               type='time'
-              defaultValue='09:00'
+              value={formData.defaultPublishTime}
+              onChange={(e) => setFormData(prev => ({ ...prev, defaultPublishTime: e.target.value }))}
               className='input input-bordered w-full'
             />
           </div>
-          <CustomCheckbox checked={autoSchedule} onChange={setAutoSchedule}>
+          <CustomCheckbox 
+            checked={formData.autoSchedule} 
+            onChange={(checked) => setFormData(prev => ({ ...prev, autoSchedule: checked }))}
+          >
             Auto-schedule for optimal times
           </CustomCheckbox>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button className='btn btn-primary'>
-          <Save size={16} className='mr-2' />
-          Save Changes
+        <button 
+          className='btn btn-primary' 
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <span className='loading loading-spinner loading-sm'></span>
+          ) : (
+            <Save size={16} className='mr-2' />
+          )}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>
   );
 }
 
-function NotificationSettings() {
+function NotificationSettings({ 
+  settings, 
+  onSave, 
+  isSaving, 
+  setIsSaving 
+}: { 
+  settings: UserSettings | null; 
+  onSave: () => void;
+  isSaving: boolean;
+  setIsSaving: (saving: boolean) => void;
+}) {
+  const [formData, setFormData] = useState({
+    publishSuccess: settings?.notifications?.publishSuccess ?? true,
+    publishErrors: settings?.notifications?.publishErrors ?? true,
+    dailyDigest: settings?.notifications?.dailyDigest ?? false,
+    weeklyReport: settings?.notifications?.weeklyReport ?? true,
+  });
+
+  useEffect(() => {
+    setFormData({
+      publishSuccess: settings?.notifications?.publishSuccess ?? true,
+      publishErrors: settings?.notifications?.publishErrors ?? true,
+      dailyDigest: settings?.notifications?.dailyDigest ?? false,
+      weeklyReport: settings?.notifications?.weeklyReport ?? true,
+    });
+  }, [settings]);
+
+  async function handleSave() {
+    try {
+      setIsSaving(true);
+      const result = await updateNotificationSettings(formData);
+      
+      if (result.success) {
+        toast.success('Notification settings updated successfully');
+        onSave();
+      } else {
+        toast.error(result.error || 'Failed to update notification settings');
+      }
+    } catch (error) {
+      toast.error('Failed to update notification settings');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <div className='space-y-6'>
       <div>
@@ -272,7 +562,8 @@ function NotificationSettings() {
             <input
               type='checkbox'
               className='toggle toggle-primary'
-              defaultChecked
+              checked={formData.publishSuccess}
+              onChange={(e) => setFormData(prev => ({ ...prev, publishSuccess: e.target.checked }))}
             />
           </div>
           <div className='flex items-center justify-between'>
@@ -285,7 +576,8 @@ function NotificationSettings() {
             <input
               type='checkbox'
               className='toggle toggle-primary'
-              defaultChecked
+              checked={formData.publishErrors}
+              onChange={(e) => setFormData(prev => ({ ...prev, publishErrors: e.target.checked }))}
             />
           </div>
           <div className='flex items-center justify-between'>
@@ -295,7 +587,12 @@ function NotificationSettings() {
                 Receive a daily summary of your content performance
               </p>
             </div>
-            <input type='checkbox' className='toggle toggle-primary' />
+            <input 
+              type='checkbox' 
+              className='toggle toggle-primary'
+              checked={formData.dailyDigest}
+              onChange={(e) => setFormData(prev => ({ ...prev, dailyDigest: e.target.checked }))}
+            />
           </div>
           <div className='flex items-center justify-between'>
             <div>
@@ -307,15 +604,24 @@ function NotificationSettings() {
             <input
               type='checkbox'
               className='toggle toggle-primary'
-              defaultChecked
+              checked={formData.weeklyReport}
+              onChange={(e) => setFormData(prev => ({ ...prev, weeklyReport: e.target.checked }))}
             />
           </div>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button className='btn btn-primary'>
-          <Save size={16} className='mr-2' />
-          Save Changes
+        <button 
+          className='btn btn-primary' 
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <span className='loading loading-spinner loading-sm'></span>
+          ) : (
+            <Save size={16} className='mr-2' />
+          )}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>
