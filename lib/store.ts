@@ -47,8 +47,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   userPlan: {
     planId: PlanIdEnum.FREE,
     usage: {
-      articlesThisMonth: 2,
-      thumbnailsThisMonth: 1,
+      articlesThisMonth: 0,
+      thumbnailsThisMonth: 0,
     },
   },
 

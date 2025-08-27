@@ -28,8 +28,10 @@ import { listDrafts, deleteDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft, DraftsResponse } from '@/lib/types/drafts';
+import { usePlan } from '@/hooks/use-plan';
 
 export default function DraftsPage() {
+  const { refreshPlanData } = usePlan();
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -274,6 +276,8 @@ export default function DraftsPage() {
         if (reloadResult.success && reloadResult.data) {
           setDrafts((reloadResult.data as DraftsResponse).drafts);
         }
+
+        await refreshPlanData();
       } else {
         console.error('Publish failed:', result.error);
         toast.error(`Publish failed: ${result.error}`);

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   LayoutDashboard,
   Edit3,
@@ -31,6 +32,7 @@ const navigation = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const { sidebarCollapsed, toggleSidebar } = useAppStore();
   const [showHelp, setShowHelp] = useState(false);
 
@@ -120,7 +122,7 @@ export function AppSidebar() {
             <User size={20} className='flex-shrink-0' />
             {!sidebarCollapsed && (
               <>
-                <span className='ml-3'>Alex Johnson</span>
+                <span className='ml-3'>{session?.user?.name || 'User'}</span>
                 <div className='ml-auto w-2 h-2 bg-success rounded-full'></div>
               </>
             )}
