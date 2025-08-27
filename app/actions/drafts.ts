@@ -2,7 +2,7 @@
 
 import { eq, and, desc, like, or, count } from 'drizzle-orm';
 import { db } from '@/db/client';
-import { drafts, platformPosts } from '@/db/schema';
+import { drafts } from '@/db/schema';
 import {
   requireAuth,
   successResult,
@@ -161,42 +161,14 @@ export async function deleteDraft(input: unknown) {
 
 export async function publishDraft(input: unknown) {
   try {
-    const session = await requireAuth();
     const { id, platforms } = publishDraftSchema.parse(input);
 
-    const [draft] = await db
-      .select()
-      .from(drafts)
-      .where(and(eq(drafts.id, id), eq(drafts.userId, session.id)))
-      .limit(1);
+    // Use the new platform publishing action
+    const { publishToPlatforms } = await import('./integrations/publish');
 
-    if (!draft) {
-      return errorResult('Draft not found');
-    }
-
-    const platformPostValues = platforms.map(platform => ({
+    return await publishToPlatforms({
       draftId: id,
-      platform,
-      status: 'pending',
-    }));
-
-    await db.insert(platformPosts).values(platformPostValues);
-
-    const [updatedDraft] = await db
-      .update(drafts)
-      .set({
-        status: 'published',
-        publishedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(drafts.id, id))
-      .returning();
-
-    revalidateDashboard();
-    return successResult({
-      draft: updatedDraft,
-      platformPosts: platformPostValues,
-      message: 'Draft published successfully (stub - no actual publishing)',
+      platforms,
     });
   } catch (error) {
     return errorResult(await handleDatabaseError(error));

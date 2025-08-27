@@ -22,6 +22,7 @@ export const integrations = pgTable(
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     webhookUrl: text('webhook_url'),
+    publicationId: text('publication_id'),
     status: text('status').notNull().default('disconnected'),
     autoPublish: boolean('auto_publish').default(false),
     syncInterval: integer('sync_interval').default(60),

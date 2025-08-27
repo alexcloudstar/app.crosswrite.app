@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getPlatformDisplayName as getPlatformDisplayNameFromConfig, getPlatformColor as getPlatformColorFromConfig, Platform } from '@/lib/config/platforms';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -49,21 +50,9 @@ export function formatRelativeTime(date: Date): string {
 }
 
 export function getPlatformDisplayName(platform: string): string {
-  const names: Record<string, string> = {
-    devto: 'dev.to',
-    medium: 'Medium',
-    hashnode: 'Hashnode',
-    beehiiv: 'Beehiiv',
-  };
-  return names[platform] || platform;
+  return getPlatformDisplayNameFromConfig(platform as Platform) || platform;
 }
 
 export function getPlatformColor(platform: string): string {
-  const colors: Record<string, string> = {
-    devto: 'bg-blue-500',
-    medium: 'bg-green-500',
-    hashnode: 'bg-purple-500',
-    beehiiv: 'bg-orange-500',
-  };
-  return colors[platform] || 'bg-gray-500';
+  return getPlatformColorFromConfig(platform as Platform) || 'bg-gray-500';
 }

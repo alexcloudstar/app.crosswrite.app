@@ -38,11 +38,10 @@ const allNewsItems: NewsItem[] = [
   {
     id: '2',
     title: 'Multi-Platform Publishing',
-    description:
-      'Write once, publish everywhere. Support for LinkedIn, Twitter, and more.',
+    description: 'Write once, publish everywhere. Support for Dev.to, Hashnode, and more.',
     detailedDescription:
-      'Streamline your content workflow with our multi-platform publishing system. Write your content once and publish it across LinkedIn, Twitter, Instagram, and more with platform-specific optimizations. Each post is automatically formatted for the best performance on each platform.',
-    date: '2024-01-10',
+      'Streamline your content workflow with our multi-platform publishing system. Write your content once and publish it across Dev.to, Hashnode, and more with platform-specific optimizations. Each post is automatically formatted for the best performance on each platform.',
+    date: '2024-01-15',
     type: 'feature',
     tags: ['Publishing', 'Social Media', 'Automation'],
   },

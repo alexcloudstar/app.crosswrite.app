@@ -269,7 +269,7 @@ export function ThumbnailGeneratorModal({
               <div className='grid grid-cols-2 gap-4'>
                 {generatedImages.map((imageUrl, index) => (
                   <div
-                    key={index}
+                    key={`thumbnail-${index}`}
                     className={`relative border-2 rounded-lg overflow-hidden ${
                       selectedImage === imageUrl
                         ? 'border-primary'

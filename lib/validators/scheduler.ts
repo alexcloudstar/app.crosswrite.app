@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { supportedPlatforms } from './integrations';
+import { supportedPlatforms } from '@/lib/config/platforms';
 
 export const createScheduledPostSchema = z
   .object({

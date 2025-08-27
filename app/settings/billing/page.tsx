@@ -5,17 +5,10 @@ import { Check, Crown, Loader2 } from 'lucide-react';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
 import { usePlan } from '@/hooks/use-plan';
-import { PLAN_FEATURES, PLAN_PRICING } from '@/lib/plans';
+import { PLAN_FEATURES, PLAN_PRICING, PLAN_VALUES } from '@/lib/plans';
 
 export default function BillingPage() {
-  const {
-    userPlan,
-    updatePlan,
-    getPricing,
-    isFree,
-    isPro,
-    PlanId,
-  } = usePlan();
+  const { userPlan, updatePlan, getPricing, isFree, isPro, PlanId } = usePlan();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isDowngrading, setIsDowngrading] = useState(false);
 
@@ -98,8 +91,11 @@ export default function BillingPage() {
             </div>
 
             <div className='space-y-3 mb-6'>
-              {PLAN_FEATURES.FREE.map((feature, index) => (
-                <div key={index} className='flex items-center space-x-3'>
+              {PLAN_FEATURES[PLAN_VALUES.FREE].map((feature, index) => (
+                <div
+                  key={`free-${index}`}
+                  className='flex items-center space-x-3'
+                >
                   <Check size={16} className='text-success flex-shrink-0' />
                   <span className='text-sm'>{feature}</span>
                 </div>
@@ -148,8 +144,11 @@ export default function BillingPage() {
             </div>
 
             <div className='space-y-3 mb-6'>
-              {PLAN_FEATURES.PRO.map((feature, index) => (
-                <div key={index} className='flex items-center space-x-3'>
+              {PLAN_FEATURES[PLAN_VALUES.PRO].map((feature, index) => (
+                <div
+                  key={`pro-${index}`}
+                  className='flex items-center space-x-3'
+                >
                   <Check
                     size={16}
                     className='text-primary-content flex-shrink-0'

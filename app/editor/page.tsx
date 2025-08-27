@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Save, Eye, Send, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Eye, Send, Settings, X } from 'lucide-react';
 import NextImage from 'next/image';
+import Link from 'next/link';
 import { EditorToolbar } from '@/components/editor/EditorToolbar';
 import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
 import { AiSuggestionsPanel } from '@/components/editor/AiSuggestionsPanel';
@@ -10,6 +11,7 @@ import { PreviewModal } from '@/components/editor/PreviewModal';
 import { ThumbnailGeneratorModal } from '@/components/editor/ThumbnailGeneratorModal';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { useAppStore } from '@/lib/store';
 import {
   improveText,
@@ -17,6 +19,51 @@ import {
   summarizeText,
   generateSuggestions,
 } from '@/app/actions/ai';
+import { publishToPlatforms } from '@/app/actions/integrations/publish';
+import { createDraft } from '@/app/actions/drafts';
+import { listIntegrations } from '@/app/actions/integrations';
+import { supportedPlatforms } from '@/lib/config/platforms';
+
+interface Draft {
+  id: string;
+  title: string;
+  content: string;
+  contentPreview?: string;
+  status: string;
+  platforms: string[];
+  thumbnailUrl?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt?: Date;
+  scheduledAt?: Date;
+}
+
+interface PublishResult {
+  results: Array<{
+    platform: string;
+    success: boolean;
+    platformPostId?: string;
+    platformUrl?: string;
+    error?: string;
+  }>;
+  summary: {
+    total: number;
+    successful: number;
+    failed: number;
+    draftId: string;
+  };
+}
+
+interface Integration {
+  id: string;
+  platform: string;
+  status: string;
+  connectedAt?: Date;
+  lastSync?: Date;
+}
 
 type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | null;
 
@@ -54,6 +101,12 @@ Happy writing! 🚀`);
   const [showThumbnailGenerator, setShowThumbnailGenerator] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [loadingType, setLoadingType] = useState<LoadingType>(null);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
+    ...supportedPlatforms,
+  ]);
+  const [publishing, setPublishing] = useState(false);
+  const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
@@ -167,11 +220,128 @@ Happy writing! 🚀`);
   };
 
   const handleApplySuggestion = (suggestion: string) => {
-    // Add the suggestion as a note at the end of the content
     const timestamp = new Date().toLocaleTimeString();
     const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
     setContent(prev => prev + suggestionNote);
   };
+
+  const handleSaveDraft = async () => {
+    if (!title.trim() || !content.trim() || isLoading) return;
+
+    setLoadingType('ai');
+    try {
+      const result = await createDraft({
+        title: title.trim(),
+        content: content.trim(),
+        contentPreview:
+          content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+        thumbnailUrl: thumbnailUrl || undefined,
+        tags: [], // TODO: Add tag extraction from content
+      });
+
+      if (result.success) {
+        alert('Draft saved successfully!');
+
+        window.location.href = '/drafts';
+      } else {
+        alert(`Failed to save draft: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Save draft error:', error);
+      alert('Failed to save draft. Please try again.');
+    } finally {
+      setLoadingType(null);
+    }
+  };
+
+  const handlePublish = () => {
+    if (selectedPlatforms.length === 0) {
+      alert('Please select at least one platform to publish to.');
+      return;
+    }
+    setShowPublishModal(true);
+  };
+
+  const handlePublishSubmit = async () => {
+    if (!title.trim() || !content.trim() || publishing) return;
+
+    setPublishing(true);
+    try {
+      const draftResult = await createDraft({
+        title: title.trim(),
+        content: content.trim(),
+        contentPreview:
+          content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+        thumbnailUrl: thumbnailUrl || undefined,
+        tags: [], // TODO: Add tag extraction from content
+      });
+
+      if (!draftResult.success) {
+        console.error('Failed to save draft:', draftResult.error);
+        // TODO: Show error message
+        return;
+      }
+
+      const draftId = (draftResult.data as Draft).id;
+
+      const result = await publishToPlatforms({
+        draftId,
+        platforms: selectedPlatforms,
+        options: {
+          publishAsDraft: false,
+        },
+      });
+
+      if (result.success) {
+        console.log('Published successfully:', result.data);
+        setShowPublishModal(false);
+
+        alert(
+          `Successfully published to ${
+            (result.data as PublishResult).summary.successful
+          } platforms! Redirecting to drafts...`
+        );
+        window.location.href = '/drafts';
+      } else {
+        console.error('Publish failed:', result.error);
+        alert(`Publish failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Publish error:', error);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const handlePlatformToggle = (platform: string) => {
+    setSelectedPlatforms(prev =>
+      prev.includes(platform)
+        ? prev.filter(p => p !== platform)
+        : [...prev, platform]
+    );
+  };
+
+  useEffect(() => {
+    if (!showPublishModal) return;
+
+    async function loadIntegrations() {
+      try {
+        const result = await listIntegrations();
+        if (result.success && result.data) {
+          const connected = (result.data as Integration[])
+            .filter(
+              (integration: Integration) => integration.status === 'connected'
+            )
+            .map((integration: Integration) => integration.platform);
+          setConnectedPlatforms(connected);
+        }
+      } catch (error) {
+        console.error('Failed to load integrations:', error);
+      }
+    }
+
+    loadIntegrations();
+  }, [showPublishModal]);
 
   const getLoadingMessage = () => {
     switch (loadingType) {
@@ -294,11 +464,19 @@ Happy writing! 🚀`);
               <span>{readingTime} min read</span>
             </div>
             <div className='flex items-center space-x-2'>
-              <button className='btn btn-ghost btn-sm' disabled={isLoading}>
+              <button
+                onClick={handleSaveDraft}
+                className='btn btn-ghost btn-sm'
+                disabled={isLoading}
+              >
                 <Save size={16} className='mr-2' />
-                Save Draft
+                {isLoading ? 'Saving...' : 'Save Draft'}
               </button>
-              <button className='btn btn-primary btn-sm' disabled={isLoading}>
+              <button
+                onClick={handlePublish}
+                className='btn btn-primary btn-sm'
+                disabled={isLoading}
+              >
                 <Send size={16} className='mr-2' />
                 Publish
               </button>
@@ -374,6 +552,96 @@ Happy writing! 🚀`);
                 onClick={handleToggleRewriteSettings}
               >
                 Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPublishModal && (
+        <div className='modal modal-open'>
+          <div className='modal-box max-w-md'>
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='font-bold text-lg flex items-center'>
+                <Send size={20} className='mr-2' />
+                Publish to Platforms
+              </h3>
+              <button
+                onClick={setShowPublishModal.bind(null, false)}
+                className='btn btn-ghost btn-sm btn-circle'
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className='space-y-4'>
+              <div>
+                <label className='label'>
+                  <span className='label-text'>Select Platforms</span>
+                </label>
+                <div className='space-y-2'>
+                  {supportedPlatforms.map(platform => {
+                    const isConnected = connectedPlatforms.includes(platform);
+                    return (
+                      <CustomCheckbox
+                        key={platform}
+                        checked={selectedPlatforms.includes(platform)}
+                        onChange={handlePlatformToggle.bind(null, platform)}
+                        disabled={!isConnected}
+                      >
+                        <span
+                          className={`capitalize ${
+                            !isConnected ? 'opacity-50' : ''
+                          }`}
+                        >
+                          {platform}
+                          {!isConnected && ' (Not Connected)'}
+                        </span>
+                      </CustomCheckbox>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className='text-sm text-base-content/70'>
+                <p>Your article will be published to the selected platforms.</p>
+                <p className='mt-1'>
+                  Make sure you have connected these platforms in the{' '}
+                  <Link href='/integrations' className='link link-primary'>
+                    Integrations page
+                  </Link>{' '}
+                  first.
+                </p>
+                {selectedPlatforms.length === 0 && (
+                  <div className='alert alert-warning mt-4'>
+                    <div>
+                      <span className='font-medium'>
+                        No platforms selected!
+                      </span>
+                      <p className='text-xs mt-1'>
+                        Please select at least one platform to publish to.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className='modal-action'>
+              <button
+                onClick={setShowPublishModal.bind(null, false)}
+                className='btn btn-ghost'
+                disabled={publishing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePublishSubmit}
+                className='btn btn-primary'
+                disabled={publishing || selectedPlatforms.length === 0}
+              >
+                <Send size={16} className='mr-2' />
+                {publishing ? 'Publishing...' : 'Publish'}
               </button>
             </div>
           </div>

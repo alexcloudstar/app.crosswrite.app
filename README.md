@@ -35,7 +35,7 @@ OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
 ## 🚀 Features
 
 - **AI-Assisted Editor**: Get real-time writing suggestions and improvements
-- **Multi-Platform Publishing**: Support for dev.to, Medium, Hashnode, and Beehiiv
+- **Multi-Platform Publishing**: Support for dev.to and Hashnode
 - **Smart Scheduling**: Schedule posts for optimal publishing times
 - **Analytics Dashboard**: Track performance across all platforms
 - **Command Palette**: Quick access to all features with keyboard shortcuts

@@ -6,6 +6,7 @@ import { Clock, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { mockDrafts } from '@/lib/mock';
 import { formatDateTime, getPlatformDisplayName } from '@/lib/utils';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
+import { supportedPlatforms } from '@/lib/config/platforms';
 
 export default function SchedulerPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -140,14 +141,14 @@ export default function SchedulerPage() {
 
                 {days.map((day, index) => {
                   if (!day) {
-                    return <div key={index} className='p-2' />;
+                    return <div key={`empty-${index}`} className='p-2' />;
                   }
 
                   const scheduledPosts = getScheduledPostsForDate(day);
 
                   return (
                     <div
-                      key={index}
+                      key={day.toISOString()}
                       onClick={setSelectedDate.bind(null, day)}
                       className={`
                         p-2 min-h-[80px] border border-base-300 cursor-pointer hover:bg-base-200 transition-colors
@@ -244,7 +245,6 @@ export default function SchedulerPage() {
                   </span>
                 </div>
                 <div className='flex justify-between'>
-                  <span>Medium</span>
                   <span className='text-base-content/50'>
                     7:00 AM - 9:00 AM
                   </span>
@@ -256,7 +256,6 @@ export default function SchedulerPage() {
                   </span>
                 </div>
                 <div className='flex justify-between'>
-                  <span>Beehiiv</span>
                   <span className='text-base-content/50'>
                     6:00 AM - 8:00 AM
                   </span>
@@ -303,7 +302,7 @@ export default function SchedulerPage() {
                   <span className='label-text'>Platforms</span>
                 </label>
                 <div className='space-y-2'>
-                  {['devto', 'medium', 'hashnode', 'beehiiv'].map(platform => (
+                  {supportedPlatforms.map(platform => (
                     <CustomCheckbox
                       key={platform}
                       size='sm'

@@ -1,4 +1,4 @@
-export type Platform = 'devto' | 'medium' | 'hashnode' | 'beehiiv';
+import { Platform } from '@/lib/config/platforms';
 export type DraftStatus = 'draft' | 'scheduled' | 'published';
 export type ActivityType =
   | 'draft_created'
@@ -70,7 +70,7 @@ export const mockDrafts: Draft[] = [
     contentPreview:
       'Next.js 15 introduces several exciting new features including the new App Router, improved performance, and better developer experience...',
     status: 'published',
-    platforms: ['devto', 'medium'],
+    platforms: ['devto'],
     updatedAt: new Date('2024-01-15'),
     publishedAt: new Date('2024-01-15'),
   },
@@ -80,7 +80,7 @@ export const mockDrafts: Draft[] = [
     contentPreview:
       "TypeScript has evolved significantly over the years. Here are the best practices I've learned from building large-scale applications...",
     status: 'scheduled',
-    platforms: ['devto', 'medium'],
+    platforms: ['devto'],
     updatedAt: new Date('2024-01-14'),
     scheduledAt: new Date('2024-01-20T10:00:00'),
   },
@@ -90,7 +90,7 @@ export const mockDrafts: Draft[] = [
     contentPreview:
       'Creating a beautiful and functional dashboard is crucial for SaaS applications. Let me share my approach to building modern dashboards...',
     status: 'draft',
-    platforms: ['devto', 'medium'],
+    platforms: ['devto'],
     updatedAt: new Date('2024-01-13'),
   },
   {
@@ -99,7 +99,7 @@ export const mockDrafts: Draft[] = [
     contentPreview:
       "Web development is constantly evolving. From AI-powered tools to new frameworks, here's what I think the future holds...",
     status: 'scheduled',
-    platforms: ['devto', 'medium'],
+    platforms: ['devto'],
     updatedAt: new Date('2024-01-12'),
     scheduledAt: new Date(),
   },
@@ -109,7 +109,7 @@ export const mockDrafts: Draft[] = [
     contentPreview:
       'Performance is crucial for React applications. Here are the techniques I use to ensure my React apps are fast and responsive...',
     status: 'published',
-    platforms: ['devto', 'medium'],
+    platforms: ['devto'],
     updatedAt: new Date('2024-01-11'),
     publishedAt: new Date('2024-01-11'),
   },
@@ -119,7 +119,7 @@ export const mockDrafts: Draft[] = [
     contentPreview:
       'Master CSS Grid with these advanced techniques that will take your layouts to the next level...',
     status: 'scheduled',
-    platforms: ['devto', 'medium'],
+    platforms: ['devto'],
     updatedAt: new Date(),
     scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
   },
@@ -129,7 +129,7 @@ export const mockDrafts: Draft[] = [
     contentPreview:
       'Explore the latest state management solutions for React applications...',
     status: 'scheduled',
-    platforms: ['devto', 'medium'],
+    platforms: ['devto'],
     updatedAt: new Date(),
     scheduledAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
   },
@@ -139,41 +139,32 @@ export const mockActivities: Activity[] = [
   {
     id: '1',
     type: 'published',
-    title: 'Getting Started with Next.js 15',
-    description: 'Published to Twitter, LinkedIn, and Medium',
+    title: 'Getting Started with Next.js 14',
+    description: 'Published to Dev.to and Hashnode',
     timestamp: new Date('2024-01-15T10:30:00'),
-    platform: 'devto',
   },
   {
     id: '2',
-    type: 'scheduled',
-    title: 'TypeScript Best Practices for 2024',
-    description: 'Scheduled for January 20, 2024 at 10:00 AM',
-    timestamp: new Date('2024-01-14T15:45:00'),
+    type: 'integration_connected',
+    title: 'Dev.to Integration',
+    description: 'Successfully connected Dev.to account',
+    timestamp: new Date('2024-01-14T15:20:00'),
   },
   {
     id: '3',
-    type: 'draft_created',
-    title: 'Building a Modern SaaS Dashboard',
-    description: 'New draft created',
+    type: 'published',
+    title: 'TypeScript Best Practices',
+    description: 'Published to Hashnode',
     timestamp: new Date('2024-01-13T09:15:00'),
   },
   {
     id: '4',
     type: 'integration_connected',
-    title: 'LinkedIn Integration',
-    description: 'Successfully connected LinkedIn account',
-    timestamp: new Date('2024-01-12T14:20:00'),
-    platform: 'devto',
+    title: 'Hashnode Integration',
+    description: 'Successfully connected Hashnode account',
+    timestamp: new Date('2024-01-12T14:45:00'),
   },
-  {
-    id: '5',
-    type: 'published',
-    title: 'Optimizing React Performance',
-    description: 'Published to Twitter, LinkedIn, and Medium',
-    timestamp: new Date('2024-01-11T11:00:00'),
-    platform: 'devto',
-  },
+
 ];
 
 export const mockAnalytics: AnalyticsData = {
@@ -194,10 +185,8 @@ export const mockAnalytics: AnalyticsData = {
     { date: '2024-01-15', reads: 1890 },
   ],
   readsByPlatform: [
-    { platform: 'Twitter', reads: 6200 },
-    { platform: 'LinkedIn', reads: 4800 },
-    { platform: 'Medium', reads: 3200 },
-    { platform: 'Dev.to', reads: 1220 },
+    { platform: 'Dev.to', reads: 6200 },
+    { platform: 'Hashnode', reads: 4800 },
   ],
   publishSuccess: [
     { status: 'Success', count: 42 },
@@ -220,7 +209,7 @@ export const mockAnalytics: AnalyticsData = {
       reads: 2800,
       reactions: 189,
       clicks: 156,
-      platform: 'medium',
+      platform: 'devto',
       publishDate: new Date('2024-01-14'),
     },
     {
@@ -229,23 +218,14 @@ export const mockAnalytics: AnalyticsData = {
       reads: 2100,
       reactions: 156,
       clicks: 98,
-      platform: 'medium',
+      platform: 'devto',
       publishDate: new Date('2024-01-11'),
     },
   ],
 };
 
 export const mockIntegrations: Integration[] = [
-  {
-    id: '1',
-    name: 'Medium Blog',
-    platform: 'medium',
-    status: 'connected',
-    connectedAt: new Date('2024-01-08'),
-    lastSync: new Date('2024-01-15T10:30:00'),
-    autoPublish: false,
-    syncInterval: 60,
-  },
+
   {
     id: '2',
     name: 'Dev.to Blog',
@@ -262,14 +242,7 @@ export const mockIntegrations: Integration[] = [
     autoPublish: false,
     syncInterval: 60,
   },
-  {
-    id: '4',
-    name: 'Beehiiv Newsletter',
-    platform: 'beehiiv',
-    status: 'disconnected',
-    autoPublish: false,
-    syncInterval: 60,
-  },
+
 ];
 
 export function formatDate(date: Date): string {
@@ -294,20 +267,16 @@ export function formatDate(date: Date): string {
 
 export function getPlatformDisplayName(platform: string): string {
   const names: Record<string, string> = {
-    twitter: 'Twitter',
-    linkedin: 'LinkedIn',
-    medium: 'Medium',
-    dev: 'Dev.to',
+    devto: 'Dev.to',
+    hashnode: 'Hashnode',
   };
   return names[platform] || platform;
 }
 
 export function getPlatformColor(platform: string): string {
   const colors: Record<string, string> = {
-    twitter: 'bg-blue-500',
-    linkedin: 'bg-blue-600',
-    medium: 'bg-green-500',
-    dev: 'bg-purple-500',
+    devto: 'bg-purple-500',
+    hashnode: 'bg-purple-600',
   };
   return colors[platform] || 'bg-gray-500';
 }

@@ -200,7 +200,7 @@ function PublishingSettings() {
   const [selectedPlatforms, setSelectedPlatforms] = useState(['dev.to']);
   const [autoSchedule, setAutoSchedule] = useState(true);
 
-  const platforms = ['dev.to', 'Medium', 'Hashnode', 'Beehiiv'];
+  const platforms = ['dev.to', 'Hashnode'];
 
   const handlePlatformToggle = (platform: string) => {
     setSelectedPlatforms(prev =>
