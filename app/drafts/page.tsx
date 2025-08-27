@@ -26,33 +26,7 @@ import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { listDrafts } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
-
-interface Draft {
-  id: string;
-  title: string;
-  content: string;
-  contentPreview?: string;
-  status: string;
-  platforms: string[];
-  thumbnailUrl?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
-  scheduledAt?: Date;
-}
-
-interface ListDraftsResponse {
-  drafts: Draft[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-}
+import { Draft, DraftsResponse } from '@/lib/types/drafts';
 
 export default function DraftsPage() {
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -90,7 +64,7 @@ export default function DraftsPage() {
         ]);
 
         if (draftsResult.success && draftsResult.data) {
-          setDrafts((draftsResult.data as ListDraftsResponse).drafts);
+          setDrafts((draftsResult.data as DraftsResponse).drafts);
         }
 
         if (integrationsResult.success && integrationsResult.data) {
@@ -232,7 +206,7 @@ export default function DraftsPage() {
           limit: 100,
         });
         if (reloadResult.success && reloadResult.data) {
-          setDrafts((reloadResult.data as ListDraftsResponse).drafts);
+          setDrafts((reloadResult.data as DraftsResponse).drafts);
         }
       } else {
         console.error('Publish failed:', result.error);

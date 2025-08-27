@@ -23,79 +23,15 @@ import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { createDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
-
-interface Draft {
-  id: string;
-  title: string;
-  content: string;
-  contentPreview?: string;
-  status: string;
-  platforms: string[];
-  thumbnailUrl?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
-  scheduledAt?: Date;
-}
-
-interface PublishResult {
-  results: Array<{
-    platform: string;
-    success: boolean;
-    platformPostId?: string;
-    platformUrl?: string;
-    error?: string;
-  }>;
-  summary: {
-    total: number;
-    successful: number;
-    failed: number;
-    draftId: string;
-  };
-}
-
-interface Integration {
-  id: string;
-  platform: string;
-  status: string;
-  connectedAt?: Date;
-  lastSync?: Date;
-}
+import { Draft } from '@/lib/types/drafts';
+import { Integration, PublishResult } from '@/lib/types/integrations';
 
 type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | null;
 
 export default function EditorPage() {
   const { userPlan } = useAppStore();
   const [title, setTitle] = useState('Untitled Draft');
-  const [content, setContent] = useState(`# Getting Started with Cross Write
-
-Welcome to Cross Write, your multi-platform writing and publishing companion. This editor is designed to help you create content that can be published across multiple platforms with ease.
-
-## Key Features
-
-- **AI-Assisted Writing**: Get suggestions and improvements as you write
-- **Multi-Platform Publishing**: Write once, publish everywhere
-- **Smart Formatting**: Automatic formatting for different platforms
-- **Real-time Preview**: See how your content will look before publishing
-
-## Getting Started
-
-1. Start by writing your content in the editor
-2. Use the AI suggestions panel for improvements
-3. Preview your content using the preview button
-4. Save your draft or publish directly to your connected platforms
-
-## Tips for Better Content
-
-- Use clear headings and subheadings
-- Keep paragraphs short and readable
-- Include relevant images and examples
-- Use the AI suggestions to improve your writing
-
-Happy writing! 🚀`);
+  const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [showRewriteSettings, setShowRewriteSettings] = useState(false);
   const [showThumbnailGenerator, setShowThumbnailGenerator] = useState(false);
@@ -107,6 +43,16 @@ Happy writing! 🚀`);
   ]);
   const [publishing, setPublishing] = useState(false);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<
+    Array<{
+      id: string;
+      type: string;
+      title: string;
+      description: string;
+      suggestion: string;
+      applied: boolean;
+    }>
+  >([]);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
@@ -191,23 +137,19 @@ Happy writing! 🚀`);
     try {
       const result = await generateSuggestions({ content, maxSuggestions: 4 });
       if (result.success && result.data) {
-        console.log(
-          'Generated suggestions:',
-          (
-            result.data as {
-              suggestions: Array<{
-                id: string;
-                type: string;
-                title: string;
-                description: string;
-                suggestion: string;
-                applied: boolean;
-              }>;
-            }
-          ).suggestions
-        );
-        // TODO: Update the suggestions in the AiSuggestionsPanel
-        // For now, just log them
+        const suggestionsData = (
+          result.data as {
+            suggestions: Array<{
+              id: string;
+              type: string;
+              title: string;
+              description: string;
+              suggestion: string;
+              applied: boolean;
+            }>;
+          }
+        ).suggestions;
+        setSuggestions(suggestionsData);
       } else {
         console.error('Generate suggestions failed:', result.error);
         // TODO: Add toast notification
@@ -219,10 +161,18 @@ Happy writing! 🚀`);
     }
   };
 
-  const handleApplySuggestion = (suggestion: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
-    setContent(prev => prev + suggestionNote);
+  const handleApplySuggestion = (suggestionId: string) => {
+    const suggestion = suggestions.find(s => s.id === suggestionId);
+    if (suggestion) {
+      const timestamp = new Date().toLocaleTimeString();
+      const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion.suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
+      setContent(prev => prev + suggestionNote);
+
+      // Mark the suggestion as applied
+      setSuggestions(prev =>
+        prev.map(s => (s.id === suggestionId ? { ...s, applied: true } : s))
+      );
+    }
   };
 
   const handleSaveDraft = async () => {
@@ -487,6 +437,7 @@ Happy writing! 🚀`);
         <div className='w-80 border-l border-base-300 bg-base-200 flex-shrink-0'>
           <AiSuggestionsPanel
             content={content}
+            suggestions={suggestions}
             onGenerateSuggestions={handleGenerateSuggestions}
             isGenerating={loadingType === 'suggestions'}
             onApplySuggestion={handleApplySuggestion}

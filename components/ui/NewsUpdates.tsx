@@ -2,17 +2,9 @@
 
 import Link from 'next/link';
 import { Bell, ExternalLink, Calendar, Star } from 'lucide-react';
+import { NewsItemSummary } from '@/lib/types/news';
 
-interface NewsItem {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  type: 'feature' | 'update' | 'announcement';
-  link?: string;
-}
-
-const newsItems: NewsItem[] = [
+const newsItems: NewsItemSummary[] = [
   {
     id: '1',
     title: 'Multi-Platform Publishing',
@@ -40,7 +32,7 @@ const newsItems: NewsItem[] = [
   },
 ];
 
-function getTypeIcon(type: NewsItem['type']) {
+function getTypeIcon(type: NewsItemSummary['type']) {
   switch (type) {
     case 'feature':
       return <Star className='w-4 h-4 text-primary' />;
@@ -53,7 +45,7 @@ function getTypeIcon(type: NewsItem['type']) {
   }
 }
 
-function getTypeLabel(type: NewsItem['type']) {
+function getTypeLabel(type: NewsItemSummary['type']) {
   switch (type) {
     case 'feature':
       return 'New Feature';

@@ -1,13 +1,6 @@
-export interface Draft {
-  id: string;
-  title: string;
-  contentPreview?: string;
-  status: string;
-  platforms?: string[];
-  updatedAt: string;
-  publishedAt?: string;
-  scheduledAt?: string;
-}
+import { Draft } from './drafts';
+
+export type { Draft };
 
 export interface AnalyticsData {
   reads: number;
