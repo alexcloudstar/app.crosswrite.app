@@ -15,94 +15,122 @@ import { NewsItem } from '@/lib/types/news';
 const allNewsItems: NewsItem[] = [
   {
     id: '1',
-    title: 'AI-Powered Thumbnail Generation',
+    title: 'AI-Powered Content Assistant',
     description:
-      'Generate stunning thumbnails automatically using our advanced AI technology.',
+      'Advanced AI integration with real-time writing suggestions, content improvement, and SEO optimization.',
     detailedDescription:
-      "We've launched our revolutionary AI-powered thumbnail generation feature. Simply provide your content, and our advanced AI will create eye-catching thumbnails that are optimized for engagement across all social media platforms. The system learns from your brand style and creates consistent, professional visuals.",
-    date: '2024-01-15',
+      'Our AI assistant is now fully integrated with OpenAI, providing real-time writing suggestions, grammar improvements, content optimization, and SEO recommendations. The system analyzes your content as you write and offers contextual suggestions to enhance readability and engagement.',
+    date: '2025-08-28',
     type: 'feature',
     link: '/editor',
-    tags: ['AI', 'Thumbnails', 'Design'],
+    tags: ['AI', 'Writing', 'Productivity'],
   },
   {
     id: '2',
     title: 'Multi-Platform Publishing',
-    description: 'Write once, publish everywhere. Support for Dev.to, Hashnode, and more.',
+    description:
+      'Publish to Dev.to, Hashnode, and Beehiiv with automatic formatting and optimization.',
     detailedDescription:
-      'Streamline your content workflow with our multi-platform publishing system. Write your content once and publish it across Dev.to, Hashnode, and more with platform-specific optimizations. Each post is automatically formatted for the best performance on each platform.',
-    date: '2024-01-15',
+      "We've launched comprehensive platform integrations for Dev.to, Hashnode, and Beehiiv. Write once and publish everywhere with automatic platform-specific formatting, metadata handling, and content optimization. Each platform gets perfectly formatted content tailored to their requirements.",
+    date: '2025-08-25',
     type: 'feature',
-    tags: ['Publishing', 'Social Media', 'Automation'],
+    link: '/integrations',
+    tags: ['Publishing', 'Platforms', 'Automation'],
   },
   {
     id: '3',
-    title: 'Enhanced Editor Experience',
+    title: 'Advanced Content Scheduling',
     description:
-      'Improved markdown editor with real-time preview and AI suggestions.',
+      'Schedule posts across multiple platforms with intelligent timing and automatic publishing.',
     detailedDescription:
-      'Our markdown editor has been completely redesigned with a focus on productivity and ease of use. New features include real-time preview, AI-powered writing suggestions, advanced formatting options, and seamless collaboration tools.',
-    date: '2024-01-05',
-    type: 'update',
-    tags: ['Editor', 'Productivity', 'Markdown'],
+      'Our scheduling system now supports cross-platform publishing with intelligent timing recommendations. Schedule posts days, weeks, or months in advance, and our system will automatically publish them at optimal times across all your connected platforms.',
+    date: '2025-08-22',
+    type: 'feature',
+    link: '/scheduler',
+    tags: ['Scheduling', 'Automation', 'Multi-platform'],
   },
   {
     id: '4',
-    title: 'Analytics Dashboard',
+    title: 'Real Analytics Dashboard',
     description:
-      'Track your content performance with detailed analytics and insights.',
+      'Track your content performance with real data, detailed insights, and export capabilities.',
     detailedDescription:
-      'Get deep insights into your content performance with our comprehensive analytics dashboard. Track engagement rates, audience growth, best posting times, and content performance across all your platforms in one unified view.',
-    date: '2024-01-01',
+      'Our analytics dashboard now provides real-time insights into your content performance across all platforms. Track reads, reactions, clicks, and shares with beautiful visualizations, custom date ranges, and export functionality for detailed analysis.',
+    date: '2025-08-20',
     type: 'feature',
     link: '/analytics',
     tags: ['Analytics', 'Insights', 'Performance'],
   },
   {
     id: '5',
-    title: 'Content Scheduling',
+    title: 'Enhanced Draft Management',
     description:
-      'Schedule your content in advance and never miss a post again.',
+      'Organize your content with version control, collaboration features, and advanced organization.',
     detailedDescription:
-      'Plan your content calendar with our advanced scheduling system. Set up posts days, weeks, or months in advance, and our intelligent scheduler will automatically publish them at optimal times for maximum engagement.',
-    date: '2023-12-28',
+      'Our draft management system now includes version control, collaboration tools, and advanced organization features. Track changes, collaborate with team members, and maintain a clean content workflow with folders, tags, and status management.',
+    date: '2025-08-18',
     type: 'feature',
-    link: '/scheduler',
-    tags: ['Scheduling', 'Calendar', 'Automation'],
+    link: '/drafts',
+    tags: ['Drafts', 'Organization', 'Collaboration'],
   },
   {
     id: '6',
-    title: 'Team Collaboration',
+    title: 'AI Content Generation',
     description:
-      'Work together with your team on content creation and approval workflows.',
+      'Generate SEO metadata, content summaries, and thumbnail suggestions with AI.',
     detailedDescription:
-      'Collaborate seamlessly with your team using our new collaboration features. Assign roles, set up approval workflows, leave comments, and track changes in real-time. Perfect for marketing teams and content agencies.',
-    date: '2023-12-20',
+      'Our AI can now generate SEO titles and descriptions, create content summaries, suggest thumbnails, and even translate content to other languages. All AI features are rate-limited and usage-tracked for optimal performance.',
+    date: '2025-08-15',
     type: 'feature',
-    tags: ['Collaboration', 'Team', 'Workflow'],
+    link: '/editor',
+    tags: ['AI', 'SEO', 'Generation'],
   },
   {
     id: '7',
-    title: 'Performance Improvements',
+    title: 'Platform-Specific Optimizations',
     description:
-      'Faster loading times and improved overall performance across the platform.',
+      'Automatic content formatting and optimization for each publishing platform.',
     detailedDescription:
-      "We've made significant performance improvements to ensure a smoother, faster experience. Page load times have been reduced by 40%, and the editor now responds instantly to your typing.",
-    date: '2023-12-15',
+      'Each platform now receives perfectly formatted content with platform-specific optimizations. Dev.to gets proper frontmatter, Hashnode gets optimized metadata, and Beehiiv gets HTML-converted content with proper styling.',
+    date: '2025-08-12',
     type: 'update',
-    tags: ['Performance', 'Speed', 'Optimization'],
+    link: '/integrations',
+    tags: ['Platforms', 'Optimization', 'Formatting'],
   },
   {
     id: '8',
-    title: 'New Integration Partners',
+    title: 'Background Job Processing',
     description:
-      'Connect with more tools and platforms to streamline your workflow.',
+      'Reliable scheduled post processing with retry logic and error handling.',
     detailedDescription:
-      "We've added integrations with popular tools like Canva, Buffer, Hootsuite, and more. Connect your existing tools and create a seamless content creation and publishing workflow.",
-    date: '2023-12-10',
-    type: 'announcement',
-    link: '/integrations',
-    tags: ['Integrations', 'Tools', 'Workflow'],
+      'Our background job processing system ensures your scheduled posts are published reliably. The system includes retry logic for failed publishes, comprehensive error handling, and job monitoring for maximum reliability.',
+    date: '2025-08-10',
+    type: 'update',
+    link: '/scheduler',
+    tags: ['Scheduling', 'Reliability', 'Background Jobs'],
+  },
+  {
+    id: '9',
+    title: 'Enhanced Security & Performance',
+    description:
+      'Improved authentication, rate limiting, and overall platform performance.',
+    detailedDescription:
+      "We've enhanced our security measures with improved authentication, rate limiting, and data protection. Performance has been optimized with database indexing, caching layers, and efficient query patterns for faster response times.",
+    date: '2025-08-08',
+    type: 'update',
+    tags: ['Security', 'Performance', 'Optimization'],
+  },
+  {
+    id: '10',
+    title: 'Analytics Export & Reporting',
+    description:
+      'Export your analytics data and generate custom reports for detailed analysis.',
+    detailedDescription:
+      'Export your analytics data in CSV or JSON format for external analysis. Generate custom reports with date ranges, platform comparisons, and performance insights to track your content strategy effectiveness.',
+    date: '2025-08-05',
+    type: 'feature',
+    link: '/analytics',
+    tags: ['Analytics', 'Export', 'Reporting'],
   },
 ];
 
