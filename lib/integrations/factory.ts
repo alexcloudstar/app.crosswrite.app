@@ -1,7 +1,6 @@
 import { IntegrationClient } from './_core';
 import { createDevtoClient } from './devto';
 import { createHashnodeClient } from './hashnode';
-import { createBeehiivClient } from './beehiiv';
 
 export interface IntegrationData {
   platform: string;
@@ -32,14 +31,7 @@ export function createPlatformClient(
         publicationId: integration.publicationId,
       });
 
-    case 'beehiiv':
-      if (!integration.apiKey) {
-        throw new Error('Beehiiv integration requires API key');
-      }
-      return createBeehiivClient({
-        apiKey: integration.apiKey,
-        publicationId: integration.publicationId,
-      });
+
 
     default:
       throw new Error(`Unsupported platform: ${integration.platform}`);
@@ -47,7 +39,7 @@ export function createPlatformClient(
 }
 
 export function getSupportedPlatforms(): string[] {
-  return ['devto', 'hashnode', 'beehiiv'];
+  return ['devto', 'hashnode'];
 }
 
 export function isPlatformSupported(platform: string): boolean {

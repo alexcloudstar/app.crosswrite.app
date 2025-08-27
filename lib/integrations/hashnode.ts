@@ -3,6 +3,7 @@ import {
   MappedContent,
   normalizeError,
   retryWithBackoff,
+  validateTitle,
 } from './_core';
 
 export interface HashnodeIntegration {
@@ -154,6 +155,12 @@ export class HashnodeClient implements IntegrationClient {
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }> {
     return retryWithBackoff(async () => {
+      // Validate title length
+      const titleValidation = validateTitle(content.title, 'hashnode');
+      if (!titleValidation.valid) {
+        throw new Error(titleValidation.error);
+      }
+
       const publicationId =
         content.publicationId || this.integration.publicationId;
 

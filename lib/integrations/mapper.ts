@@ -53,10 +53,7 @@ export function mapContentForPlatform(
       // Hashnode uses markdown
       body = transformForHashnode(draft.content);
       break;
-    case 'beehiiv':
-      // Beehiiv uses HTML
-      body = transformForBeehiiv(draft.content);
-      break;
+
   }
 
   // Truncate body if needed
@@ -118,41 +115,7 @@ function transformForHashnode(content: string): string {
   return content;
 }
 
-function transformForBeehiiv(content: string): string {
-  // Convert markdown to HTML for Beehiiv
-  // This is a basic conversion - in production you might want to use a proper markdown parser
 
-  let html = content
-    // Headers
-    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-
-    // Bold and italic
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-
-    // Code blocks
-    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-
-    // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-
-    // Lists
-    .replace(/^\* (.*$)/gim, '<li>$1</li>')
-    .replace(/^- (.*$)/gim, '<li>$1</li>')
-    .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
-
-    // Line breaks
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-
-  // Wrap in paragraphs
-  html = `<p>${html}</p>`;
-
-  return html;
-}
 
 export function validateContentForPlatform(
   draft: Draft,

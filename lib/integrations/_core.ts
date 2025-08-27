@@ -26,6 +26,7 @@ export interface SyncParams {
 
 export interface PlatformConfig {
   name: string;
+  minTitleLength: number;
   maxTitleLength: number;
   maxBodyLength: number;
   maxTags: number;
@@ -41,6 +42,7 @@ export interface PlatformConfig {
 export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   devto: {
     name: 'Dev.to',
+    minTitleLength: 1,
     maxTitleLength: 95,
     maxBodyLength: 64000,
     maxTags: 4,
@@ -51,6 +53,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   },
   hashnode: {
     name: 'Hashnode',
+    minTitleLength: 6,
     maxTitleLength: 100,
     maxBodyLength: 100000,
     maxTags: 10,
@@ -59,16 +62,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     supportsCoverImages: true,
     rateLimit: { requests: 10, windowMs: 60000 },
   },
-  beehiiv: {
-    name: 'Beehiiv',
-    maxTitleLength: 100,
-    maxBodyLength: 50000,
-    maxTags: 0, // Beehiiv doesn't use tags
-    supportsDrafts: true,
-    supportsPublications: false,
-    supportsCoverImages: true,
-    rateLimit: { requests: 10, windowMs: 60000 },
-  },
+
 };
 
 export function normalizeError(error: unknown): string {
@@ -156,4 +150,32 @@ export function retryWithBackoff<T>(
 
     attempt();
   });
+}
+
+export function validateTitle(
+  title: string,
+  platform: string
+): { valid: boolean; error?: string } {
+  const config = PLATFORM_CONFIGS[platform];
+  if (!config) {
+    return { valid: false, error: `Unsupported platform: ${platform}` };
+  }
+
+  const trimmedTitle = title.trim();
+
+  if (trimmedTitle.length < config.minTitleLength) {
+    return {
+      valid: false,
+      error: `Title must be at least ${config.minTitleLength} characters long for ${config.name}`,
+    };
+  }
+
+  if (trimmedTitle.length > config.maxTitleLength) {
+    return {
+      valid: false,
+      error: `Title must be no more than ${config.maxTitleLength} characters long for ${config.name}`,
+    };
+  }
+
+  return { valid: true };
 }

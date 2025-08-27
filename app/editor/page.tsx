@@ -104,7 +104,6 @@ Happy writing! 🚀`);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
     'devto',
     'hashnode',
-    'beehiiv',
   ]);
   const [publishing, setPublishing] = useState(false);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
@@ -306,7 +305,7 @@ Happy writing! 🚀`);
             (result.data as PublishResult).summary.successful
           } platforms! Redirecting to drafts...`
         );
-        window.location.href = '/drafts';
+        // window.location.href = '/drafts';
       } else {
         console.error('Publish failed:', result.error);
         alert(`Publish failed: ${result.error}`);
@@ -585,7 +584,7 @@ Happy writing! 🚀`);
                   <span className='label-text'>Select Platforms</span>
                 </label>
                 <div className='space-y-2'>
-                  {['devto', 'hashnode', 'beehiiv'].map(platform => {
+                  {['devto', 'hashnode'].map(platform => {
                     const isConnected = connectedPlatforms.includes(platform);
                     return (
                       <CustomCheckbox

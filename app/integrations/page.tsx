@@ -77,13 +77,6 @@ export default function IntegrationsPage() {
       icon: 'H',
       url: 'https://hashnode.com',
     },
-    beehiiv: {
-      name: 'Beehiiv',
-      description: 'Publish newsletters and grow your audience',
-      color: 'bg-orange-500',
-      icon: 'B',
-      url: 'https://beehiiv.com',
-    },
   };
 
   // Load integrations on component mount
@@ -218,7 +211,7 @@ export default function IntegrationsPage() {
 
     try {
       const result = await syncPlatformAnalytics({
-        platform: platform as 'medium' | 'devto' | 'hashnode' | 'beehiiv',
+        platform: platform as 'devto' | 'hashnode',
         integrationId: integration.id,
       });
 
@@ -254,7 +247,7 @@ export default function IntegrationsPage() {
 
     try {
       const result = await getPlatformPublications({
-        platform: platform as 'medium' | 'hashnode' | 'beehiiv',
+        platform: platform as 'hashnode',
         integrationId: integration.id,
       });
 
@@ -264,18 +257,27 @@ export default function IntegrationsPage() {
         typeof result.data === 'object' &&
         'publications' in result.data
       ) {
-        setPublications(
-          (
-            result.data as {
-              publications: Array<{
-                id: string;
-                name: string;
-                description?: string;
-                domain?: string;
-              }>;
-            }
-          ).publications
-        );
+        // Transform Hashnode publications to match expected format
+        const rawPublications = (
+          result.data as {
+            publications: Array<{
+              _id: string;
+              title: string;
+              description?: string;
+              domain?: string;
+            }>;
+          }
+        ).publications;
+
+        // Transform to match UI expectations
+        const transformedPublications = rawPublications.map(pub => ({
+          id: pub._id,
+          name: pub.title,
+          description: pub.description,
+          domain: pub.domain,
+        }));
+
+        setPublications(transformedPublications);
         setShowPublicationSelector(true);
       } else {
         alert(`Failed to load publications: ${result.error}`);
@@ -316,14 +318,6 @@ export default function IntegrationsPage() {
           break;
 
         case 'hashnode':
-          integrationData = {
-            ...integrationData,
-            apiKey: apiKey.trim(),
-            publicationId: publicationId.trim() || undefined,
-          };
-          break;
-
-        case 'beehiiv':
           integrationData = {
             ...integrationData,
             apiKey: apiKey.trim(),
@@ -533,8 +527,7 @@ export default function IntegrationsPage() {
                             'Sync Analytics'
                           )}
                         </button>
-                        {(platform.platform === 'hashnode' ||
-                          platform.platform === 'beehiiv') && (
+                        {platform.platform === 'hashnode' && (
                           <div className='flex items-center space-x-2'>
                             {selectedPublicationName && (
                               <span className='text-xs text-base-content/70'>
@@ -716,60 +709,6 @@ export default function IntegrationsPage() {
                     <input
                       type='password'
                       placeholder='Enter your Hashnode GraphQL token'
-                      value={apiKey}
-                      onChange={e => setApiKey(e.target.value)}
-                      className='input input-bordered w-full'
-                    />
-                  </div>
-
-                  <div>
-                    <label className='label'>
-                      <span className='label-text'>
-                        Publication ID (Optional)
-                      </span>
-                    </label>
-                    <input
-                      type='text'
-                      placeholder='Enter your publication ID if you have multiple publications'
-                      value={publicationId}
-                      onChange={e => setPublicationId(e.target.value)}
-                      className='input input-bordered w-full'
-                    />
-                    <label className='label'>
-                      <span className='label-text-alt'>
-                        Leave empty to use your default publication
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              {showSettings === 'beehiiv' && (
-                <div className='space-y-4'>
-                  <div className='alert alert-info'>
-                    <div>
-                      <h4 className='font-semibold'>Beehiiv API Key</h4>
-                      <p className='text-sm mt-2'>
-                        Get your API key from{' '}
-                        <a
-                          href='https://app.beehiiv.com/settings/workspace/api'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='link link-primary'
-                        >
-                          app.beehiiv.com/settings/api
-                        </a>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className='label'>
-                      <span className='label-text'>API Key</span>
-                    </label>
-                    <input
-                      type='password'
-                      placeholder='Enter your Beehiiv API key'
                       value={apiKey}
                       onChange={e => setApiKey(e.target.value)}
                       className='input input-bordered w-full'

@@ -1,9 +1,5 @@
-// Server-only configuration for deployment modes and API keys
-// This file should never be imported on the client side
-
 type DeploymentMode = 'HOSTED' | 'SELF_HOST';
 
-// Cached values read at process start
 let cachedDeploymentMode: DeploymentMode | null = null;
 let cachedHostedAppKey: string | null = null;
 let cachedSelfHostKey: string | null = null;
@@ -14,7 +10,6 @@ function getDeploymentMode(): DeploymentMode {
     if (mode === 'HOSTED' || mode === 'SELF_HOST') {
       cachedDeploymentMode = mode;
     } else {
-      // Default to HOSTED if not specified
       cachedDeploymentMode = 'HOSTED';
     }
   }

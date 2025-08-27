@@ -212,16 +212,6 @@ export async function testIntegration(input: unknown) {
           testResult = await hashnodeClient.testConnection();
           break;
 
-        case 'beehiiv':
-          const { createBeehiivClient } = await import(
-            '@/lib/integrations/beehiiv'
-          );
-          const beehiivClient = createBeehiivClient({
-            apiKey: integration.apiKey!,
-          });
-          testResult = await beehiivClient.testConnection();
-          break;
-
         default:
           return errorResult(`Unsupported platform: ${integration.platform}`);
       }
@@ -309,7 +299,7 @@ export async function getPlatformPublications(input: unknown) {
     const session = await requireAuth();
     const { platform, integrationId } = z
       .object({
-        platform: z.enum(['hashnode', 'beehiiv']),
+        platform: z.enum(['hashnode']),
         integrationId: z.string().uuid(),
       })
       .parse(input);
@@ -353,22 +343,7 @@ export async function getPlatformPublications(input: unknown) {
         }
         break;
 
-      case 'beehiiv':
-        const { createBeehiivClient } = await import(
-          '@/lib/integrations/beehiiv'
-        );
-        const beehiivClient = createBeehiivClient({
-          apiKey: integration.apiKey!,
-        });
-        const beehiivResult = await beehiivClient.getPublications();
-        if (beehiivResult.success && beehiivResult.publications) {
-          publications = beehiivResult.publications;
-        } else {
-          return errorResult(
-            beehiivResult.error || 'Failed to fetch Beehiiv publications'
-          );
-        }
-        break;
+
 
       default:
         return errorResult(
@@ -387,7 +362,7 @@ export async function syncPlatformAnalytics(input: unknown) {
     const session = await requireAuth();
     const { platform, integrationId } = z
       .object({
-        platform: z.enum(['devto', 'hashnode', 'beehiiv']),
+        platform: z.enum(['devto', 'hashnode']),
         integrationId: z.string().uuid(),
       })
       .parse(input);
@@ -438,14 +413,7 @@ export async function syncPlatformAnalytics(input: unknown) {
         };
         break;
 
-      case 'beehiiv':
-        // Beehiiv has some analytics available
-        analyticsData = {
-          message:
-            'Beehiiv analytics sync would require additional API endpoints',
-          lastSync: new Date(),
-        };
-        break;
+
     }
 
     // Update the integration's last sync timestamp

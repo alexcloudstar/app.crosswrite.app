@@ -90,7 +90,7 @@ export function Topbar() {
       id: '1',
       title: 'Post published successfully',
       message:
-        'Your article "Getting Started with Next.js 15" was published to Medium',
+        'Your article "Getting Started with Next.js 15" was published to Dev.to',
       time: '2 minutes ago',
       type: 'success',
     },

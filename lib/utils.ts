@@ -51,9 +51,8 @@ export function formatRelativeTime(date: Date): string {
 export function getPlatformDisplayName(platform: string): string {
   const names: Record<string, string> = {
     devto: 'dev.to',
-    medium: 'Medium',
+
     hashnode: 'Hashnode',
-    beehiiv: 'Beehiiv',
   };
   return names[platform] || platform;
 }
@@ -61,9 +60,8 @@ export function getPlatformDisplayName(platform: string): string {
 export function getPlatformColor(platform: string): string {
   const colors: Record<string, string> = {
     devto: 'bg-blue-500',
-    medium: 'bg-green-500',
+
     hashnode: 'bg-purple-500',
-    beehiiv: 'bg-orange-500',
   };
   return colors[platform] || 'bg-gray-500';
 }

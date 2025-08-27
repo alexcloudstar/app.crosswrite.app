@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const supportedPlatforms = ['devto', 'hashnode', 'beehiiv'] as const;
+export const supportedPlatforms = ['devto', 'hashnode'] as const;
 
 export const connectIntegrationSchema = z.object({
   platform: z.enum(supportedPlatforms, {
@@ -56,10 +56,7 @@ export const hashnodePublishOptionsSchema = z.object({
   publishAsDraft: z.boolean().optional(),
 });
 
-export const beehiivPublishOptionsSchema = z.object({
-  publicationId: z.string().optional(),
-  publishAsDraft: z.boolean().optional(),
-});
+
 
 export const devtoPublishOptionsSchema = z.object({
   publishAsDraft: z.boolean().optional(),

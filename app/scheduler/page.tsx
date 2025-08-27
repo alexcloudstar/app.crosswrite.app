@@ -244,7 +244,6 @@ export default function SchedulerPage() {
                   </span>
                 </div>
                 <div className='flex justify-between'>
-                  <span>Medium</span>
                   <span className='text-base-content/50'>
                     7:00 AM - 9:00 AM
                   </span>
@@ -256,7 +255,6 @@ export default function SchedulerPage() {
                   </span>
                 </div>
                 <div className='flex justify-between'>
-                  <span>Beehiiv</span>
                   <span className='text-base-content/50'>
                     6:00 AM - 8:00 AM
                   </span>
@@ -303,7 +301,7 @@ export default function SchedulerPage() {
                   <span className='label-text'>Platforms</span>
                 </label>
                 <div className='space-y-2'>
-                  {['devto', 'medium', 'hashnode', 'beehiiv'].map(platform => (
+                  {['devto', 'hashnode'].map(platform => (
                     <CustomCheckbox
                       key={platform}
                       size='sm'

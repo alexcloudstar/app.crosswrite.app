@@ -3,18 +3,13 @@ import {
   MappedContent,
   normalizeError,
   retryWithBackoff,
+  validateTitle,
 } from './_core';
 
 export interface DevtoIntegration {
   apiKey: string;
 }
 
-/**
- * Normalizes markdown content for Dev.to by handling YAML front matter
- * @param markdown The original markdown content
- * @param publishAsDraft Whether to publish as draft or live
- * @returns Normalized markdown with proper front matter
- */
 function normalizeDevtoMarkdown(
   markdown: string,
   publishAsDraft: boolean
@@ -26,10 +21,9 @@ function normalizeDevtoMarkdown(
   let content = markdown;
 
   if (match) {
-    // Parse existing front matter
     try {
       const yamlContent = match[1];
-      // Simple YAML parsing for basic key-value pairs
+
       const lines = yamlContent.split('\n');
       for (const line of lines) {
         const colonIndex = line.indexOf(':');
@@ -45,20 +39,16 @@ function normalizeDevtoMarkdown(
       console.warn('Failed to parse existing front matter:', error);
     }
 
-    // Remove existing front matter from content
     content = markdown.replace(frontMatterRegex, '');
   }
 
-  // Set published state in front matter
   frontMatter.published = !publishAsDraft;
 
-  // Remove conflicting keys that Dev.to derives from JSON
   delete frontMatter.title;
   delete frontMatter.tags;
   delete frontMatter.canonical_url;
   delete frontMatter.cover_image;
 
-  // Build new front matter
   const frontMatterLines = Object.entries(frontMatter).map(
     ([key, value]) => `${key}: ${value}`
   );
@@ -91,21 +81,6 @@ export class DevtoClient implements IntegrationClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const userData = await response.json();
-
-      const articlesResponse = await fetch(`${this.baseUrl}/articles/me`, {
-        headers: {
-          'api-key': this.integration.apiKey,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('Dev.to API Key Test:', {
-        user: userData.username,
-        canAccessArticles: articlesResponse.ok,
-        articlesStatus: articlesResponse.status,
-      });
-
       return { success: true };
     } catch (error) {
       return {
@@ -119,6 +94,12 @@ export class DevtoClient implements IntegrationClient {
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }> {
     return retryWithBackoff(async () => {
+      // Validate title length
+      const titleValidation = validateTitle(content.title, 'devto');
+      if (!titleValidation.valid) {
+        throw new Error(titleValidation.error);
+      }
+
       // Input validation
       if (!content.title?.trim()) {
         throw new Error('Title is required for Dev.to publishing');
@@ -128,16 +109,13 @@ export class DevtoClient implements IntegrationClient {
         throw new Error('Body content is required for Dev.to publishing');
       }
 
-      // Normalize markdown with front matter
       const normalizedMarkdown = normalizeDevtoMarkdown(
         content.body,
         content.publishAsDraft || false
       );
 
-      // Prepare tags (max 4)
       const tags = (content.tags || []).slice(0, 4);
 
-      // Determine publish intent
       const shouldPublish = !content.publishAsDraft;
 
       console.log('Dev.to publishing:', {
@@ -190,7 +168,6 @@ export class DevtoClient implements IntegrationClient {
         published_at: data.published_at,
       });
 
-      // Safety net: if intent was publish but response indicates draft, try to publish it
       if (shouldPublish && (!data.published || !data.published_at)) {
         console.log(
           'Dev.to safety net: Article was created as draft, attempting to publish...'

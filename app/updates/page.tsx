@@ -40,7 +40,7 @@ const allNewsItems: NewsItem[] = [
     title: 'Multi-Platform Publishing',
     description: 'Write once, publish everywhere. Support for Dev.to, Hashnode, and more.',
     detailedDescription:
-      'Streamline your content workflow with our multi-platform publishing system. Write your content once and publish it across Dev.to, Hashnode, Beehiiv, and more with platform-specific optimizations. Each post is automatically formatted for the best performance on each platform.',
+      'Streamline your content workflow with our multi-platform publishing system. Write your content once and publish it across Dev.to, Hashnode, and more with platform-specific optimizations. Each post is automatically formatted for the best performance on each platform.',
     date: '2024-01-15',
     type: 'feature',
     tags: ['Publishing', 'Social Media', 'Automation'],

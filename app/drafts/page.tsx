@@ -66,7 +66,6 @@ export default function DraftsPage() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
     'devto',
     'hashnode',
-    'beehiiv',
   ]);
   const [publishingDraft, setPublishingDraft] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -79,12 +78,6 @@ export default function DraftsPage() {
     }>
   >([]);
 
-  // Debug: Log when openDropdown changes
-  useEffect(() => {
-    console.log('openDropdown changed to:', openDropdown);
-  }, [openDropdown]);
-
-  // Load drafts and integrations on component mount
   useEffect(() => {
     async function loadData() {
       try {
@@ -120,7 +113,6 @@ export default function DraftsPage() {
     loadData();
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -213,15 +205,13 @@ export default function DraftsPage() {
         };
         console.log('Published successfully:', data);
 
-        // Show detailed results
         if (data.summary) {
-          const { successful, failed, total } = data.summary;
+          const { successful, total } = data.summary;
           if (successful > 0) {
             alert(
               `Successfully published to ${successful} out of ${total} platforms!`
             );
           } else {
-            // Show detailed error messages with helpful guidance
             const errorMessages = data.results
               .filter(r => !r.success)
               .map(r => {
@@ -237,7 +227,6 @@ export default function DraftsPage() {
           }
         }
 
-        // Reload drafts to update status
         const reloadResult = await listDrafts({
           page: 1,
           limit: 100,
@@ -275,7 +264,7 @@ export default function DraftsPage() {
     setScheduleDraftId(null);
     setScheduleDate('');
     setScheduleTime('');
-    setSelectedPlatforms(['devto', 'hashnode', 'beehiiv']);
+    setSelectedPlatforms(['devto', 'hashnode']);
 
     if (!scheduleDraftId) {
       setSelectedDrafts([]);
@@ -323,11 +312,10 @@ export default function DraftsPage() {
   const onScheduleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setScheduleTime(e.target.value);
 
-  // Check if any integrations need publication IDs
   const integrationsNeedingPublicationIds = integrations.filter(
     integration =>
       integration.status === 'connected' &&
-      ['hashnode', 'beehiiv'].includes(integration.platform) &&
+      integration.platform === 'hashnode' &&
       !integration.publicationId
   );
 
@@ -668,7 +656,7 @@ export default function DraftsPage() {
                   <span className='label-text'>Platforms</span>
                 </label>
                 <div className='flex flex-wrap gap-3'>
-                  {['devto', 'hashnode', 'beehiiv'].map(platform => (
+                  {['devto', 'hashnode'].map(platform => (
                     <CustomCheckbox
                       key={platform}
                       size='sm'

@@ -12,10 +12,12 @@ import {
 } from '../_utils';
 import { publishToPlatformsSchema } from '@/lib/validators/integrations';
 import { mapContentForPlatform } from '@/lib/integrations/mapper';
-import { checkPlatformRateLimit } from '@/lib/integrations/_core';
+import {
+  checkPlatformRateLimit,
+  validateTitle,
+} from '@/lib/integrations/_core';
 import { createDevtoClient } from '@/lib/integrations/devto';
 import { createHashnodeClient } from '@/lib/integrations/hashnode';
-import { createBeehiivClient } from '@/lib/integrations/beehiiv';
 
 export async function publishToPlatforms(input: unknown) {
   try {
@@ -82,6 +84,17 @@ export async function publishToPlatforms(input: unknown) {
     // Publish to each platform
     for (const platform of platforms) {
       try {
+        // Validate title length for this platform
+        const titleValidation = validateTitle(draft.title, platform);
+        if (!titleValidation.valid) {
+          results.push({
+            platform,
+            success: false,
+            error: titleValidation.error,
+          });
+          continue;
+        }
+
         const integration = integrationMap.get(platform)!;
         const result = await publishToSinglePlatform(
           {
@@ -215,13 +228,6 @@ async function publishToSinglePlatform(
         publicationId: integration.publicationId,
       });
       return await hashnodeClient.publish(mappedContent);
-
-    case 'beehiiv':
-      const beehiivClient = createBeehiivClient({
-        apiKey: integration.apiKey!,
-        publicationId: integration.publicationId,
-      });
-      return await beehiivClient.publish(mappedContent);
 
     default:
       throw new Error(`Unsupported platform: ${integration.platform}`);

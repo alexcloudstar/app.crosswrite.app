@@ -55,25 +55,11 @@ export default function OnboardingPage() {
       color: 'bg-blue-500',
     },
     {
-      id: 'medium',
-      name: 'Medium',
-      description: 'Popular blogging platform',
-      icon: 'M',
-      color: 'bg-green-500',
-    },
-    {
       id: 'hashnode',
       name: 'Hashnode',
       description: 'Developer-focused blogging',
       icon: 'H',
       color: 'bg-purple-500',
-    },
-    {
-      id: 'beehiiv',
-      name: 'Beehiiv',
-      description: 'Newsletter platform',
-      icon: 'B',
-      color: 'bg-orange-500',
     },
   ];
 
