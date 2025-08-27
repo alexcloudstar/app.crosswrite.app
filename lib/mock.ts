@@ -139,40 +139,37 @@ export const mockActivities: Activity[] = [
   {
     id: '1',
     type: 'published',
-    title: 'Getting Started with Next.js 15',
-    description: 'Published to Twitter, LinkedIn, and Medium',
+    title: 'Getting Started with Next.js 14',
+    description: 'Published to Dev.to and Hashnode',
     timestamp: new Date('2024-01-15T10:30:00'),
-    platform: 'devto',
   },
   {
     id: '2',
-    type: 'scheduled',
-    title: 'TypeScript Best Practices for 2024',
-    description: 'Scheduled for January 20, 2024 at 10:00 AM',
-    timestamp: new Date('2024-01-14T15:45:00'),
+    type: 'integration_connected',
+    title: 'Dev.to Integration',
+    description: 'Successfully connected Dev.to account',
+    timestamp: new Date('2024-01-14T15:20:00'),
   },
   {
     id: '3',
-    type: 'draft_created',
-    title: 'Building a Modern SaaS Dashboard',
-    description: 'New draft created',
+    type: 'published',
+    title: 'TypeScript Best Practices',
+    description: 'Published to Hashnode and Beehiiv',
     timestamp: new Date('2024-01-13T09:15:00'),
   },
   {
     id: '4',
     type: 'integration_connected',
-    title: 'LinkedIn Integration',
-    description: 'Successfully connected LinkedIn account',
-    timestamp: new Date('2024-01-12T14:20:00'),
-    platform: 'devto',
+    title: 'Hashnode Integration',
+    description: 'Successfully connected Hashnode account',
+    timestamp: new Date('2024-01-12T14:45:00'),
   },
   {
     id: '5',
-    type: 'published',
-    title: 'Optimizing React Performance',
-    description: 'Published to Twitter, LinkedIn, and Medium',
-    timestamp: new Date('2024-01-11T11:00:00'),
-    platform: 'devto',
+    type: 'integration_connected',
+    title: 'Beehiiv Integration',
+    description: 'Successfully connected Beehiiv account',
+    timestamp: new Date('2024-01-11T11:30:00'),
   },
 ];
 
@@ -194,10 +191,9 @@ export const mockAnalytics: AnalyticsData = {
     { date: '2024-01-15', reads: 1890 },
   ],
   readsByPlatform: [
-    { platform: 'Twitter', reads: 6200 },
-    { platform: 'LinkedIn', reads: 4800 },
-    { platform: 'Medium', reads: 3200 },
-    { platform: 'Dev.to', reads: 1220 },
+    { platform: 'Dev.to', reads: 6200 },
+    { platform: 'Hashnode', reads: 4800 },
+    { platform: 'Beehiiv', reads: 4400 },
   ],
   publishSuccess: [
     { status: 'Success', count: 42 },
@@ -294,20 +290,18 @@ export function formatDate(date: Date): string {
 
 export function getPlatformDisplayName(platform: string): string {
   const names: Record<string, string> = {
-    twitter: 'Twitter',
-    linkedin: 'LinkedIn',
-    medium: 'Medium',
-    dev: 'Dev.to',
+    devto: 'Dev.to',
+    hashnode: 'Hashnode',
+    beehiiv: 'Beehiiv',
   };
   return names[platform] || platform;
 }
 
 export function getPlatformColor(platform: string): string {
   const colors: Record<string, string> = {
-    twitter: 'bg-blue-500',
-    linkedin: 'bg-blue-600',
-    medium: 'bg-green-500',
-    dev: 'bg-purple-500',
+    devto: 'bg-purple-500',
+    hashnode: 'bg-purple-600',
+    beehiiv: 'bg-orange-500',
   };
   return colors[platform] || 'bg-gray-500';
 }

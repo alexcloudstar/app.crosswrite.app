@@ -104,7 +104,7 @@ export function Topbar() {
     {
       id: '3',
       title: 'Integration connected',
-      message: 'LinkedIn account connected successfully',
+      message: 'Dev.to account connected successfully',
       time: '2 hours ago',
       type: 'success',
     },

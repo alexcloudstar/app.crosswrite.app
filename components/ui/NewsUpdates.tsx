@@ -15,23 +15,14 @@ interface NewsItem {
 const newsItems: NewsItem[] = [
   {
     id: '1',
-    title: 'AI-Powered Thumbnail Generation',
+    title: 'Multi-Platform Publishing',
     description:
-      'Generate stunning thumbnails automatically using our advanced AI technology.',
+      'Write once, publish everywhere. Support for Dev.to, Hashnode, and more.',
     date: '2024-01-15',
     type: 'feature',
-    link: '/editor',
   },
   {
     id: '2',
-    title: 'Multi-Platform Publishing',
-    description:
-      'Write once, publish everywhere. Support for LinkedIn, Twitter, and more.',
-    date: '2024-01-10',
-    type: 'feature',
-  },
-  {
-    id: '3',
     title: 'Enhanced Editor Experience',
     description:
       'Improved markdown editor with real-time preview and AI suggestions.',
@@ -39,7 +30,7 @@ const newsItems: NewsItem[] = [
     type: 'update',
   },
   {
-    id: '4',
+    id: '3',
     title: 'Analytics Dashboard',
     description:
       'Track your content performance with detailed analytics and insights.',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -12,18 +12,50 @@ import {
   FileText,
   X,
   Clock,
+  Send,
 } from 'lucide-react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockDrafts } from '@/lib/mock';
 import {
   formatDate,
   getPlatformDisplayName,
   getPlatformColor,
 } from '@/lib/utils';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
+import { publishToPlatforms } from '@/app/actions/integrations/publish';
+import { listDrafts } from '@/app/actions/drafts';
+import { listIntegrations } from '@/app/actions/integrations';
+
+interface Draft {
+  id: string;
+  title: string;
+  content: string;
+  contentPreview?: string;
+  status: string;
+  platforms: string[];
+  thumbnailUrl?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt?: Date;
+  scheduledAt?: Date;
+}
+
+interface ListDraftsResponse {
+  drafts: Draft[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
 
 export default function DraftsPage() {
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedDrafts, setSelectedDrafts] = useState<string[]>([]);
@@ -32,16 +64,84 @@ export default function DraftsPage() {
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
-    'twitter',
-    'linkedin',
-    'medium',
-    'dev',
+    'devto',
+    'hashnode',
+    'beehiiv',
   ]);
+  const [publishingDraft, setPublishingDraft] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [integrations, setIntegrations] = useState<
+    Array<{
+      id: string;
+      platform: string;
+      status: string;
+      publicationId?: string;
+    }>
+  >([]);
 
-  const filteredDrafts = mockDrafts.filter(draft => {
+  // Debug: Log when openDropdown changes
+  useEffect(() => {
+    console.log('openDropdown changed to:', openDropdown);
+  }, [openDropdown]);
+
+  // Load drafts and integrations on component mount
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [draftsResult, integrationsResult] = await Promise.all([
+          listDrafts({
+            page: 1,
+            limit: 100,
+          }),
+          listIntegrations(),
+        ]);
+
+        if (draftsResult.success && draftsResult.data) {
+          setDrafts((draftsResult.data as ListDraftsResponse).drafts);
+        }
+
+        if (integrationsResult.success && integrationsResult.data) {
+          setIntegrations(
+            integrationsResult.data as Array<{
+              id: string;
+              platform: string;
+              status: string;
+              publicationId?: string;
+            }>
+          );
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        openDropdown &&
+        !(event.target as Element).closest('.dropdown-container')
+      ) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdown]);
+
+  const filteredDrafts = drafts.filter((draft: Draft) => {
     const matchesSearch =
       draft.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      draft.contentPreview.toLowerCase().includes(searchQuery.toLowerCase());
+      (draft.contentPreview &&
+        draft.contentPreview.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus =
       statusFilter === 'all' || draft.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -53,7 +153,7 @@ export default function DraftsPage() {
       return;
     }
 
-    setSelectedDrafts(filteredDrafts.map(d => d.id));
+    setSelectedDrafts(filteredDrafts.map((d: Draft) => d.id));
   };
 
   const handleSelectDraft = (id: string) =>
@@ -84,6 +184,83 @@ export default function DraftsPage() {
     setSelectedDrafts([]);
   };
 
+  const handlePublishDraft = async (draftId: string) => {
+    setPublishingDraft(draftId);
+    try {
+      const result = await publishToPlatforms({
+        draftId,
+        platforms: selectedPlatforms,
+        options: {
+          publishAsDraft: false,
+        },
+      });
+
+      if (result.success) {
+        const data = result.data as {
+          results: Array<{
+            platform: string;
+            success: boolean;
+            platformPostId?: string;
+            platformUrl?: string;
+            error?: string;
+          }>;
+          summary: {
+            total: number;
+            successful: number;
+            failed: number;
+            draftId: string;
+          };
+        };
+        console.log('Published successfully:', data);
+
+        // Show detailed results
+        if (data.summary) {
+          const { successful, failed, total } = data.summary;
+          if (successful > 0) {
+            alert(
+              `Successfully published to ${successful} out of ${total} platforms!`
+            );
+          } else {
+            // Show detailed error messages with helpful guidance
+            const errorMessages = data.results
+              .filter(r => !r.success)
+              .map(r => {
+                let message = `${r.platform}: ${r.error}`;
+                if (r.error?.includes('Publication ID is required')) {
+                  message +=
+                    '\n  → Go to Integrations page and click &quot;Select Publication&quot; to set up your publication ID';
+                }
+                return message;
+              })
+              .join('\n\n');
+            alert(`Failed to publish to any platforms:\n\n${errorMessages}`);
+          }
+        }
+
+        // Reload drafts to update status
+        const reloadResult = await listDrafts({
+          page: 1,
+          limit: 100,
+        });
+        if (reloadResult.success && reloadResult.data) {
+          setDrafts((reloadResult.data as ListDraftsResponse).drafts);
+        }
+      } else {
+        console.error('Publish failed:', result.error);
+        alert(`Publish failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Publish error:', error);
+      alert(
+        `Publish error: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    } finally {
+      setPublishingDraft(null);
+    }
+  };
+
   const handleScheduleSubmit = () => {
     // TODO: Implement schedule functionality
     console.log('Scheduling:', {
@@ -98,7 +275,7 @@ export default function DraftsPage() {
     setScheduleDraftId(null);
     setScheduleDate('');
     setScheduleTime('');
-    setSelectedPlatforms(['twitter', 'linkedin', 'medium', 'dev']);
+    setSelectedPlatforms(['devto', 'hashnode', 'beehiiv']);
 
     if (!scheduleDraftId) {
       setSelectedDrafts([]);
@@ -119,7 +296,7 @@ export default function DraftsPage() {
 
   const getDraftToSchedule = () => {
     if (scheduleDraftId) {
-      return mockDrafts.find(d => d.id === scheduleDraftId);
+      return drafts.find((d: Draft) => d.id === scheduleDraftId);
     }
     return null;
   };
@@ -146,6 +323,14 @@ export default function DraftsPage() {
   const onScheduleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setScheduleTime(e.target.value);
 
+  // Check if any integrations need publication IDs
+  const integrationsNeedingPublicationIds = integrations.filter(
+    integration =>
+      integration.status === 'connected' &&
+      ['hashnode', 'beehiiv'].includes(integration.platform) &&
+      !integration.publicationId
+  );
+
   return (
     <div className='p-6 max-w-7xl mx-auto'>
       <div className='flex items-center justify-between mb-8'>
@@ -160,6 +345,40 @@ export default function DraftsPage() {
           New Draft
         </Link>
       </div>
+
+      {integrationsNeedingPublicationIds.length > 0 && (
+        <div className='alert alert-warning mb-6'>
+          <div>
+            <h3 className='font-bold'>Integration Setup Required</h3>
+            <div className='text-sm'>
+              Some of your integrations need publication IDs to publish content:
+              {integrationsNeedingPublicationIds.map(integration => (
+                <div key={integration.id} className='mt-1'>
+                  •{' '}
+                  {integration.platform.charAt(0).toUpperCase() +
+                    integration.platform.slice(1)}
+                  : Missing publication ID
+                </div>
+              ))}
+              <div className='mt-2'>
+                <p>To fix this:</p>
+                <ol className='list-decimal list-inside mt-1 space-y-1'>
+                  <li>
+                    Go to the{' '}
+                    <Link href='/integrations' className='link link-primary'>
+                      Integrations page
+                    </Link>
+                  </li>
+                  <li>
+                    Click &quot;Select Publication&quot; for each platform
+                  </li>
+                  <li>Choose your publication from the list</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className='card bg-base-100 border border-base-300 shadow-sm mb-6'>
         <div className='card-body'>
@@ -207,6 +426,14 @@ export default function DraftsPage() {
                   Schedule
                 </button>
                 <button
+                  onClick={() => handlePublishDraft(selectedDrafts[0])}
+                  disabled={publishingDraft !== null}
+                  className='btn btn-primary btn-sm'
+                >
+                  <Send size={16} className='mr-2' />
+                  {publishingDraft ? 'Publishing...' : 'Publish'}
+                </button>
+                <button
                   onClick={handleBulkDelete}
                   className='btn btn-error btn-sm'
                 >
@@ -219,7 +446,12 @@ export default function DraftsPage() {
         </div>
       </div>
 
-      {filteredDrafts.length === 0 ? (
+      {loading ? (
+        <div className='flex items-center justify-center py-12'>
+          <div className='loading loading-spinner loading-lg'></div>
+          <span className='ml-4'>Loading drafts...</span>
+        </div>
+      ) : filteredDrafts.length === 0 ? (
         <EmptyState
           icon={<FileText />}
           title='No drafts found'
@@ -236,7 +468,7 @@ export default function DraftsPage() {
         />
       ) : (
         <div className='card bg-base-100 border border-base-300 shadow-sm'>
-          <div className='overflow-x-auto'>
+          <div className='w-full'>
             <table className='table w-full'>
               <thead>
                 <tr>
@@ -292,35 +524,77 @@ export default function DraftsPage() {
                       </div>
                     </td>
                     <td>
-                      <div className='dropdown dropdown-end'>
-                        <button className='btn btn-ghost btn-sm btn-circle'>
+                      <div className='relative dropdown-container'>
+                        <button
+                          onClick={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log(
+                              'Dropdown clicked for draft:',
+                              draft.id
+                            );
+                            setOpenDropdown(
+                              openDropdown === draft.id ? null : draft.id
+                            );
+                          }}
+                          className='btn btn-ghost btn-sm btn-circle'
+                        >
                           <MoreHorizontal size={16} />
                         </button>
-                        <ul className='dropdown-content menu bg-base-200 rounded-box w-52 shadow-lg'>
-                          <li>
-                            <Link href={`/editor?id=${draft.id}`}>
-                              <Edit3 size={16} />
-                              Edit
-                            </Link>
-                          </li>
-                          <li>
-                            <button
-                              onClick={handleScheduleDraft.bind(null, draft.id)}
-                            >
-                              <Calendar size={16} />
-                              Schedule
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={handleDeleteDraft.bind(null, draft.id)}
-                              className='text-error'
-                            >
-                              <Trash2 size={16} />
-                              Delete
-                            </button>
-                          </li>
-                        </ul>
+                        {openDropdown === draft.id && (
+                          <div className='absolute right-0 top-full mt-1 bg-base-200 rounded-box shadow-lg z-50 min-w-[200px] border border-base-300'>
+                            <ul className='menu p-2 w-full'>
+                              <li>
+                                <Link href={`/editor?id=${draft.id}`}>
+                                  <Edit3 size={16} />
+                                  Edit
+                                </Link>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={() => {
+                                    handlePublishDraft(draft.id);
+                                    setOpenDropdown(null);
+                                  }}
+                                  disabled={publishingDraft === draft.id}
+                                  className={
+                                    publishingDraft === draft.id
+                                      ? 'opacity-50'
+                                      : ''
+                                  }
+                                >
+                                  <Send size={16} />
+                                  {publishingDraft === draft.id
+                                    ? 'Publishing...'
+                                    : 'Publish'}
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={() => {
+                                    handleScheduleDraft(draft.id);
+                                    setOpenDropdown(null);
+                                  }}
+                                >
+                                  <Calendar size={16} />
+                                  Schedule
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={() => {
+                                    handleDeleteDraft(draft.id);
+                                    setOpenDropdown(null);
+                                  }}
+                                  className='text-error'
+                                >
+                                  <Trash2 size={16} />
+                                  Delete
+                                </button>
+                              </li>
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -394,7 +668,7 @@ export default function DraftsPage() {
                   <span className='label-text'>Platforms</span>
                 </label>
                 <div className='flex flex-wrap gap-3'>
-                  {['twitter', 'linkedin', 'medium', 'dev'].map(platform => (
+                  {['devto', 'hashnode', 'beehiiv'].map(platform => (
                     <CustomCheckbox
                       key={platform}
                       size='sm'
