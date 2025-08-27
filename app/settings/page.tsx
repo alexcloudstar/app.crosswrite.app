@@ -73,7 +73,7 @@ export default function SettingsPage() {
     try {
       setIsLoading(true);
       const result = await getUserSettings();
-      
+
       if (result.success && result.data) {
         setUser((result.data as any).user);
         setSettings((result.data as any).settings);
@@ -143,33 +143,33 @@ export default function SettingsPage() {
           <div className='card bg-base-100 border border-base-300 shadow-sm'>
             <div className='card-body'>
               {activeTab === 'profile' && (
-                <ProfileSettings 
-                  user={user} 
-                  settings={settings} 
+                <ProfileSettings
+                  user={user}
+                  settings={settings}
                   onSave={loadUserSettings}
                   isSaving={isSaving}
                   setIsSaving={setIsSaving}
                 />
               )}
               {activeTab === 'writing' && (
-                <WritingSettings 
-                  settings={settings} 
+                <WritingSettings
+                  settings={settings}
                   onSave={loadUserSettings}
                   isSaving={isSaving}
                   setIsSaving={setIsSaving}
                 />
               )}
               {activeTab === 'publishing' && (
-                <PublishingSettings 
-                  settings={settings} 
+                <PublishingSettings
+                  settings={settings}
                   onSave={loadUserSettings}
                   isSaving={isSaving}
                   setIsSaving={setIsSaving}
                 />
               )}
               {activeTab === 'notifications' && (
-                <NotificationSettings 
-                  settings={settings} 
+                <NotificationSettings
+                  settings={settings}
                   onSave={loadUserSettings}
                   isSaving={isSaving}
                   setIsSaving={setIsSaving}
@@ -185,15 +185,15 @@ export default function SettingsPage() {
   );
 }
 
-function ProfileSettings({ 
-  user, 
-  settings, 
-  onSave, 
-  isSaving, 
-  setIsSaving 
-}: { 
-  user: User | null; 
-  settings: UserSettings | null; 
+function ProfileSettings({
+  user,
+  settings,
+  onSave,
+  isSaving,
+  setIsSaving,
+}: {
+  user: User | null;
+  settings: UserSettings | null;
   onSave: () => void;
   isSaving: boolean;
   setIsSaving: (saving: boolean) => void;
@@ -216,7 +216,7 @@ function ProfileSettings({
     try {
       setIsSaving(true);
       const result = await updateProfile(formData);
-      
+
       if (result.success) {
         toast.success('Profile updated successfully');
         onSave();
@@ -242,7 +242,9 @@ function ProfileSettings({
             <input
               type='text'
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, name: e.target.value }))
+              }
               className='input input-bordered w-full'
             />
           </div>
@@ -266,7 +268,9 @@ function ProfileSettings({
             </label>
             <textarea
               value={formData.bio}
-              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, bio: e.target.value }))
+              }
               className='textarea textarea-bordered w-full'
               rows={3}
             />
@@ -278,15 +282,17 @@ function ProfileSettings({
             <input
               type='url'
               value={formData.website}
-              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, website: e.target.value }))
+              }
               className='input input-bordered w-full'
             />
           </div>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button 
-          className='btn btn-primary' 
+        <button
+          className='btn btn-primary'
           onClick={handleSave}
           disabled={isSaving}
         >
@@ -302,19 +308,24 @@ function ProfileSettings({
   );
 }
 
-function WritingSettings({ 
-  settings, 
-  onSave, 
-  isSaving, 
-  setIsSaving 
-}: { 
-  settings: UserSettings | null; 
+function WritingSettings({
+  settings,
+  onSave,
+  isSaving,
+  setIsSaving,
+}: {
+  settings: UserSettings | null;
   onSave: () => void;
   isSaving: boolean;
   setIsSaving: (saving: boolean) => void;
 }) {
   const [formData, setFormData] = useState({
-    preferredTone: (settings?.preferredTone as 'professional' | 'casual' | 'friendly' | 'academic') || 'professional',
+    preferredTone:
+      (settings?.preferredTone as
+        | 'professional'
+        | 'casual'
+        | 'friendly'
+        | 'academic') || 'professional',
     defaultTags: settings?.defaultTags || [],
     autoGenerateUrls: settings?.autoGenerateUrls ?? true,
     includeReadingTime: settings?.includeReadingTime ?? false,
@@ -322,7 +333,12 @@ function WritingSettings({
 
   useEffect(() => {
     setFormData({
-      preferredTone: (settings?.preferredTone as 'professional' | 'casual' | 'friendly' | 'academic') || 'professional',
+      preferredTone:
+        (settings?.preferredTone as
+          | 'professional'
+          | 'casual'
+          | 'friendly'
+          | 'academic') || 'professional',
       defaultTags: settings?.defaultTags || [],
       autoGenerateUrls: settings?.autoGenerateUrls ?? true,
       includeReadingTime: settings?.includeReadingTime ?? false,
@@ -333,7 +349,7 @@ function WritingSettings({
     try {
       setIsSaving(true);
       const result = await updateWritingDefaults(formData);
-      
+
       if (result.success) {
         toast.success('Writing defaults updated successfully');
         onSave();
@@ -348,7 +364,10 @@ function WritingSettings({
   }
 
   function handleTagsChange(value: string) {
-    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    const tags = value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
     setFormData(prev => ({ ...prev, defaultTags: tags }));
   }
 
@@ -361,10 +380,19 @@ function WritingSettings({
             <label className='label'>
               <span className='label-text'>Preferred Tone</span>
             </label>
-            <select 
+            <select
               className='select select-bordered w-full'
               value={formData.preferredTone}
-              onChange={(e) => setFormData(prev => ({ ...prev, preferredTone: e.target.value as 'professional' | 'casual' | 'friendly' | 'academic' }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  preferredTone: e.target.value as
+                    | 'professional'
+                    | 'casual'
+                    | 'friendly'
+                    | 'academic',
+                }))
+              }
             >
               <option value='professional'>Professional</option>
               <option value='casual'>Casual</option>
@@ -379,7 +407,7 @@ function WritingSettings({
             <input
               type='text'
               value={formData.defaultTags.join(', ')}
-              onChange={(e) => handleTagsChange(e.target.value)}
+              onChange={e => handleTagsChange(e.target.value)}
               placeholder='javascript, react, web-development'
               className='input input-bordered w-full'
             />
@@ -389,21 +417,25 @@ function WritingSettings({
           </div>
           <CustomCheckbox
             checked={formData.autoGenerateUrls}
-            onChange={(checked) => setFormData(prev => ({ ...prev, autoGenerateUrls: checked }))}
+            onChange={checked =>
+              setFormData(prev => ({ ...prev, autoGenerateUrls: checked }))
+            }
           >
             Auto-generate canonical URLs
           </CustomCheckbox>
           <CustomCheckbox
             checked={formData.includeReadingTime}
-            onChange={(checked) => setFormData(prev => ({ ...prev, includeReadingTime: checked }))}
+            onChange={checked =>
+              setFormData(prev => ({ ...prev, includeReadingTime: checked }))
+            }
           >
             Include reading time estimates
           </CustomCheckbox>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button 
-          className='btn btn-primary' 
+        <button
+          className='btn btn-primary'
           onClick={handleSave}
           disabled={isSaving}
         >
@@ -419,13 +451,13 @@ function WritingSettings({
   );
 }
 
-function PublishingSettings({ 
-  settings, 
-  onSave, 
-  isSaving, 
-  setIsSaving 
-}: { 
-  settings: UserSettings | null; 
+function PublishingSettings({
+  settings,
+  onSave,
+  isSaving,
+  setIsSaving,
+}: {
+  settings: UserSettings | null;
   onSave: () => void;
   isSaving: boolean;
   setIsSaving: (saving: boolean) => void;
@@ -446,7 +478,7 @@ function PublishingSettings({
     try {
       setIsSaving(true);
       const result = await updatePublishingSettings(formData);
-      
+
       if (result.success) {
         toast.success('Publishing settings updated successfully');
         onSave();
@@ -472,21 +504,28 @@ function PublishingSettings({
             <input
               type='time'
               value={formData.defaultPublishTime}
-              onChange={(e) => setFormData(prev => ({ ...prev, defaultPublishTime: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  defaultPublishTime: e.target.value,
+                }))
+              }
               className='input input-bordered w-full'
             />
           </div>
-          <CustomCheckbox 
-            checked={formData.autoSchedule} 
-            onChange={(checked) => setFormData(prev => ({ ...prev, autoSchedule: checked }))}
+          <CustomCheckbox
+            checked={formData.autoSchedule}
+            onChange={checked =>
+              setFormData(prev => ({ ...prev, autoSchedule: checked }))
+            }
           >
             Auto-schedule for optimal times
           </CustomCheckbox>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button 
-          className='btn btn-primary' 
+        <button
+          className='btn btn-primary'
           onClick={handleSave}
           disabled={isSaving}
         >
@@ -502,13 +541,13 @@ function PublishingSettings({
   );
 }
 
-function NotificationSettings({ 
-  settings, 
-  onSave, 
-  isSaving, 
-  setIsSaving 
-}: { 
-  settings: UserSettings | null; 
+function NotificationSettings({
+  settings,
+  onSave,
+  isSaving,
+  setIsSaving,
+}: {
+  settings: UserSettings | null;
   onSave: () => void;
   isSaving: boolean;
   setIsSaving: (saving: boolean) => void;
@@ -533,7 +572,7 @@ function NotificationSettings({
     try {
       setIsSaving(true);
       const result = await updateNotificationSettings(formData);
-      
+
       if (result.success) {
         toast.success('Notification settings updated successfully');
         onSave();
@@ -563,7 +602,12 @@ function NotificationSettings({
               type='checkbox'
               className='toggle toggle-primary'
               checked={formData.publishSuccess}
-              onChange={(e) => setFormData(prev => ({ ...prev, publishSuccess: e.target.checked }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  publishSuccess: e.target.checked,
+                }))
+              }
             />
           </div>
           <div className='flex items-center justify-between'>
@@ -577,7 +621,12 @@ function NotificationSettings({
               type='checkbox'
               className='toggle toggle-primary'
               checked={formData.publishErrors}
-              onChange={(e) => setFormData(prev => ({ ...prev, publishErrors: e.target.checked }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  publishErrors: e.target.checked,
+                }))
+              }
             />
           </div>
           <div className='flex items-center justify-between'>
@@ -587,11 +636,16 @@ function NotificationSettings({
                 Receive a daily summary of your content performance
               </p>
             </div>
-            <input 
-              type='checkbox' 
+            <input
+              type='checkbox'
               className='toggle toggle-primary'
               checked={formData.dailyDigest}
-              onChange={(e) => setFormData(prev => ({ ...prev, dailyDigest: e.target.checked }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  dailyDigest: e.target.checked,
+                }))
+              }
             />
           </div>
           <div className='flex items-center justify-between'>
@@ -605,14 +659,19 @@ function NotificationSettings({
               type='checkbox'
               className='toggle toggle-primary'
               checked={formData.weeklyReport}
-              onChange={(e) => setFormData(prev => ({ ...prev, weeklyReport: e.target.checked }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  weeklyReport: e.target.checked,
+                }))
+              }
             />
           </div>
         </div>
       </div>
       <div className='flex justify-end'>
-        <button 
-          className='btn btn-primary' 
+        <button
+          className='btn btn-primary'
           onClick={handleSave}
           disabled={isSaving}
         >

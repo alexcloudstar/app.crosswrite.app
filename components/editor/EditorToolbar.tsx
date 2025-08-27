@@ -20,6 +20,7 @@ interface EditorToolbarProps {
   onTone?: () => void;
   onSummarize?: () => void;
   isAiLoading?: boolean;
+  hasContent?: boolean;
 }
 
 export function EditorToolbar({
@@ -28,6 +29,7 @@ export function EditorToolbar({
   onTone,
   onSummarize,
   isAiLoading = false,
+  hasContent = true,
 }: EditorToolbarProps) {
   const { canGenerateThumbnail } = useAppStore();
 
@@ -64,9 +66,9 @@ export function EditorToolbar({
       <div className='flex items-center space-x-1'>
         <button
           className='btn btn-ghost btn-sm'
-          title='AI Rewrite'
+          title={!hasContent ? 'Add content to rewrite' : 'AI Rewrite'}
           onClick={onRewrite}
-          disabled={isAiLoading}
+          disabled={isAiLoading || !hasContent}
         >
           <Sparkles size={16} />
           <span className='ml-1 text-xs'>
@@ -75,9 +77,9 @@ export function EditorToolbar({
         </button>
         <button
           className='btn btn-ghost btn-sm'
-          title='Fix Tone'
+          title={!hasContent ? 'Add content to adjust tone' : 'Fix Tone'}
           onClick={onTone}
-          disabled={isAiLoading}
+          disabled={isAiLoading || !hasContent}
         >
           <MessageSquare size={16} />
           <span className='ml-1 text-xs'>
@@ -86,9 +88,9 @@ export function EditorToolbar({
         </button>
         <button
           className='btn btn-ghost btn-sm'
-          title='Summarize'
+          title={!hasContent ? 'Add content to summarize' : 'Summarize'}
           onClick={onSummarize}
-          disabled={isAiLoading}
+          disabled={isAiLoading || !hasContent}
         >
           <FileText size={16} />
           <span className='ml-1 text-xs'>

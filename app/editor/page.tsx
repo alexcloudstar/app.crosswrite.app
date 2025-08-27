@@ -23,6 +23,8 @@ import {
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { createDraft, getDraft, updateDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
+import { getUserSettings } from '@/app/actions/user-settings';
+
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft } from '@/lib/types/drafts';
 import { Integration, PublishResult } from '@/lib/types/integrations';
@@ -48,11 +50,44 @@ export default function EditorPage() {
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [selectedTone, setSelectedTone] = useState<
+    'professional' | 'casual' | 'friendly' | 'academic'
+  >('professional');
+  const [selectedLength, setSelectedLength] = useState<
+    'keep' | 'shorter' | 'longer'
+  >('keep');
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
 
   const isLoading = loadingType !== null || isLoadingDraft;
+
+  // Load user's preferred tone from settings on mount
+  useEffect(() => {
+    async function loadUserTone() {
+      try {
+        const result = await getUserSettings();
+        if (result.success && result.data) {
+          const settings = (
+            result.data as { settings: { preferredTone: string } }
+          ).settings;
+          if (settings?.preferredTone) {
+            setSelectedTone(
+              settings.preferredTone as
+                | 'professional'
+                | 'casual'
+                | 'friendly'
+                | 'academic'
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user tone preference:', error);
+      }
+    }
+
+    loadUserTone();
+  }, []);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTitle(e.target.value);
@@ -73,7 +108,14 @@ export default function EditorPage() {
 
     setLoadingType('ai');
     try {
-      const result = await improveText({ text: content });
+      const goals = [];
+      if (selectedLength !== 'keep') {
+        goals.push(
+          selectedLength === 'shorter' ? 'Make it shorter' : 'Make it longer'
+        );
+      }
+
+      const result = await improveText({ text: content, goals });
       if (result.success && result.data) {
         setContent((result.data as { improvedText: string }).improvedText);
       } else {
@@ -92,15 +134,68 @@ export default function EditorPage() {
 
     setLoadingType('ai');
     try {
-      const result = await adjustTone({ text: content, tone: 'professional' });
+      const result = await adjustTone({ text: content, tone: selectedTone });
       if (result.success && result.data) {
         setContent((result.data as { adjustedText: string }).adjustedText);
+        toast.success(`Content adjusted to ${selectedTone} tone`);
       } else {
         console.error('Tone adjustment failed:', result.error);
         toast.error('Failed to adjust tone. Please try again.');
       }
     } catch (error) {
       console.error('Tone adjustment error:', error);
+    } finally {
+      setLoadingType(null);
+    }
+  };
+
+  const handleApplyRewriteSettings = async () => {
+    if (isLoading) return;
+
+    // If no content, just save the settings and close modal
+    if (!content.trim()) {
+      toast.success('Settings saved for when you add content');
+      setShowRewriteSettings(false);
+      return;
+    }
+
+    setLoadingType('ai');
+    try {
+      let result;
+
+      // Apply tone adjustment if not professional
+      if (selectedTone !== 'professional') {
+        result = await adjustTone({ text: content, tone: selectedTone });
+        if (result.success && result.data) {
+          setContent((result.data as { adjustedText: string }).adjustedText);
+        } else {
+          console.error('Tone adjustment failed:', result.error);
+          toast.error('Failed to adjust tone. Please try again.');
+          return;
+        }
+      }
+
+      if (selectedLength !== 'keep') {
+        const lengthInstruction =
+          selectedLength === 'shorter' ? 'Make it shorter' : 'Make it longer';
+        result = await improveText({
+          text: content,
+          goals: [lengthInstruction],
+        });
+        if (result.success && result.data) {
+          setContent((result.data as { improvedText: string }).improvedText);
+        } else {
+          console.error('Length adjustment failed:', result.error);
+          toast.error('Failed to adjust length. Please try again.');
+          return;
+        }
+      }
+
+      toast.success('Content adjusted successfully');
+      setShowRewriteSettings(false);
+    } catch (error) {
+      console.error('Rewrite settings error:', error);
+      toast.error('Failed to apply settings. Please try again.');
     } finally {
       setLoadingType(null);
     }
@@ -156,7 +251,6 @@ export default function EditorPage() {
       const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion.suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
       setContent(prev => prev + suggestionNote);
 
-      // Mark the suggestion as applied
       setSuggestions(prev =>
         prev.map(s => (s.id === suggestionId ? { ...s, applied: true } : s))
       );
@@ -171,7 +265,6 @@ export default function EditorPage() {
       let result;
 
       if (draftId) {
-        // Update existing draft
         result = await updateDraft({
           id: draftId,
           title: title.trim(),
@@ -182,7 +275,6 @@ export default function EditorPage() {
           tags: [], // TODO: Add tag extraction from content
         });
       } else {
-        // Create new draft
         result = await createDraft({
           title: title.trim(),
           content: content.trim(),
@@ -223,7 +315,6 @@ export default function EditorPage() {
       let currentDraftId = draftId;
 
       if (!currentDraftId) {
-        // Create new draft if we don't have one
         const draftResult = await createDraft({
           title: title.trim(),
           content: content.trim(),
@@ -241,7 +332,6 @@ export default function EditorPage() {
 
         currentDraftId = (draftResult.data as Draft).id;
       } else {
-        // Update existing draft
         const updateResult = await updateDraft({
           id: currentDraftId,
           title: title.trim(),
@@ -296,7 +386,6 @@ export default function EditorPage() {
     );
   };
 
-  // Load draft if ID is provided in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
@@ -457,6 +546,7 @@ export default function EditorPage() {
         onTone={handleTone}
         onSummarize={handleSummarize}
         isAiLoading={isLoading}
+        hasContent={!!content.trim()}
       />
 
       <div className='flex-1 flex overflow-hidden'>
@@ -479,7 +569,10 @@ export default function EditorPage() {
               <button
                 onClick={handleSaveDraft}
                 className='btn btn-ghost btn-sm'
-                disabled={isLoading}
+                disabled={isLoading || !content.trim()}
+                title={
+                  !content.trim() ? 'Add some content to save' : 'Save draft'
+                }
               >
                 <Save size={16} className='mr-2' />
                 {loadingType === 'saving' ? 'Saving...' : 'Save Draft'}
@@ -487,7 +580,12 @@ export default function EditorPage() {
               <button
                 onClick={handlePublish}
                 className='btn btn-primary btn-sm'
-                disabled={isLoading}
+                disabled={isLoading || !content.trim()}
+                title={
+                  !content.trim()
+                    ? 'Add some content to publish'
+                    : 'Publish to platforms'
+                }
               >
                 <Send size={16} className='mr-2' />
                 Publish
@@ -535,21 +633,41 @@ export default function EditorPage() {
                 <label className='label'>
                   <span className='label-text'>Tone</span>
                 </label>
-                <select className='select select-bordered w-full'>
-                  <option>Professional</option>
-                  <option>Casual</option>
-                  <option>Friendly</option>
-                  <option>Academic</option>
+                <select
+                  className='select select-bordered w-full'
+                  value={selectedTone}
+                  onChange={e =>
+                    setSelectedTone(
+                      e.target.value as
+                        | 'professional'
+                        | 'casual'
+                        | 'friendly'
+                        | 'academic'
+                    )
+                  }
+                >
+                  <option value='professional'>Professional</option>
+                  <option value='casual'>Casual</option>
+                  <option value='friendly'>Friendly</option>
+                  <option value='academic'>Academic</option>
                 </select>
               </div>
               <div>
                 <label className='label'>
                   <span className='label-text'>Length</span>
                 </label>
-                <select className='select select-bordered w-full'>
-                  <option>Keep current length</option>
-                  <option>Make it shorter</option>
-                  <option>Make it longer</option>
+                <select
+                  className='select select-bordered w-full'
+                  value={selectedLength}
+                  onChange={e =>
+                    setSelectedLength(
+                      e.target.value as 'keep' | 'shorter' | 'longer'
+                    )
+                  }
+                >
+                  <option value='keep'>Keep current length</option>
+                  <option value='shorter'>Make it shorter</option>
+                  <option value='longer'>Make it longer</option>
                 </select>
               </div>
             </div>
@@ -562,7 +680,8 @@ export default function EditorPage() {
               </button>
               <button
                 className='btn btn-primary'
-                onClick={handleToggleRewriteSettings}
+                onClick={handleApplyRewriteSettings}
+                title='Apply settings to content'
               >
                 Apply
               </button>
