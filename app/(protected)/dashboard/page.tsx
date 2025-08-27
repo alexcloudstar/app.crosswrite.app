@@ -11,48 +11,140 @@ import {
   BarChart3,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { StatCard } from '@/components/ui/StatCard';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
 import { NewsUpdates } from '@/components/ui/NewsUpdates';
-import { mockDrafts, mockActivities, mockAnalytics } from '@/lib/mock';
 import { formatDate, getPlatformDisplayName } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
+import { listDrafts } from '@/app/actions/drafts';
+import { getOverview, getReadsOverTime } from '@/app/actions/analytics';
+import {
+  Draft,
+  AnalyticsData,
+  ReadsData,
+  DashboardStats,
+} from '@/lib/types/dashboard';
 
 export default function DashboardPage() {
   const { userPlan } = useAppStore();
-  const stats = {
-    drafts: mockDrafts.filter(d => d.status === 'draft').length,
-    scheduled: mockDrafts.filter(d => d.status === 'scheduled').length,
-    published7Days: mockDrafts.filter(d => {
-      if (d.status !== 'published' || !d.publishedAt) return false;
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      return d.publishedAt >= sevenDaysAgo;
-    }).length,
-    published30Days: mockDrafts.filter(d => {
-      if (d.status !== 'published' || !d.publishedAt) return false;
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return d.publishedAt >= thirtyDaysAgo;
-    }).length,
-  };
+  const [stats, setStats] = useState<DashboardStats>({
+    drafts: 0,
+    scheduled: 0,
+    published7Days: 0,
+    published30Days: 0,
+  });
+  const [recentDrafts, setRecentDrafts] = useState<Draft[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
+    reads: 0,
+    engagement: 0,
+    followers: 0,
+  });
+  const [readsData, setReadsData] = useState<ReadsData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const recentDrafts = mockDrafts
-    .filter(d => d.status === 'draft')
-    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-    .slice(0, 3);
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        setIsLoading(true);
 
-  const recentActivities = mockActivities
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-    .slice(0, 5);
+        const draftsResult = await listDrafts({ page: 1, limit: 100 });
+        if (draftsResult.success && draftsResult.data) {
+          const drafts = (draftsResult.data as { drafts: Draft[] }).drafts;
 
-  const readsData = mockAnalytics.readsOverTime.map(item => ({
-    date: item.date,
-    value: item.reads,
-  }));
+          const draftStats = {
+            drafts: drafts.filter((d: Draft) => d.status === 'draft').length,
+            scheduled: drafts.filter((d: Draft) => d.status === 'scheduled')
+              .length,
+            published7Days: drafts.filter((d: Draft) => {
+              if (d.status !== 'published' || !d.publishedAt) return false;
+              const sevenDaysAgo = new Date();
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+              return new Date(d.publishedAt) >= sevenDaysAgo;
+            }).length,
+            published30Days: drafts.filter((d: Draft) => {
+              if (d.status !== 'published' || !d.publishedAt) return false;
+              const thirtyDaysAgo = new Date();
+              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+              return new Date(d.publishedAt) >= thirtyDaysAgo;
+            }).length,
+          };
+
+          setStats(draftStats);
+
+          const recent = drafts
+            .filter((d: Draft) => d.status === 'draft')
+            .sort(
+              (a: Draft, b: Draft) =>
+                new Date(b.updatedAt).getTime() -
+                new Date(a.updatedAt).getTime()
+            )
+            .slice(0, 3);
+          setRecentDrafts(recent);
+        }
+
+        const analyticsResult = await getOverview({ range: '30d' });
+        if (analyticsResult.success && analyticsResult.data) {
+          const analyticsData = analyticsResult.data as {
+            reads: number;
+            engagement: number;
+          };
+          setAnalytics({
+            reads: analyticsData.reads || 0,
+            engagement: analyticsData.engagement || 0,
+            followers: 0, // TODO: Get from platform integrations
+          });
+        }
+
+        const readsResult = await getReadsOverTime({ range: '7d' });
+        if (readsResult.success && readsResult.data) {
+          const readsData = (
+            readsResult.data as { data: Array<{ date: string; reads: number }> }
+          ).data;
+          const data = readsData.map(item => ({
+            date: item.date,
+            value: item.reads || 0,
+          }));
+          setReadsData(data);
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDashboardData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className='p-6 max-w-7xl mx-auto'>
+        <div className='mb-8'>
+          <div className='flex items-center justify-between mb-4'>
+            <div>
+              <h1 className='text-3xl font-bold mb-2'>Dashboard</h1>
+              <p className='text-base-content/70'>
+                Welcome back! Here&apos;s what&apos;s happening with your
+                content.
+              </p>
+            </div>
+            <div className='flex items-center space-x-4'>
+              <PlanBadge planId={userPlan.planId} />
+              <QuotaHint type='articles' />
+              <QuotaHint type='thumbnails' />
+            </div>
+          </div>
+        </div>
+        <div className='flex items-center justify-center py-12'>
+          <div className='loading loading-spinner loading-lg'></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='p-6 max-w-7xl mx-auto'>
@@ -107,7 +199,7 @@ export default function DashboardPage() {
               <Eye size={20} className='text-base-content/50' />
             </div>
             <div className='text-2xl font-bold mb-2'>
-              {mockAnalytics.reads.toLocaleString()}
+              {analytics.reads.toLocaleString()}
             </div>
             <Sparkline data={readsData} />
           </div>
@@ -120,7 +212,7 @@ export default function DashboardPage() {
               <BarChart3 size={20} className='text-base-content/50' />
             </div>
             <div className='text-2xl font-bold mb-2'>
-              {mockAnalytics.engagement}
+              {analytics.engagement}
             </div>
             <Sparkline data={readsData} color='#7ad3a3' />
           </div>
@@ -133,7 +225,7 @@ export default function DashboardPage() {
               <Clock size={20} className='text-base-content/50' />
             </div>
             <div className='text-2xl font-bold mb-2'>
-              {mockAnalytics.followers.toLocaleString()}
+              {analytics.followers.toLocaleString()}
             </div>
             <Sparkline data={readsData} color='#89b4fa' />
           </div>
@@ -145,20 +237,12 @@ export default function DashboardPage() {
           <div className='card-body'>
             <h2 className='card-title text-lg mb-4'>Recent Activity</h2>
             <div className='space-y-4'>
-              {recentActivities.map(activity => (
-                <div key={activity.id} className='flex items-start space-x-3'>
-                  <div className='w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0'></div>
-                  <div className='flex-1'>
-                    <p className='text-sm font-medium'>{activity.title}</p>
-                    <p className='text-sm text-base-content/70'>
-                      {activity.description}
-                    </p>
-                    <p className='text-xs text-base-content/50 mt-1'>
-                      {formatDate(activity.timestamp)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              <div className='text-center py-8'>
+                <p className='text-base-content/70'>No recent activity</p>
+                <p className='text-sm text-base-content/50 mt-1'>
+                  Your publishing activity will appear here
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -198,28 +282,31 @@ export default function DashboardPage() {
                           {draft.title}
                         </h3>
                         <p className='text-sm text-base-content/60 mb-3 leading-relaxed'>
-                          {draft.contentPreview.length > 80
+                          {draft.contentPreview &&
+                          draft.contentPreview.length > 80
                             ? `${draft.contentPreview.substring(0, 80)}...`
-                            : draft.contentPreview}
+                            : draft.contentPreview || 'No preview available'}
                         </p>
                         <div className='space-y-2'>
                           <div className='flex items-center space-x-2'>
-                            {draft.platforms.slice(0, 3).map(platform => (
-                              <span
-                                key={platform}
-                                className='px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md'
-                              >
-                                {getPlatformDisplayName(platform)}
-                              </span>
-                            ))}
-                            {draft.platforms.length > 3 && (
+                            {draft.platforms
+                              ?.slice(0, 3)
+                              .map((platform: string) => (
+                                <span
+                                  key={platform}
+                                  className='px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md'
+                                >
+                                  {getPlatformDisplayName(platform)}
+                                </span>
+                              ))}
+                            {draft.platforms && draft.platforms.length > 3 && (
                               <span className='text-xs text-base-content/50'>
                                 +{draft.platforms.length - 3} more
                               </span>
                             )}
                           </div>
                           <div className='text-xs text-base-content/50'>
-                            {formatDate(draft.updatedAt)}
+                            {formatDate(new Date(draft.updatedAt))}
                           </div>
                         </div>
                       </div>
