@@ -15,6 +15,8 @@ import {
   updateScheduledPostSchema,
   scheduledPostIdSchema,
 } from '@/lib/validators/scheduler';
+import { toUTC } from '@/lib/scheduler/time';
+import { processDueJobs } from '@/lib/scheduler/engine';
 
 export async function listScheduledPosts() {
   try {
@@ -29,7 +31,9 @@ export async function listScheduledPosts() {
         status: scheduledPosts.status,
         publishedAt: scheduledPosts.publishedAt,
         errorMessage: scheduledPosts.errorMessage,
+        retryCount: scheduledPosts.retryCount,
         createdAt: scheduledPosts.createdAt,
+        updatedAt: scheduledPosts.updatedAt,
         draftTitle: drafts.title,
         draftStatus: drafts.status,
       })
@@ -51,6 +55,7 @@ export async function createScheduledPost(input: unknown) {
       draftId: string;
       platforms: string[];
       scheduledAt: string;
+      userTz?: string;
     };
 
     const [draft] = await db
@@ -81,12 +86,18 @@ export async function createScheduledPost(input: unknown) {
       return errorResult('Draft is already scheduled');
     }
 
+    const scheduledAtUTC = toUTC(
+      new Date(validated.scheduledAt),
+      validated.userTz
+    );
+
     const [scheduledPost] = await db
       .insert(scheduledPosts)
       .values({
-        ...validated,
+        draftId: validated.draftId,
+        platforms: validated.platforms,
         userId: session.id,
-        scheduledAt: new Date(validated.scheduledAt),
+        scheduledAt: scheduledAtUTC,
       })
       .returning();
 
@@ -105,8 +116,9 @@ export async function updateScheduledPost(input: unknown) {
       platforms?: string[];
       scheduledAt?: string;
       status?: 'pending' | 'published' | 'cancelled' | 'failed';
+      userTz?: string;
     };
-    const { id, ...updateData } = validated;
+    const { id, userTz, ...updateData } = validated;
 
     const [existing] = await db
       .select()
@@ -124,12 +136,16 @@ export async function updateScheduledPost(input: unknown) {
       return errorResult('Scheduled post not found or cannot be updated');
     }
 
-    const updateValues: Record<string, unknown> = {};
+    const updateValues: Record<string, unknown> = {
+      updatedAt: new Date(),
+    };
+
     if (updateData.platforms) {
       updateValues.platforms = updateData.platforms;
     }
     if (updateData.scheduledAt) {
-      updateValues.scheduledAt = new Date(updateData.scheduledAt);
+      const scheduledAtUTC = toUTC(new Date(updateData.scheduledAt), userTz);
+      updateValues.scheduledAt = scheduledAtUTC;
     }
     if (updateData.status) {
       updateValues.status = updateData.status;
@@ -157,6 +173,7 @@ export async function cancelScheduledPost(input: unknown) {
       .update(scheduledPosts)
       .set({
         status: 'cancelled',
+        updatedAt: new Date(),
       })
       .where(
         and(
@@ -173,6 +190,127 @@ export async function cancelScheduledPost(input: unknown) {
 
     revalidateDashboard();
     return successResult({ cancelled: true });
+  } catch (error) {
+    return errorResult(await handleDatabaseError(error));
+  }
+}
+
+export async function bulkSchedule(input: unknown) {
+  try {
+    const session = await requireAuth();
+    const { schedules } = input as {
+      schedules: Array<{
+        draftId: string;
+        platforms: string[];
+        scheduledAt: string;
+        userTz?: string;
+      }>;
+    };
+
+    if (!Array.isArray(schedules) || schedules.length === 0) {
+      return errorResult('No schedules provided');
+    }
+
+    if (schedules.length > 10) {
+      return errorResult('Maximum 10 schedules allowed per bulk operation');
+    }
+
+    const results: Array<{
+      success: boolean;
+      draftId: string;
+      error?: string;
+    }> = [];
+
+    for (const schedule of schedules) {
+      try {
+        const validated = createScheduledPostSchema.parse(schedule);
+
+        const [draft] = await db
+          .select()
+          .from(drafts)
+          .where(
+            and(eq(drafts.id, validated.draftId), eq(drafts.userId, session.id))
+          )
+          .limit(1);
+
+        if (!draft) {
+          results.push({
+            success: false,
+            draftId: validated.draftId,
+            error: 'Draft not found',
+          });
+          continue;
+        }
+
+        const [existing] = await db
+          .select()
+          .from(scheduledPosts)
+          .where(
+            and(
+              eq(scheduledPosts.draftId, validated.draftId),
+              eq(scheduledPosts.userId, session.id),
+              eq(scheduledPosts.status, 'pending')
+            )
+          )
+          .limit(1);
+
+        if (existing) {
+          results.push({
+            success: false,
+            draftId: validated.draftId,
+            error: 'Draft is already scheduled',
+          });
+          continue;
+        }
+
+        const scheduledAtUTC = toUTC(
+          new Date(validated.scheduledAt),
+          schedule.userTz
+        );
+
+        await db.insert(scheduledPosts).values({
+          draftId: validated.draftId,
+          platforms: validated.platforms,
+          userId: session.id,
+          scheduledAt: scheduledAtUTC,
+        });
+
+        results.push({
+          success: true,
+          draftId: validated.draftId,
+        });
+      } catch (error) {
+        results.push({
+          success: false,
+          draftId: schedule.draftId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+
+    const successCount = results.filter(r => r.success).length;
+    const failureCount = results.length - successCount;
+
+    revalidateDashboard();
+
+    return successResult({
+      results,
+      summary: {
+        total: results.length,
+        successful: successCount,
+        failed: failureCount,
+      },
+    });
+  } catch (error) {
+    return errorResult(await handleDatabaseError(error));
+  }
+}
+
+export async function processDueJobsAction() {
+  try {
+    const result = await processDueJobs();
+
+    return successResult(result);
   } catch (error) {
     return errorResult(await handleDatabaseError(error));
   }
