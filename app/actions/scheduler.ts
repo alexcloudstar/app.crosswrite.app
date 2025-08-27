@@ -86,7 +86,6 @@ export async function createScheduledPost(input: unknown) {
       return errorResult('Draft is already scheduled');
     }
 
-    // Convert to UTC for storage
     const scheduledAtUTC = toUTC(
       new Date(validated.scheduledAt),
       validated.userTz
@@ -145,7 +144,6 @@ export async function updateScheduledPost(input: unknown) {
       updateValues.platforms = updateData.platforms;
     }
     if (updateData.scheduledAt) {
-      // Convert to UTC for storage
       const scheduledAtUTC = toUTC(new Date(updateData.scheduledAt), userTz);
       updateValues.scheduledAt = scheduledAtUTC;
     }
@@ -225,10 +223,8 @@ export async function bulkSchedule(input: unknown) {
 
     for (const schedule of schedules) {
       try {
-        // Validate each schedule
         const validated = createScheduledPostSchema.parse(schedule);
 
-        // Check if draft exists and belongs to user
         const [draft] = await db
           .select()
           .from(drafts)
@@ -246,7 +242,6 @@ export async function bulkSchedule(input: unknown) {
           continue;
         }
 
-        // Check if already scheduled
         const [existing] = await db
           .select()
           .from(scheduledPosts)
@@ -268,13 +263,11 @@ export async function bulkSchedule(input: unknown) {
           continue;
         }
 
-        // Convert to UTC for storage
         const scheduledAtUTC = toUTC(
           new Date(validated.scheduledAt),
           schedule.userTz
         );
 
-        // Create scheduled post
         await db.insert(scheduledPosts).values({
           draftId: validated.draftId,
           platforms: validated.platforms,

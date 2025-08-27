@@ -1,8 +1,3 @@
-/**
- * Retry policy implementation for the scheduler
- * Handles retry logic with bounded backoff
- */
-
 import {
   SCHEDULER_CONFIG,
   isRetryableError,
@@ -16,15 +11,10 @@ export interface RetryResult {
   errorMessage: string;
 }
 
-/**
- * Determine if a failed job should be retried
- * Implements bounded retry policy with exponential backoff
- */
 export function shouldRetry(
   error: unknown,
   currentRetryCount: number
 ): RetryResult {
-  // Check if we've exceeded max retries
   if (currentRetryCount >= SCHEDULER_CONFIG.MAX_RETRIES) {
     return {
       shouldRetry: false,
@@ -32,7 +22,6 @@ export function shouldRetry(
     };
   }
 
-  // Check if the error is retryable
   if (!isRetryableError(error)) {
     return {
       shouldRetry: false,
@@ -40,7 +29,6 @@ export function shouldRetry(
     };
   }
 
-  // Calculate next retry time
   const nextAttemptAt = getNextRetryTime(currentRetryCount);
 
   return {
@@ -50,10 +38,6 @@ export function shouldRetry(
   };
 }
 
-/**
- * Update scheduled post with retry information
- * Sets retry count, next attempt time, and error message
- */
 export async function updateWithRetryInfo(
   scheduledPostId: string,
   retryCount: number,
@@ -78,7 +62,6 @@ export async function updateWithRetryInfo(
       updateData.errorMessage = errorMessage;
     }
 
-    // If we've exceeded max retries, mark as failed
     if (retryCount >= SCHEDULER_CONFIG.MAX_RETRIES) {
       updateData.status = 'failed';
     }
@@ -92,10 +75,6 @@ export async function updateWithRetryInfo(
   }
 }
 
-/**
- * Reset retry information when job succeeds
- * Clears retry count and error message
- */
 export async function resetRetryInfo(scheduledPostId: string): Promise<void> {
   try {
     const { scheduledPosts } = await import('@/db/schema');
@@ -115,28 +94,16 @@ export async function resetRetryInfo(scheduledPostId: string): Promise<void> {
   }
 }
 
-/**
- * Get retry delay in milliseconds for a given retry count
- * Uses exponential backoff with jitter
- */
 export function getRetryDelayMs(retryCount: number): number {
-  // Base delay: 30 seconds
   const baseDelay = 30000;
 
-  // Exponential backoff: 2^retryCount
   const exponentialDelay = baseDelay * Math.pow(2, retryCount);
 
-  // Add jitter (±10%) to prevent thundering herd
   const jitter = exponentialDelay * 0.1 * (Math.random() - 0.5);
 
-  // Cap at 2 minutes
   return Math.min(exponentialDelay + jitter, 120000);
 }
 
-/**
- * Check if a scheduled post is ready for retry
- * Compares current time with next attempt time
- */
 export function isReadyForRetry(nextAttemptAt: Date): boolean {
   return new Date() >= nextAttemptAt;
 }
