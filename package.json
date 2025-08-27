@@ -20,6 +20,7 @@
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
     "next-auth": "^5.0.0-beta.29",
+    "openai": "^5.16.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
