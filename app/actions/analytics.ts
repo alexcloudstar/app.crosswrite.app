@@ -49,7 +49,7 @@ export async function getOverview(input: unknown) {
       period: { startDate, endDate },
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -87,7 +87,7 @@ export async function getReadsOverTime(input: unknown) {
       period: { startDate, endDate },
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -133,7 +133,7 @@ export async function getPlatformBreakdown(input: unknown) {
       period: { startDate, endDate },
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -187,7 +187,7 @@ export async function getTopPosts(input: unknown) {
       period: { startDate, endDate },
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -201,6 +201,6 @@ export async function syncAnalytics() {
       timestamp: new Date(),
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }

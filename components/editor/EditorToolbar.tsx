@@ -16,9 +16,19 @@ import { useAppStore } from '@/lib/store';
 
 interface EditorToolbarProps {
   onGenerateThumbnail?: () => void;
+  onRewrite?: () => void;
+  onTone?: () => void;
+  onSummarize?: () => void;
+  isAiLoading?: boolean;
 }
 
-export function EditorToolbar({ onGenerateThumbnail }: EditorToolbarProps) {
+export function EditorToolbar({
+  onGenerateThumbnail,
+  onRewrite,
+  onTone,
+  onSummarize,
+  isAiLoading = false,
+}: EditorToolbarProps) {
   const { canGenerateThumbnail } = useAppStore();
 
   return (
@@ -52,17 +62,38 @@ export function EditorToolbar({ onGenerateThumbnail }: EditorToolbarProps) {
       <div className='divider divider-horizontal mx-2'></div>
 
       <div className='flex items-center space-x-1'>
-        <button className='btn btn-ghost btn-sm' title='AI Rewrite'>
+        <button
+          className='btn btn-ghost btn-sm'
+          title='AI Rewrite'
+          onClick={onRewrite}
+          disabled={isAiLoading}
+        >
           <Sparkles size={16} />
-          <span className='ml-1 text-xs'>Rewrite</span>
+          <span className='ml-1 text-xs'>
+            {isAiLoading ? 'Processing...' : 'Rewrite'}
+          </span>
         </button>
-        <button className='btn btn-ghost btn-sm' title='Fix Tone'>
+        <button
+          className='btn btn-ghost btn-sm'
+          title='Fix Tone'
+          onClick={onTone}
+          disabled={isAiLoading}
+        >
           <MessageSquare size={16} />
-          <span className='ml-1 text-xs'>Tone</span>
+          <span className='ml-1 text-xs'>
+            {isAiLoading ? 'Processing...' : 'Tone'}
+          </span>
         </button>
-        <button className='btn btn-ghost btn-sm' title='Summarize'>
+        <button
+          className='btn btn-ghost btn-sm'
+          title='Summarize'
+          onClick={onSummarize}
+          disabled={isAiLoading}
+        >
           <FileText size={16} />
-          <span className='ml-1 text-xs'>Summarize</span>
+          <span className='ml-1 text-xs'>
+            {isAiLoading ? 'Processing...' : 'Summarize'}
+          </span>
         </button>
       </div>
 

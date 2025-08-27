@@ -6,12 +6,14 @@ interface MarkdownEditorProps {
   value: string;
   onChangeContent: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function MarkdownEditor({
   value,
   onChangeContent,
   placeholder,
+  disabled = false,
 }: MarkdownEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -23,13 +25,16 @@ export function MarkdownEditor({
   }, [value]);
 
   return (
-    <div className='flex-1 p-6'>
+    <div className='p-6'>
       <textarea
         ref={textareaRef}
         value={value}
         onChange={onChangeContent}
         placeholder={placeholder}
-        className='w-full h-full bg-transparent border-none outline-none resize-none text-base leading-relaxed font-mono'
+        disabled={disabled}
+        className={`w-full bg-transparent border-none outline-none resize-none text-base leading-relaxed font-mono ${
+          disabled ? 'cursor-not-allowed opacity-50' : ''
+        }`}
         style={{ minHeight: '400px' }}
       />
     </div>

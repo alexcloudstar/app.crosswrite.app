@@ -40,7 +40,7 @@ export async function listScheduledPosts() {
 
     return successResult(results);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -89,7 +89,7 @@ export async function createScheduledPost(input: unknown) {
     revalidateDashboard();
     return successResult(scheduledPost);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -135,7 +135,7 @@ export async function updateScheduledPost(input: unknown) {
     revalidateDashboard();
     return successResult(scheduledPost);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -165,6 +165,6 @@ export async function cancelScheduledPost(input: unknown) {
     revalidateDashboard();
     return successResult({ cancelled: true });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }

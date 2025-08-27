@@ -1,17 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Sparkles,
-  Check,
-  Copy,
-  MessageSquare,
-  FileText,
-  Zap,
-} from 'lucide-react';
+import { Sparkles, Check, MessageSquare, FileText, Zap } from 'lucide-react';
 
 interface AiSuggestionsPanelProps {
   content: string;
+  onGenerateSuggestions?: () => void;
+  isGenerating?: boolean;
+  onApplySuggestion?: (suggestion: string) => void;
 }
 
 interface Suggestion {
@@ -23,7 +19,11 @@ interface Suggestion {
   applied: boolean;
 }
 
-export function AiSuggestionsPanel({}: AiSuggestionsPanelProps) {
+export function AiSuggestionsPanel({
+  onGenerateSuggestions,
+  isGenerating = false,
+  onApplySuggestion,
+}: AiSuggestionsPanelProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([
     {
       id: '1',
@@ -63,13 +63,14 @@ export function AiSuggestionsPanel({}: AiSuggestionsPanelProps) {
     },
   ]);
 
-  const handleApply = (id: string) =>
-    setSuggestions(prev =>
-      prev.map(s => (s.id === id ? { ...s, applied: true } : s))
-    );
-
-  const handleInsert = (id: string) => {
-    console.log('Inserting suggestion:', id);
+  const handleApply = (id: string) => {
+    const suggestion = suggestions.find(s => s.id === id);
+    if (suggestion && onApplySuggestion) {
+      onApplySuggestion(suggestion.suggestion);
+      setSuggestions(prev =>
+        prev.map(s => (s.id === id ? { ...s, applied: true } : s))
+      );
+    }
   };
 
   const getIcon = (type: string) => {
@@ -140,13 +141,6 @@ export function AiSuggestionsPanel({}: AiSuggestionsPanelProps) {
                 >
                   {suggestion.applied ? 'Applied' : 'Apply'}
                 </button>
-                <button
-                  onClick={handleInsert.bind(null, suggestion.id)}
-                  className='btn btn-ghost btn-xs'
-                >
-                  <Copy size={12} className='mr-1' />
-                  Insert
-                </button>
               </div>
             </div>
           </div>
@@ -154,9 +148,13 @@ export function AiSuggestionsPanel({}: AiSuggestionsPanelProps) {
       </div>
 
       <div className='p-4 border-t border-base-300'>
-        <button className='btn btn-outline btn-sm w-full'>
+        <button
+          className='btn btn-outline btn-sm w-full'
+          onClick={onGenerateSuggestions}
+          disabled={isGenerating}
+        >
           <Sparkles size={16} className='mr-2' />
-          Generate More Suggestions
+          {isGenerating ? 'Generating...' : 'Generate More Suggestions'}
         </button>
       </div>
     </div>

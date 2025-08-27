@@ -10,11 +10,13 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAppStore } from '@/lib/store';
+import { generateThumbnail } from '@/app/actions/ai';
 
 interface ThumbnailGeneratorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (imageUrl: string) => void;
+  onGeneratingChange?: (isGenerating: boolean) => void;
 }
 
 const THUMBNAIL_PRESETS = [
@@ -61,9 +63,9 @@ export function ThumbnailGeneratorModal({
   isOpen,
   onClose,
   onSelect,
+  onGeneratingChange,
 }: ThumbnailGeneratorModalProps) {
-  const { canGenerateThumbnail, incrementThumbnailUsage, userPlan } =
-    useAppStore();
+  const { canGenerateThumbnail, incrementThumbnailUsage } = useAppStore();
   const [selectedPreset, setSelectedPreset] = useState(0);
   const [customPrompt, setCustomPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('16:9');
@@ -79,35 +81,27 @@ export function ThumbnailGeneratorModal({
     if (!canGenerateThumbnail()) return;
 
     setIsGenerating(true);
+    onGeneratingChange?.(true);
 
     try {
-      const response = await fetch('/api/ai/thumbnail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: currentPrompt,
-          aspectRatio,
-          size,
-          planId: userPlan.planId,
-          usage: userPlan.usage,
-        }),
+      const result = await generateThumbnail({
+        prompt: currentPrompt,
+        aspectRatio: aspectRatio as '16:9' | '1:1' | '4:5' | '2:1',
+        size: size as 'small' | 'medium' | 'large',
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate thumbnails');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate thumbnails');
       }
 
-      setGeneratedImages(data.images);
+      setGeneratedImages((result.data as { images: string[] }).images);
       incrementThumbnailUsage();
     } catch (error) {
       console.error('Failed to generate thumbnails:', error);
       // You could add a toast notification here
     } finally {
       setIsGenerating(false);
+      onGeneratingChange?.(false);
     }
   };
 
@@ -133,13 +127,25 @@ export function ThumbnailGeneratorModal({
 
   return (
     <div className='modal modal-open'>
-      <div className='modal-box max-w-4xl'>
+      <div className={`modal-box max-w-4xl ${isGenerating ? 'relative' : ''}`}>
+        {isGenerating && (
+          <div className='absolute inset-0 bg-base-300/20 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center'>
+            <div className='flex flex-col items-center space-y-2'>
+              <div className='loading loading-spinner loading-md text-primary'></div>
+              <p className='text-sm font-medium'>Generating thumbnails...</p>
+            </div>
+          </div>
+        )}
         <div className='flex items-center justify-between mb-6'>
           <h3 className='font-bold text-lg flex items-center'>
             <ImageIcon size={20} className='mr-2' />
             Generate AI Thumbnail
           </h3>
-          <button onClick={onClose} className='btn btn-ghost btn-sm'>
+          <button
+            onClick={onClose}
+            className='btn btn-ghost btn-sm'
+            disabled={isGenerating}
+          >
             <X size={16} />
           </button>
         </div>
@@ -158,6 +164,7 @@ export function ThumbnailGeneratorModal({
                     className={`btn btn-outline btn-sm ${
                       selectedPreset === index ? 'btn-primary' : ''
                     }`}
+                    disabled={isGenerating}
                   >
                     {preset.name}
                   </button>
@@ -175,6 +182,7 @@ export function ThumbnailGeneratorModal({
                 placeholder='Describe the thumbnail you want to generate...'
                 className='textarea textarea-bordered w-full'
                 rows={3}
+                disabled={isGenerating}
               />
             </div>
 
@@ -186,6 +194,7 @@ export function ThumbnailGeneratorModal({
                 value={aspectRatio}
                 onChange={onChangeAspectRatio}
                 className='select select-bordered w-full'
+                disabled={isGenerating}
               >
                 {ASPECT_RATIOS.map(ratio => (
                   <option key={ratio.value} value={ratio.value}>
@@ -203,6 +212,7 @@ export function ThumbnailGeneratorModal({
                 value={size}
                 onChange={onSetSize}
                 className='select select-bordered w-full'
+                disabled={isGenerating}
               >
                 {SIZES.map(sizeOption => (
                   <option key={sizeOption.value} value={sizeOption.value}>
@@ -215,9 +225,7 @@ export function ThumbnailGeneratorModal({
             <button
               onClick={handleGenerate}
               disabled={!canGenerateThumbnail() || isGenerating}
-              className={`btn btn-primary w-full ${
-                isGenerating ? 'loading' : ''
-              }`}
+              className='btn btn-primary w-full'
             >
               {isGenerating ? (
                 <>
@@ -262,12 +270,20 @@ export function ThumbnailGeneratorModal({
                 {generatedImages.map((imageUrl, index) => (
                   <div
                     key={index}
-                    className={`relative cursor-pointer border-2 rounded-lg overflow-hidden ${
+                    className={`relative border-2 rounded-lg overflow-hidden ${
                       selectedImage === imageUrl
                         ? 'border-primary'
                         : 'border-base-300'
+                    } ${
+                      isGenerating
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'cursor-pointer'
                     }`}
-                    onClick={handleSelectImage.bind(null, imageUrl)}
+                    onClick={
+                      isGenerating
+                        ? undefined
+                        : handleSelectImage.bind(null, imageUrl)
+                    }
                   >
                     <Image
                       src={imageUrl}
@@ -300,6 +316,7 @@ export function ThumbnailGeneratorModal({
                 <button
                   onClick={handleUseImage}
                   className='btn btn-success w-full'
+                  disabled={isGenerating}
                 >
                   <Download size={16} className='mr-2' />
                   Use as Cover

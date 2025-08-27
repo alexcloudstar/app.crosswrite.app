@@ -67,7 +67,7 @@ export async function listDrafts(input: unknown) {
       },
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -87,7 +87,7 @@ export async function createDraft(input: unknown) {
     revalidateDashboard();
     return successResult(draft);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -108,7 +108,7 @@ export async function getDraft(input: unknown) {
 
     return successResult(draft);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -134,7 +134,7 @@ export async function updateDraft(input: unknown) {
     revalidateDashboard();
     return successResult(draft);
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -155,7 +155,7 @@ export async function deleteDraft(input: unknown) {
     revalidateDashboard();
     return successResult({ deleted: true });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -199,7 +199,7 @@ export async function publishDraft(input: unknown) {
       message: 'Draft published successfully (stub - no actual publishing)',
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
 
@@ -234,6 +234,6 @@ export async function scheduleDraft(input: unknown) {
       message: 'Draft scheduled successfully (stub - no actual scheduling)',
     });
   } catch (error) {
-    return errorResult(handleDatabaseError(error));
+    return errorResult(await handleDatabaseError(error));
   }
 }
