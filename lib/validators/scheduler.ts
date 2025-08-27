@@ -8,6 +8,7 @@ export const createScheduledPostSchema = z
       .array(z.enum(supportedPlatforms))
       .min(1, 'At least one platform required'),
     scheduledAt: z.string().datetime('Invalid scheduled date'),
+    userTz: z.string().optional(),
   })
   .refine(data => new Date(data.scheduledAt) > new Date(), {
     message: 'Scheduled date must be in the future',
@@ -20,6 +21,7 @@ export const updateScheduledPostSchema = z
     platforms: z.array(z.enum(supportedPlatforms)).optional(),
     scheduledAt: z.string().datetime('Invalid scheduled date').optional(),
     status: z.enum(['pending', 'published', 'cancelled', 'failed']).optional(),
+    userTz: z.string().optional(),
   })
   .refine(
     data => {
@@ -36,4 +38,16 @@ export const updateScheduledPostSchema = z
 
 export const scheduledPostIdSchema = z.object({
   id: z.string().uuid('Invalid scheduled post ID'),
+});
+
+export const bulkScheduleSchema = z.object({
+  schedules: z
+    .array(createScheduledPostSchema)
+    .min(1, 'At least one schedule required')
+    .max(10, 'Maximum 10 schedules allowed per bulk operation'),
+});
+
+export const processDueJobsSchema = z.object({
+  maxJobs: z.number().min(1).max(50).optional(),
+  force: z.boolean().optional(),
 });

@@ -43,6 +43,13 @@
       "when": 1756297221284,
       "tag": "0005_cuddly_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1756312649915,
+      "tag": "0006_massive_christian_walker",
+      "breakpoints": true
     }
   ]
 }

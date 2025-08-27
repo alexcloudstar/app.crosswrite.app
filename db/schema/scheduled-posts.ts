@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, index } from 'drizzle-orm/pg-core';
 import { users } from './auth';
 import { drafts } from './drafts';
 
@@ -17,7 +17,9 @@ export const scheduledPosts = pgTable(
     status: text('status').notNull().default('pending'),
     publishedAt: timestamp('published_at'),
     errorMessage: text('error_message'),
+    retryCount: integer('retry_count').default(0),
     createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   table => [
     index('scheduled_posts_draft_id_idx').on(table.draftId),
