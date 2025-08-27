@@ -42,7 +42,7 @@ export const publishToPlatformsSchema = z.object({
 
 export const syncPlatformSchema = z.object({
   platform: z.enum(supportedPlatforms).optional(),
-  since: z.string().datetime().optional(),
+  since: z.iso.datetime().optional(),
   limit: z.number().min(1).max(100).optional(),
 });
 
@@ -55,8 +55,6 @@ export const hashnodePublishOptionsSchema = z.object({
   publicationId: z.string().min(1, 'Publication ID is required for Hashnode'),
   publishAsDraft: z.boolean().optional(),
 });
-
-
 
 export const devtoPublishOptionsSchema = z.object({
   publishAsDraft: z.boolean().optional(),

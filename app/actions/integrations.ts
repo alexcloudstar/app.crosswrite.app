@@ -52,7 +52,6 @@ export async function connectIntegration(input: unknown) {
     let integration;
 
     if (existing) {
-      // If integration exists but is disconnected, update it
       if (existing.status === 'disconnected') {
         [integration] = await db
           .update(integrations)
@@ -68,7 +67,6 @@ export async function connectIntegration(input: unknown) {
         return errorResult('Integration already exists for this platform');
       }
     } else {
-      // Create new integration
       [integration] = await db
         .insert(integrations)
         .values({
@@ -187,7 +185,6 @@ export async function testIntegration(input: unknown) {
       return errorResult('Integration not found');
     }
 
-    // Test the actual platform connection
     let testResult: { success: boolean; error?: string };
 
     try {
@@ -217,7 +214,6 @@ export async function testIntegration(input: unknown) {
       }
 
       if (testResult.success) {
-        // Update last sync timestamp on successful test
         await db
           .update(integrations)
           .set({
@@ -264,12 +260,10 @@ export async function syncIntegration(input: unknown) {
       return errorResult('Integration not found');
     }
 
-    // Use the new sync actions
     const { syncPlatformStatus, syncPlatformAnalytics } = await import(
       './integrations/sync'
     );
 
-    // Sync both status and analytics
     const statusResult = await syncPlatformStatus({
       platform: integration.platform,
     });
@@ -300,7 +294,7 @@ export async function getPlatformPublications(input: unknown) {
     const { platform, integrationId } = z
       .object({
         platform: z.enum(['hashnode']),
-        integrationId: z.string().uuid(),
+        integrationId: z.uuid(),
       })
       .parse(input);
 
@@ -343,8 +337,6 @@ export async function getPlatformPublications(input: unknown) {
         }
         break;
 
-
-
       default:
         return errorResult(
           `Publications not supported for platform: ${platform}`
@@ -363,7 +355,7 @@ export async function syncPlatformAnalytics(input: unknown) {
     const { platform, integrationId } = z
       .object({
         platform: z.enum(['devto', 'hashnode']),
-        integrationId: z.string().uuid(),
+        integrationId: z.uuid(),
       })
       .parse(input);
 
@@ -386,8 +378,6 @@ export async function syncPlatformAnalytics(input: unknown) {
       return errorResult('Integration is not connected');
     }
 
-    // For now, we'll implement basic analytics sync
-    // In a full implementation, this would fetch analytics from each platform
     let analyticsData: {
       message: string;
       lastSync: Date;
@@ -398,7 +388,6 @@ export async function syncPlatformAnalytics(input: unknown) {
 
     switch (platform) {
       case 'devto':
-        // Dev.to analytics are limited
         analyticsData = {
           message: 'Dev.to analytics are limited and require manual tracking',
           lastSync: new Date(),
@@ -406,17 +395,13 @@ export async function syncPlatformAnalytics(input: unknown) {
         break;
 
       case 'hashnode':
-        // Hashnode analytics are limited
         analyticsData = {
           message: 'Hashnode analytics are limited and require manual tracking',
           lastSync: new Date(),
         };
         break;
-
-
     }
 
-    // Update the integration's last sync timestamp
     await db
       .update(integrations)
       .set({

@@ -25,7 +25,6 @@ export async function publishToPlatforms(input: unknown) {
     const validated = publishToPlatformsSchema.parse(input);
     const { draftId, platforms, options = {} } = validated;
 
-    // Get the draft and verify ownership
     const [draft] = await db
       .select()
       .from(drafts)
@@ -36,7 +35,6 @@ export async function publishToPlatforms(input: unknown) {
       return errorResult('Draft not found');
     }
 
-    // Get all integrations for the user
     const userIntegrations = await db
       .select()
       .from(integrations)
@@ -51,7 +49,6 @@ export async function publishToPlatforms(input: unknown) {
       userIntegrations.map(integration => [integration.platform, integration])
     );
 
-    // Validate that all requested platforms are connected
     const missingPlatforms = platforms.filter(
       platform => !integrationMap.has(platform)
     );
@@ -64,7 +61,6 @@ export async function publishToPlatforms(input: unknown) {
       );
     }
 
-    // Check rate limits for all platforms
     for (const platform of platforms) {
       if (!checkPlatformRateLimit(platform, session.id)) {
         return errorResult(
@@ -81,10 +77,8 @@ export async function publishToPlatforms(input: unknown) {
       error?: string;
     }> = [];
 
-    // Publish to each platform
     for (const platform of platforms) {
       try {
-        // Validate title length for this platform
         const titleValidation = validateTitle(draft.title, platform);
         if (!titleValidation.valid) {
           results.push({
@@ -123,7 +117,6 @@ export async function publishToPlatforms(input: unknown) {
       }
     }
 
-    // Update platform_posts table with results
     const platformPostValues = results.map(result => ({
       draftId,
       platform: result.platform,
@@ -136,7 +129,6 @@ export async function publishToPlatforms(input: unknown) {
 
     await db.insert(platformPosts).values(platformPostValues);
 
-    // Update draft status if any platform succeeded
     const hasSuccess = results.some(r => r.success);
     const successCount = results.filter(r => r.success).length;
     const failureCount = results.filter(r => !r.success).length;

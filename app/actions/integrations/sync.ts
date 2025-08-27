@@ -19,7 +19,6 @@ export async function syncPlatformStatus(input: unknown) {
     const validated = syncPlatformSchema.parse(input);
     const { platform } = validated;
 
-    // Get integrations to sync
     const whereConditions = [
       eq(integrations.userId, session.id),
       eq(integrations.status, 'connected'),
@@ -38,7 +37,6 @@ export async function syncPlatformStatus(input: unknown) {
       return errorResult('No connected integrations found');
     }
 
-    // Check rate limits
     for (const integration of userIntegrations) {
       if (!checkPlatformRateLimit(integration.platform, session.id)) {
         return errorResult(
@@ -54,7 +52,6 @@ export async function syncPlatformStatus(input: unknown) {
       error?: string;
     }> = [];
 
-    // Sync each platform
     for (const integration of userIntegrations) {
       try {
         // TODO: Implement actual status sync for each platform
@@ -109,7 +106,6 @@ export async function syncPlatformAnalytics(input: unknown) {
     const validated = syncPlatformSchema.parse(input);
     const { platform } = validated;
 
-    // Get integrations to sync
     const whereConditions = [
       eq(integrations.userId, session.id),
       eq(integrations.status, 'connected'),
@@ -128,7 +124,6 @@ export async function syncPlatformAnalytics(input: unknown) {
       return errorResult('No connected integrations found');
     }
 
-    // Check rate limits
     for (const integration of userIntegrations) {
       if (!checkPlatformRateLimit(integration.platform, session.id)) {
         return errorResult(
@@ -144,7 +139,6 @@ export async function syncPlatformAnalytics(input: unknown) {
       error?: string;
     }> = [];
 
-    // Sync analytics for each platform
     for (const integration of userIntegrations) {
       try {
         // TODO: Implement actual analytics sync for each platform
@@ -197,7 +191,6 @@ export async function syncAllPlatforms() {
   try {
     const session = await requireAuth();
 
-    // Get all connected integrations
     const userIntegrations = await db
       .select()
       .from(integrations)
@@ -212,7 +205,6 @@ export async function syncAllPlatforms() {
       return errorResult('No connected integrations found');
     }
 
-    // Check rate limits for all platforms
     for (const integration of userIntegrations) {
       if (!checkPlatformRateLimit(integration.platform, session.id)) {
         return errorResult(
@@ -228,7 +220,6 @@ export async function syncAllPlatforms() {
       error?: string;
     }> = [];
 
-    // Sync both status and analytics for each platform
     for (const integration of userIntegrations) {
       try {
         // TODO: Implement actual sync for each platform

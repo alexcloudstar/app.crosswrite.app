@@ -220,7 +220,6 @@ Happy writing! 🚀`);
   };
 
   const handleApplySuggestion = (suggestion: string) => {
-    // Add the suggestion as a note at the end of the content
     const timestamp = new Date().toLocaleTimeString();
     const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
     setContent(prev => prev + suggestionNote);
@@ -229,7 +228,7 @@ Happy writing! 🚀`);
   const handleSaveDraft = async () => {
     if (!title.trim() || !content.trim() || isLoading) return;
 
-    setLoadingType('ai'); // Reuse loading state for save
+    setLoadingType('ai');
     try {
       const result = await createDraft({
         title: title.trim(),
@@ -242,7 +241,7 @@ Happy writing! 🚀`);
 
       if (result.success) {
         alert('Draft saved successfully!');
-        // Optionally redirect to drafts page or stay in editor
+
         window.location.href = '/drafts';
       } else {
         alert(`Failed to save draft: ${result.error}`);
@@ -256,7 +255,6 @@ Happy writing! 🚀`);
   };
 
   const handlePublish = () => {
-    // Check if user has any platforms selected
     if (selectedPlatforms.length === 0) {
       alert('Please select at least one platform to publish to.');
       return;
@@ -269,7 +267,6 @@ Happy writing! 🚀`);
 
     setPublishing(true);
     try {
-      // First save the draft
       const draftResult = await createDraft({
         title: title.trim(),
         content: content.trim(),
@@ -287,7 +284,6 @@ Happy writing! 🚀`);
 
       const draftId = (draftResult.data as Draft).id;
 
-      // Then publish to platforms
       const result = await publishToPlatforms({
         draftId,
         platforms: selectedPlatforms,
@@ -299,13 +295,13 @@ Happy writing! 🚀`);
       if (result.success) {
         console.log('Published successfully:', result.data);
         setShowPublishModal(false);
-        // Show success message
+
         alert(
           `Successfully published to ${
             (result.data as PublishResult).summary.successful
           } platforms! Redirecting to drafts...`
         );
-        // window.location.href = '/drafts';
+        window.location.href = '/drafts';
       } else {
         console.error('Publish failed:', result.error);
         alert(`Publish failed: ${result.error}`);
@@ -325,26 +321,26 @@ Happy writing! 🚀`);
     );
   };
 
-  // Load connected integrations when publish modal opens
   useEffect(() => {
-    if (showPublishModal) {
-      async function loadIntegrations() {
-        try {
-          const result = await listIntegrations();
-          if (result.success && result.data) {
-            const connected = (result.data as Integration[])
-              .filter(
-                (integration: Integration) => integration.status === 'connected'
-              )
-              .map((integration: Integration) => integration.platform);
-            setConnectedPlatforms(connected);
-          }
-        } catch (error) {
-          console.error('Failed to load integrations:', error);
+    if (!showPublishModal) return;
+
+    async function loadIntegrations() {
+      try {
+        const result = await listIntegrations();
+        if (result.success && result.data) {
+          const connected = (result.data as Integration[])
+            .filter(
+              (integration: Integration) => integration.status === 'connected'
+            )
+            .map((integration: Integration) => integration.platform);
+          setConnectedPlatforms(connected);
         }
+      } catch (error) {
+        console.error('Failed to load integrations:', error);
       }
-      loadIntegrations();
     }
+
+    loadIntegrations();
   }, [showPublishModal]);
 
   const getLoadingMessage = () => {
@@ -571,7 +567,7 @@ Happy writing! 🚀`);
                 Publish to Platforms
               </h3>
               <button
-                onClick={() => setShowPublishModal(false)}
+                onClick={setShowPublishModal.bind(null, false)}
                 className='btn btn-ghost btn-sm btn-circle'
               >
                 <X size={16} />
@@ -633,7 +629,7 @@ Happy writing! 🚀`);
 
             <div className='modal-action'>
               <button
-                onClick={() => setShowPublishModal(false)}
+                onClick={setShowPublishModal.bind(null, false)}
                 className='btn btn-ghost'
                 disabled={publishing}
               >
