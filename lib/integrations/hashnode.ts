@@ -20,7 +20,7 @@ export interface HashnodePublication {
 
 export class HashnodeClient implements IntegrationClient {
   private integration: HashnodeIntegration;
-  private baseUrl = 'https://api.hashnode.com';
+  private baseUrl = 'https://gql.hashnode.com';
 
   constructor(integration: HashnodeIntegration) {
     this.integration = integration;
@@ -31,7 +31,7 @@ export class HashnodeClient implements IntegrationClient {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
-          Authorization: this.integration.apiKey,
+          Authorization: `Bearer ${this.integration.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -40,13 +40,17 @@ export class HashnodeClient implements IntegrationClient {
               me {
                 id
                 username
-                publicationDomain
-                publications {
-                  _id
-                  title
-                  domain
-                  description
-                  isTeam
+                publications(first: 10) {
+                  edges {
+                    node {
+                      id
+                      title
+                      about {
+                        text
+                      }
+                      isTeam
+                    }
+                  }
                 }
               }
             }
@@ -55,7 +59,8 @@ export class HashnodeClient implements IntegrationClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
@@ -82,19 +87,24 @@ export class HashnodeClient implements IntegrationClient {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
-          Authorization: this.integration.apiKey,
+          Authorization: `Bearer ${this.integration.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           query: `
             query {
               me {
-                publications {
-                  _id
-                  title
-                  domain
-                  description
-                  isTeam
+                publications(first: 10) {
+                  edges {
+                    node {
+                      id
+                      title
+                      about {
+                        text
+                      }
+                      isTeam
+                    }
+                  }
                 }
               }
             }
@@ -103,7 +113,8 @@ export class HashnodeClient implements IntegrationClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
@@ -112,7 +123,23 @@ export class HashnodeClient implements IntegrationClient {
         throw new Error(data.errors[0].message);
       }
 
-      const publications: HashnodePublication[] = data.data.me.publications;
+      const publications: HashnodePublication[] =
+        data.data.me.publications.edges.map(
+          (edge: {
+            node: {
+              id: string;
+              title: string;
+              about?: { text: string };
+              isTeam: boolean;
+            };
+          }) => ({
+            _id: edge.node.id,
+            title: edge.node.title,
+            domain: `${edge.node.id}.hashnode.dev`,
+            description: edge.node.about?.text || '',
+            isTeam: edge.node.isTeam,
+          })
+        );
 
       return { success: true, publications };
     } catch (error) {
@@ -137,27 +164,20 @@ export class HashnodeClient implements IntegrationClient {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
-          Authorization: this.integration.apiKey,
+          Authorization: `Bearer ${this.integration.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           query: `
-            mutation CreateStory($input: CreateStoryInput!) {
-              createStory(input: $input) {
-                code
-                success
-                message
-                story {
-                  _id
-                  slug
+            mutation PublishPost($input: PublishPostInput!) {
+              publishPost(input: $input) {
+                post {
+                  id
                   title
-                  brief
-                  dateAdded
-                  isActive
-                  isDelisted
-                  isRepublished
+                  url
+                  slug
                   publication {
-                    domain
+                    id
                   }
                 }
               }
@@ -167,15 +187,10 @@ export class HashnodeClient implements IntegrationClient {
             input: {
               title: content.title,
               contentMarkdown: content.body,
-              tags:
-                content.tags?.map(tag => ({
-                  _id: tag,
-                  slug: tag,
-                  name: tag,
-                })) || [],
-              coverImageURL: content.coverUrl,
-              isRepublished: false,
-              isActive: !content.publishAsDraft,
+              tags: content.tags || [],
+              ...(content.coverUrl && {
+                coverImageOptions: { coverImageURL: content.coverUrl },
+              }),
               publicationId: publicationId,
             },
           },
@@ -195,16 +210,17 @@ export class HashnodeClient implements IntegrationClient {
         throw new Error(data.errors[0].message);
       }
 
-      if (!data.data.createStory.success) {
-        throw new Error(data.data.createStory.message);
+      if (!data.data.publishPost.post) {
+        throw new Error('Failed to publish post to Hashnode');
       }
 
-      const story = data.data.createStory.story;
-      const domain = story.publication.domain;
+      const post = data.data.publishPost.post;
 
       return {
-        platformPostId: story._id,
-        platformUrl: `https://${domain}/${story.slug}`,
+        platformPostId: post.id,
+        platformUrl:
+          post.url ||
+          `https://${post.publication.id}.hashnode.dev/${post.slug}`,
       };
     });
   }
