@@ -327,8 +327,6 @@ export async function exportAnalytics(input: unknown) {
  */
 export async function syncAnalytics() {
   try {
-    const session = await requireAuth();
-
     // TODO: Implement actual platform sync
     // This would iterate through user's connected integrations
     // and fetch analytics data from platform APIs

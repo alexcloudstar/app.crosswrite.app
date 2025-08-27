@@ -10,7 +10,7 @@ interface CacheEntry<T> {
   ttl: number;
 }
 
-const analyticsCache = new Map<string, CacheEntry<any>>();
+const analyticsCache = new Map<string, CacheEntry<unknown>>();
 
 /**
  * Generate cache key for analytics queries
@@ -45,7 +45,7 @@ export function getCachedData<T>(key: string): T | null {
     return null;
   }
 
-  return entry.data;
+  return entry.data as T;
 }
 
 /**
