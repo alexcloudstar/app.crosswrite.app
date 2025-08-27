@@ -1,13 +1,14 @@
 import { create } from 'zustand';
-import { PlanId, PLAN_LIMITS } from './plans';
-
-interface UserPlan {
-  planId: PlanId;
-  usage: {
-    articlesThisMonth: number;
-    thumbnailsThisMonth: number;
-  };
-}
+import {
+  type PlanId,
+  type UserPlan,
+  type UserUsage,
+  PlanId as PlanIdEnum,
+  canUseAI,
+  canGenerateThumbnail,
+  canPublishArticle,
+  getUsageStatus,
+} from './plans';
 
 interface AppState {
   sidebarOpen: boolean;
@@ -46,7 +47,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   closeCommandPalette: () => set({ commandPaletteOpen: false }),
 
   userPlan: {
-    planId: 'FREE',
+    planId: PlanIdEnum.FREE,
     usage: {
       articlesThisMonth: 2,
       thumbnailsThisMonth: 1,
@@ -57,8 +58,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     set(state => ({
       userPlan: { ...state.userPlan, ...plan },
     })),
-
-
 
   incrementArticleUsage: () =>
     set(state => ({
@@ -84,57 +83,21 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   canUseAI: () => {
     const { userPlan } = get();
-    const limits = PLAN_LIMITS[userPlan.planId];
-
-    if (!limits.aiEnabled) return false;
-
-    return true;
+    return canUseAI(userPlan.planId);
   },
 
   canGenerateThumbnail: () => {
     const { userPlan } = get();
-    const limits = PLAN_LIMITS[userPlan.planId];
-
-    if (!limits.aiEnabled) return false;
-
-    if (limits.monthlyThumbGen === 0) return false;
-
-    if (
-      typeof limits.monthlyThumbGen === 'number' &&
-      userPlan.usage.thumbnailsThisMonth >= limits.monthlyThumbGen
-    ) {
-      return false;
-    }
-
-    return true;
+    return canGenerateThumbnail(userPlan.planId, userPlan.usage);
   },
 
   canPublishArticle: () => {
     const { userPlan } = get();
-    const limits = PLAN_LIMITS[userPlan.planId];
-
-    if (limits.monthlyArticles === 'UNLIMITED') return true;
-
-    if (typeof limits.monthlyArticles === 'number') {
-      return userPlan.usage.articlesThisMonth < limits.monthlyArticles;
-    }
-
-    return true;
+    return canPublishArticle(userPlan.planId, userPlan.usage);
   },
 
   getUsageStatus: () => {
     const { userPlan } = get();
-    const limits = PLAN_LIMITS[userPlan.planId];
-
-    return {
-      articles: {
-        used: userPlan.usage.articlesThisMonth,
-        limit: limits.monthlyArticles,
-      },
-      thumbnails: {
-        used: userPlan.usage.thumbnailsThisMonth,
-        limit: limits.monthlyThumbGen,
-      },
-    };
+    return getUsageStatus(userPlan.planId, userPlan.usage);
   },
 }));

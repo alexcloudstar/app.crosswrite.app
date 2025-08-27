@@ -14,6 +14,7 @@ import {
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { useAppStore } from '@/lib/store';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
+import { PlanId } from '@/lib/plans';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -336,7 +337,7 @@ function BillingSettings() {
             <div className='flex items-center space-x-2'>
               <PlanBadge planId={userPlan.planId} />
               <span className='text-sm text-base-content/50'>
-                {userPlan.planId === 'FREE' ? 'Free Plan' : 'Pro Plan'}
+                {userPlan.planId === PlanId.FREE ? 'Free Plan' : 'Pro Plan'}
               </span>
             </div>
           </div>

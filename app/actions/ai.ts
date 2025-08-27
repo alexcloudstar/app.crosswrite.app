@@ -1,10 +1,6 @@
 'use server';
 
-// AI Server Actions for Cross Write
-// Implements: improveText, adjustTone, summarizeText, generateSuggestions, generateThumbnail
-// These actions are required by the UI components in EditorToolbar, AiSuggestionsPanel, and ThumbnailGeneratorModal
-
-import { eq, and, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { requireAuth, successResult, errorResult } from './_utils';
 import { aiProvider } from '@/lib/ai/provider';
 import { PROMPT_TEMPLATES } from '@/lib/ai/prompt-templates';
@@ -23,9 +19,8 @@ import {
 import { db } from '@/db/client';
 import { userUsage } from '@/db/schema/user-usage';
 import { users } from '@/db/schema/auth';
-import { PLAN_LIMITS } from '@/lib/plans';
+import { planService } from '@/lib/plan-service';
 
-// Helper function to track AI usage
 async function trackAIUsage(
   userId: string,
   action: 'aiSuggestionsUsed' | 'thumbnailsGenerated'
@@ -37,7 +32,6 @@ async function trackAIUsage(
   )}`;
 
   try {
-    // Try to update existing record
     const result = await db
       .update(userUsage)
       .set({
@@ -49,8 +43,7 @@ async function trackAIUsage(
       )
       .returning();
 
-    // If no record was updated, create a new one
-    if (result.length === 0) {
+    if (!result.length) {
       await db.insert(userUsage).values({
         userId,
         monthYear,
@@ -59,70 +52,31 @@ async function trackAIUsage(
     }
   } catch (error) {
     console.error('Failed to track AI usage:', error);
-    // Don't fail the main action if usage tracking fails
   }
-}
-
-// Helper function to get user plan tier
-async function getUserPlanTier(userId: string): Promise<string> {
-  const userRecord = await db
-    .select({ planTier: users.planTier })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-  return userRecord[0]?.planTier || 'free';
-}
-
-// Helper function to check plan limits
-function checkPlanLimits(
-  userPlan: string,
-  action: 'aiSuggestionsUsed' | 'thumbnailsGenerated'
-): boolean {
-  // Map planTier to planId
-  const planMap: Record<string, string> = {
-    free: 'FREE',
-    pro: 'PRO',
-  };
-  const planId = planMap[userPlan] || 'FREE';
-
-  const limits = PLAN_LIMITS[planId as keyof typeof PLAN_LIMITS];
-  if (!limits?.aiEnabled) return false;
-
-  if (action === 'thumbnailsGenerated' && limits.monthlyThumbGen === 0)
-    return false;
-
-  return true;
 }
 
 export async function improveText(input: ImproveTextInput) {
   try {
     const user = await requireAuth();
-
-    // Get user's plan tier from database
-    const planTier = await getUserPlanTier(user.id);
-
-    // Validate input
     const validatedInput = improveTextSchema.parse(input);
 
-    // Check plan limits
-    if (!checkPlanLimits(planTier, 'aiSuggestionsUsed')) {
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
+    ) {
       return errorResult('AI features are not available for your plan');
     }
 
-    // Generate prompt
     const prompt = PROMPT_TEMPLATES.improveText(
       validatedInput.text,
       validatedInput.goals
     );
 
-    // Call AI provider
     const improvedText = await aiProvider.invoke({
       purpose: 'improveText',
       input: prompt,
       modelConfig: { temperature: 0.7, maxTokens: 2000 },
     });
 
-    // Track usage
     await trackAIUsage(user.id, 'aiSuggestionsUsed');
 
     return await successResult({ improvedText });
@@ -137,32 +91,25 @@ export async function improveText(input: ImproveTextInput) {
 export async function adjustTone(input: AdjustToneInput) {
   try {
     const user = await requireAuth();
-
-    // Get user's plan tier from database
-    const planTier = await getUserPlanTier(user.id);
-
-    // Validate input
     const validatedInput = adjustToneSchema.parse(input);
 
-    // Check plan limits
-    if (!checkPlanLimits(planTier, 'aiSuggestionsUsed')) {
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
+    ) {
       return errorResult('AI features are not available for your plan');
     }
 
-    // Generate prompt
     const prompt = PROMPT_TEMPLATES.adjustTone(
       validatedInput.text,
       validatedInput.tone
     );
 
-    // Call AI provider
     const adjustedText = await aiProvider.invoke({
       purpose: 'adjustTone',
       input: prompt,
       modelConfig: { temperature: 0.8, maxTokens: 1500 },
     });
 
-    // Track usage
     await trackAIUsage(user.id, 'aiSuggestionsUsed');
 
     return await successResult({ adjustedText });
@@ -177,33 +124,26 @@ export async function adjustTone(input: AdjustToneInput) {
 export async function summarizeText(input: SummarizeTextInput) {
   try {
     const user = await requireAuth();
-
-    // Get user's plan tier from database
-    const planTier = await getUserPlanTier(user.id);
-
-    // Validate input
     const validatedInput = summarizeTextSchema.parse(input);
 
-    // Check plan limits
-    if (!checkPlanLimits(planTier, 'aiSuggestionsUsed')) {
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
+    ) {
       return errorResult('AI features are not available for your plan');
     }
 
-    // Generate prompt
     const prompt = PROMPT_TEMPLATES.summarizeText(
       validatedInput.text,
       validatedInput.style,
       validatedInput.targetWords
     );
 
-    // Call AI provider
     const summary = await aiProvider.invoke({
       purpose: 'summarizeText',
       input: prompt,
       modelConfig: { temperature: 0.5, maxTokens: 1000 },
     });
 
-    // Track usage
     await trackAIUsage(user.id, 'aiSuggestionsUsed');
 
     return await successResult({ summary });
@@ -218,38 +158,30 @@ export async function summarizeText(input: SummarizeTextInput) {
 export async function generateSuggestions(input: GenerateSuggestionsInput) {
   try {
     const user = await requireAuth();
-
-    // Get user's plan tier from database
-    const planTier = await getUserPlanTier(user.id);
-
-    // Validate input
     const validatedInput = generateSuggestionsSchema.parse(input);
 
-    // Check plan limits
-    if (!checkPlanLimits(planTier, 'aiSuggestionsUsed')) {
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
+    ) {
       return errorResult('AI features are not available for your plan');
     }
 
-    // Generate prompt
     const prompt = PROMPT_TEMPLATES.generateSuggestions(
       validatedInput.content,
       validatedInput.maxSuggestions
     );
 
-    // Call AI provider
     const response = await aiProvider.invoke({
       purpose: 'generateSuggestions',
       input: prompt,
       modelConfig: { temperature: 0.7, maxTokens: 1500 },
     });
 
-    // Parse suggestions from response (simple parsing for now)
     const suggestions = parseSuggestionsFromResponse(
       response,
       validatedInput.maxSuggestions
     );
 
-    // Track usage
     await trackAIUsage(user.id, 'aiSuggestionsUsed');
 
     return await successResult({ suggestions });
@@ -264,25 +196,19 @@ export async function generateSuggestions(input: GenerateSuggestionsInput) {
 export async function generateThumbnail(input: GenerateThumbnailInput) {
   try {
     const user = await requireAuth();
-
-    // Get user's plan tier from database
-    const planTier = await getUserPlanTier(user.id);
-
-    // Validate input
     const validatedInput = generateThumbnailSchema.parse(input);
 
-    // Check plan limits
-    if (!checkPlanLimits(planTier, 'thumbnailsGenerated')) {
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'thumbnailsGenerated'))
+    ) {
       return errorResult('Thumbnail generation is not available for your plan');
     }
 
-    // Generate prompt
     const prompt = PROMPT_TEMPLATES.generateThumbnail(
       validatedInput.prompt,
       validatedInput.aspectRatio
     );
 
-    // Determine image size based on selection
     const sizeMap = {
       small: '1024x1024',
       medium: '1792x1024',
@@ -290,10 +216,8 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
     };
     const imageSize = sizeMap[validatedInput.size];
 
-    // Call AI provider for image generation
     const images = await aiProvider.generateImage(prompt, imageSize);
 
-    // Track usage
     await trackAIUsage(user.id, 'thumbnailsGenerated');
 
     return await successResult({ images });
@@ -305,7 +229,6 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
   }
 }
 
-// Helper function to parse suggestions from AI response
 function parseSuggestionsFromResponse(
   response: string,
   maxSuggestions: number
@@ -341,6 +264,7 @@ function parseSuggestionsFromResponse(
       if (Object.keys(currentSuggestion).length > 0) {
         suggestions.push(currentSuggestion);
       }
+
       currentSuggestion = {
         id: `suggestion-${suggestions.length + 1}`,
         type: 'improvement',
@@ -349,14 +273,17 @@ function parseSuggestionsFromResponse(
         suggestion: '',
         applied: false,
       };
-    } else if (line.startsWith('- Description:')) {
+    }
+
+    if (line.startsWith('- Description:')) {
       currentSuggestion.description = line.replace('- Description:', '').trim();
-    } else if (line.startsWith('- Suggestion:')) {
+    }
+
+    if (line.startsWith('- Suggestion:')) {
       currentSuggestion.suggestion = line.replace('- Suggestion:', '').trim();
     }
   }
 
-  // Add the last suggestion
   if (Object.keys(currentSuggestion).length > 0) {
     suggestions.push(currentSuggestion);
   }
