@@ -21,7 +21,7 @@ import {
   generateSuggestions,
 } from '@/app/actions/ai';
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
-import { createDraft } from '@/app/actions/drafts';
+import { createDraft, getDraft, updateDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft } from '@/lib/types/drafts';
@@ -32,6 +32,7 @@ type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | 'saving' | null;
 
 export default function EditorPage() {
   const { userPlan } = useAppStore();
+  const [draftId, setDraftId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled Draft');
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
@@ -46,11 +47,12 @@ export default function EditorPage() {
   const [publishing, setPublishing] = useState(false);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
 
-  const isLoading = loadingType !== null;
+  const isLoading = loadingType !== null || isLoadingDraft;
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTitle(e.target.value);
@@ -166,14 +168,30 @@ export default function EditorPage() {
 
     setLoadingType('saving');
     try {
-      const result = await createDraft({
-        title: title.trim(),
-        content: content.trim(),
-        contentPreview:
-          content.substring(0, 200) + (content.length > 200 ? '...' : ''),
-        thumbnailUrl: thumbnailUrl || undefined,
-        tags: [], // TODO: Add tag extraction from content
-      });
+      let result;
+
+      if (draftId) {
+        // Update existing draft
+        result = await updateDraft({
+          id: draftId,
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+      } else {
+        // Create new draft
+        result = await createDraft({
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+      }
 
       if (result.success) {
         toast.success('Draft saved successfully!');
@@ -202,25 +220,47 @@ export default function EditorPage() {
 
     setPublishing(true);
     try {
-      const draftResult = await createDraft({
-        title: title.trim(),
-        content: content.trim(),
-        contentPreview:
-          content.substring(0, 200) + (content.length > 200 ? '...' : ''),
-        thumbnailUrl: thumbnailUrl || undefined,
-        tags: [], // TODO: Add tag extraction from content
-      });
+      let currentDraftId = draftId;
 
-      if (!draftResult.success) {
-        console.error('Failed to save draft:', draftResult.error);
-        toast.error('Failed to save draft before publishing.');
-        return;
+      if (!currentDraftId) {
+        // Create new draft if we don't have one
+        const draftResult = await createDraft({
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+
+        if (!draftResult.success) {
+          console.error('Failed to save draft:', draftResult.error);
+          toast.error('Failed to save draft before publishing.');
+          return;
+        }
+
+        currentDraftId = (draftResult.data as Draft).id;
+      } else {
+        // Update existing draft
+        const updateResult = await updateDraft({
+          id: currentDraftId,
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+
+        if (!updateResult.success) {
+          console.error('Failed to update draft:', updateResult.error);
+          toast.error('Failed to update draft before publishing.');
+          return;
+        }
       }
 
-      const draftId = (draftResult.data as Draft).id;
-
       const result = await publishToPlatforms({
-        draftId,
+        draftId: currentDraftId,
         platforms: selectedPlatforms,
         options: {
           publishAsDraft: false,
@@ -255,6 +295,38 @@ export default function EditorPage() {
         : [...prev, platform]
     );
   };
+
+  // Load draft if ID is provided in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    if (id) {
+      setDraftId(id);
+      setIsLoadingDraft(true);
+
+      async function loadDraft() {
+        try {
+          const result = await getDraft({ id });
+          if (result.success && result.data) {
+            const draft = result.data as Draft;
+            setTitle(draft.title);
+            setContent(draft.content);
+            setThumbnailUrl(draft.thumbnailUrl || null);
+          } else {
+            toast.error('Failed to load draft');
+          }
+        } catch (error) {
+          console.error('Failed to load draft:', error);
+          toast.error('Failed to load draft');
+        } finally {
+          setIsLoadingDraft(false);
+        }
+      }
+
+      loadDraft();
+    }
+  }, []);
 
   useEffect(() => {
     if (!showPublishModal) return;
