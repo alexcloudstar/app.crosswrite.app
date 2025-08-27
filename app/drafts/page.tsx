@@ -15,6 +15,7 @@ import {
   Send,
 } from 'lucide-react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   formatDate,
@@ -26,33 +27,7 @@ import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { listDrafts } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
-
-interface Draft {
-  id: string;
-  title: string;
-  content: string;
-  contentPreview?: string;
-  status: string;
-  platforms: string[];
-  thumbnailUrl?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
-  scheduledAt?: Date;
-}
-
-interface ListDraftsResponse {
-  drafts: Draft[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-}
+import { Draft, DraftsResponse } from '@/lib/types/drafts';
 
 export default function DraftsPage() {
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -90,7 +65,7 @@ export default function DraftsPage() {
         ]);
 
         if (draftsResult.success && draftsResult.data) {
-          setDrafts((draftsResult.data as ListDraftsResponse).drafts);
+          setDrafts((draftsResult.data as DraftsResponse).drafts);
         }
 
         if (integrationsResult.success && integrationsResult.data) {
@@ -208,7 +183,7 @@ export default function DraftsPage() {
         if (data.summary) {
           const { successful, total } = data.summary;
           if (successful > 0) {
-            alert(
+            toast.success(
               `Successfully published to ${successful} out of ${total} platforms!`
             );
           } else {
@@ -218,12 +193,14 @@ export default function DraftsPage() {
                 let message = `${r.platform}: ${r.error}`;
                 if (r.error?.includes('Publication ID is required')) {
                   message +=
-                    '\n  → Go to Integrations page and click &quot;Select Publication&quot; to set up your publication ID';
+                    '\n  → Go to Integrations page and click "Select Publication" to set up your publication ID';
                 }
                 return message;
               })
               .join('\n\n');
-            alert(`Failed to publish to any platforms:\n\n${errorMessages}`);
+            toast.error(
+              `Failed to publish to any platforms:\n\n${errorMessages}`
+            );
           }
         }
 
@@ -232,15 +209,15 @@ export default function DraftsPage() {
           limit: 100,
         });
         if (reloadResult.success && reloadResult.data) {
-          setDrafts((reloadResult.data as ListDraftsResponse).drafts);
+          setDrafts((reloadResult.data as DraftsResponse).drafts);
         }
       } else {
         console.error('Publish failed:', result.error);
-        alert(`Publish failed: ${result.error}`);
+        toast.error(`Publish failed: ${result.error}`);
       }
     } catch (error) {
       console.error('Publish error:', error);
-      alert(
+      toast.error(
         `Publish error: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
@@ -264,7 +241,7 @@ export default function DraftsPage() {
     setScheduleDraftId(null);
     setScheduleDate('');
     setScheduleTime('');
-          setSelectedPlatforms([...supportedPlatforms]);
+    setSelectedPlatforms([...supportedPlatforms]);
 
     if (!scheduleDraftId) {
       setSelectedDrafts([]);

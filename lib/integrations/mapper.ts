@@ -1,14 +1,5 @@
 import { PLATFORM_CONFIGS, truncateText, sanitizeTags } from './_core';
-
-export interface Draft {
-  id: string;
-  title: string;
-  content: string;
-  tags?: string[];
-  thumbnailUrl?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-}
+import { Draft } from '@/lib/types/drafts';
 
 export interface MappedContent {
   title: string;

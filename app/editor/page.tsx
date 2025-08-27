@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Save, Eye, Send, Settings, X } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { EditorToolbar } from '@/components/editor/EditorToolbar';
 import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
 import { AiSuggestionsPanel } from '@/components/editor/AiSuggestionsPanel';
@@ -23,79 +24,16 @@ import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { createDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
+import { Draft } from '@/lib/types/drafts';
+import { Integration, PublishResult } from '@/lib/types/integrations';
+import { Suggestion } from '@/lib/types/ai';
 
-interface Draft {
-  id: string;
-  title: string;
-  content: string;
-  contentPreview?: string;
-  status: string;
-  platforms: string[];
-  thumbnailUrl?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
-  scheduledAt?: Date;
-}
-
-interface PublishResult {
-  results: Array<{
-    platform: string;
-    success: boolean;
-    platformPostId?: string;
-    platformUrl?: string;
-    error?: string;
-  }>;
-  summary: {
-    total: number;
-    successful: number;
-    failed: number;
-    draftId: string;
-  };
-}
-
-interface Integration {
-  id: string;
-  platform: string;
-  status: string;
-  connectedAt?: Date;
-  lastSync?: Date;
-}
-
-type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | null;
+type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | 'saving' | null;
 
 export default function EditorPage() {
   const { userPlan } = useAppStore();
   const [title, setTitle] = useState('Untitled Draft');
-  const [content, setContent] = useState(`# Getting Started with Cross Write
-
-Welcome to Cross Write, your multi-platform writing and publishing companion. This editor is designed to help you create content that can be published across multiple platforms with ease.
-
-## Key Features
-
-- **AI-Assisted Writing**: Get suggestions and improvements as you write
-- **Multi-Platform Publishing**: Write once, publish everywhere
-- **Smart Formatting**: Automatic formatting for different platforms
-- **Real-time Preview**: See how your content will look before publishing
-
-## Getting Started
-
-1. Start by writing your content in the editor
-2. Use the AI suggestions panel for improvements
-3. Preview your content using the preview button
-4. Save your draft or publish directly to your connected platforms
-
-## Tips for Better Content
-
-- Use clear headings and subheadings
-- Keep paragraphs short and readable
-- Include relevant images and examples
-- Use the AI suggestions to improve your writing
-
-Happy writing! 🚀`);
+  const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [showRewriteSettings, setShowRewriteSettings] = useState(false);
   const [showThumbnailGenerator, setShowThumbnailGenerator] = useState(false);
@@ -107,6 +45,7 @@ Happy writing! 🚀`);
   ]);
   const [publishing, setPublishing] = useState(false);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
@@ -137,7 +76,7 @@ Happy writing! 🚀`);
         setContent((result.data as { improvedText: string }).improvedText);
       } else {
         console.error('Rewrite failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to rewrite content. Please try again.');
       }
     } catch (error) {
       console.error('Rewrite error:', error);
@@ -156,7 +95,7 @@ Happy writing! 🚀`);
         setContent((result.data as { adjustedText: string }).adjustedText);
       } else {
         console.error('Tone adjustment failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to adjust tone. Please try again.');
       }
     } catch (error) {
       console.error('Tone adjustment error:', error);
@@ -175,7 +114,7 @@ Happy writing! 🚀`);
         setContent((result.data as { summary: string }).summary);
       } else {
         console.error('Summarize failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to summarize content. Please try again.');
       }
     } catch (error) {
       console.error('Summarize error:', error);
@@ -191,26 +130,15 @@ Happy writing! 🚀`);
     try {
       const result = await generateSuggestions({ content, maxSuggestions: 4 });
       if (result.success && result.data) {
-        console.log(
-          'Generated suggestions:',
-          (
-            result.data as {
-              suggestions: Array<{
-                id: string;
-                type: string;
-                title: string;
-                description: string;
-                suggestion: string;
-                applied: boolean;
-              }>;
-            }
-          ).suggestions
-        );
-        // TODO: Update the suggestions in the AiSuggestionsPanel
-        // For now, just log them
+        const suggestionsData = (
+          result.data as {
+            suggestions: Suggestion[];
+          }
+        ).suggestions;
+        setSuggestions(suggestionsData);
       } else {
         console.error('Generate suggestions failed:', result.error);
-        // TODO: Add toast notification
+        toast.error('Failed to generate suggestions. Please try again.');
       }
     } catch (error) {
       console.error('Generate suggestions error:', error);
@@ -219,16 +147,24 @@ Happy writing! 🚀`);
     }
   };
 
-  const handleApplySuggestion = (suggestion: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
-    setContent(prev => prev + suggestionNote);
+  const handleApplySuggestion = (suggestionId: string) => {
+    const suggestion = suggestions.find(s => s.id === suggestionId);
+    if (suggestion) {
+      const timestamp = new Date().toLocaleTimeString();
+      const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion.suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
+      setContent(prev => prev + suggestionNote);
+
+      // Mark the suggestion as applied
+      setSuggestions(prev =>
+        prev.map(s => (s.id === suggestionId ? { ...s, applied: true } : s))
+      );
+    }
   };
 
   const handleSaveDraft = async () => {
     if (!title.trim() || !content.trim() || isLoading) return;
 
-    setLoadingType('ai');
+    setLoadingType('saving');
     try {
       const result = await createDraft({
         title: title.trim(),
@@ -240,15 +176,14 @@ Happy writing! 🚀`);
       });
 
       if (result.success) {
-        alert('Draft saved successfully!');
-
+        toast.success('Draft saved successfully!');
         window.location.href = '/drafts';
       } else {
-        alert(`Failed to save draft: ${result.error}`);
+        toast.error(`Failed to save draft: ${result.error}`);
       }
     } catch (error) {
       console.error('Save draft error:', error);
-      alert('Failed to save draft. Please try again.');
+      toast.error('Failed to save draft. Please try again.');
     } finally {
       setLoadingType(null);
     }
@@ -256,7 +191,7 @@ Happy writing! 🚀`);
 
   const handlePublish = () => {
     if (selectedPlatforms.length === 0) {
-      alert('Please select at least one platform to publish to.');
+      toast.error('Please select at least one platform to publish to.');
       return;
     }
     setShowPublishModal(true);
@@ -278,7 +213,7 @@ Happy writing! 🚀`);
 
       if (!draftResult.success) {
         console.error('Failed to save draft:', draftResult.error);
-        // TODO: Show error message
+        toast.error('Failed to save draft before publishing.');
         return;
       }
 
@@ -296,7 +231,7 @@ Happy writing! 🚀`);
         console.log('Published successfully:', result.data);
         setShowPublishModal(false);
 
-        alert(
+        toast.success(
           `Successfully published to ${
             (result.data as PublishResult).summary.successful
           } platforms! Redirecting to drafts...`
@@ -304,7 +239,7 @@ Happy writing! 🚀`);
         window.location.href = '/drafts';
       } else {
         console.error('Publish failed:', result.error);
-        alert(`Publish failed: ${result.error}`);
+        toast.error(`Publish failed: ${result.error}`);
       }
     } catch (error) {
       console.error('Publish error:', error);
@@ -359,6 +294,11 @@ Happy writing! 🚀`);
         return {
           title: 'Generating thumbnail...',
           subtitle: 'Please wait while we create your thumbnail',
+        };
+      case 'saving':
+        return {
+          title: 'Saving draft...',
+          subtitle: 'Please wait while we save your content',
         };
       default:
         return {
@@ -470,7 +410,7 @@ Happy writing! 🚀`);
                 disabled={isLoading}
               >
                 <Save size={16} className='mr-2' />
-                {isLoading ? 'Saving...' : 'Save Draft'}
+                {loadingType === 'saving' ? 'Saving...' : 'Save Draft'}
               </button>
               <button
                 onClick={handlePublish}
@@ -487,6 +427,7 @@ Happy writing! 🚀`);
         <div className='w-80 border-l border-base-300 bg-base-200 flex-shrink-0'>
           <AiSuggestionsPanel
             content={content}
+            suggestions={suggestions}
             onGenerateSuggestions={handleGenerateSuggestions}
             isGenerating={loadingType === 'suggestions'}
             onApplySuggestion={handleApplySuggestion}

@@ -10,17 +10,7 @@ import {
   Filter,
 } from 'lucide-react';
 import Link from 'next/link';
-
-interface NewsItem {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  type: 'feature' | 'update' | 'announcement';
-  link?: string;
-  detailedDescription?: string;
-  tags?: string[];
-}
+import { NewsItem } from '@/lib/types/news';
 
 const allNewsItems: NewsItem[] = [
   {

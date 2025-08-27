@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Check,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import {
   listIntegrations,
@@ -51,7 +52,7 @@ export default function IntegrationsPage() {
     }>
   >([]);
   const [showPublicationSelector, setShowPublicationSelector] = useState(false);
-    const [selectedPublicationName, setSelectedPublicationName] =
+  const [selectedPublicationName, setSelectedPublicationName] =
     useState<string>('');
 
   // Load integrations on component mount
@@ -133,11 +134,11 @@ export default function IntegrationsPage() {
         }
         console.log('Successfully disconnected from', platform);
       } else {
-        alert(`Failed to disconnect: ${result.error}`);
+        toast.error(`Failed to disconnect: ${result.error}`);
       }
     } catch (error) {
       console.error('Failed to disconnect from', platform, error);
-      alert('Failed to disconnect. Please try again.');
+      toast.error('Failed to disconnect. Please try again.');
     } finally {
       setConnecting(null);
     }
@@ -153,7 +154,7 @@ export default function IntegrationsPage() {
       const result = await testIntegration({ id: integration.id });
 
       if (result.success) {
-        alert(`Connection test successful for ${platform}`);
+        toast.success(`Connection test successful for ${platform}`);
         // Reload integrations to get updated lastSync
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
@@ -168,11 +169,11 @@ export default function IntegrationsPage() {
           );
         }
       } else {
-        alert(`Connection test failed: ${result.error}`);
+        toast.error(`Connection test failed: ${result.error}`);
       }
     } catch (error) {
       console.error('Failed to test connection for', platform, error);
-      alert('Failed to test connection. Please try again.');
+      toast.error('Failed to test connection. Please try again.');
     } finally {
       setTesting(null);
     }
@@ -191,7 +192,7 @@ export default function IntegrationsPage() {
       });
 
       if (result.success) {
-        alert(`Analytics sync completed for ${platform}`);
+        toast.success(`Analytics sync completed for ${platform}`);
         // Reload integrations to get updated lastSync
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
@@ -206,11 +207,11 @@ export default function IntegrationsPage() {
           );
         }
       } else {
-        alert(`Analytics sync failed: ${result.error}`);
+        toast.error(`Analytics sync failed: ${result.error}`);
       }
     } catch (error) {
       console.error('Failed to sync analytics for', platform, error);
-      alert('Failed to sync analytics. Please try again.');
+      toast.error('Failed to sync analytics. Please try again.');
     } finally {
       setSyncing(null);
     }
@@ -255,11 +256,11 @@ export default function IntegrationsPage() {
         setPublications(transformedPublications);
         setShowPublicationSelector(true);
       } else {
-        alert(`Failed to load publications: ${result.error}`);
+        toast.error(`Failed to load publications: ${result.error}`);
       }
     } catch (error) {
       console.error('Failed to load publications for', platform, error);
-      alert('Failed to load publications. Please try again.');
+      toast.error('Failed to load publications. Please try again.');
     }
   };
 
@@ -269,7 +270,7 @@ export default function IntegrationsPage() {
     try {
       // Validate required fields
       if (!apiKey.trim()) {
-        alert('API key is required');
+        toast.error('API key is required');
         return;
       }
 
@@ -331,11 +332,11 @@ export default function IntegrationsPage() {
         });
       } else {
         // Show error message
-        alert(`Failed to connect: ${result.error}`);
+        toast.error(`Failed to connect: ${result.error}`);
       }
     } catch (error) {
       console.error('Failed to connect to', platform, error);
-      alert('Failed to connect. Please try again.');
+      toast.error('Failed to connect. Please try again.');
     } finally {
       setConnecting(null);
     }

@@ -1,8 +1,3 @@
-/**
- * Analytics time utilities for date range parsing, timezone handling, and time bucketing
- * Handles UTC storage with optional timezone formatting for display
- */
-
 export interface DateRange {
   from: Date;
   to: Date;
@@ -16,9 +11,6 @@ export interface TimeRangeInput {
   granularity?: 'day' | 'week';
 }
 
-/**
- * Parse date range input with defaults and validation
- */
 export function parseDateRange(input: TimeRangeInput): DateRange {
   const now = new Date();
   const defaultFrom = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
@@ -27,12 +19,10 @@ export function parseDateRange(input: TimeRangeInput): DateRange {
   const to = input.to ? new Date(input.to) : now;
   const granularity = input.granularity || 'day';
 
-  // Validate and clamp range
   if (from > to) {
     throw new Error('Start date must be before or equal to end date');
   }
 
-  // Clamp to maximum 365 days
   const maxRange = 365 * 24 * 60 * 60 * 1000;
   if (to.getTime() - from.getTime() > maxRange) {
     const clampedFrom = new Date(to.getTime() - maxRange);
@@ -42,9 +32,6 @@ export function parseDateRange(input: TimeRangeInput): DateRange {
   return { from, to, granularity };
 }
 
-/**
- * Get SQL date truncation for time-series grouping
- */
 export function getDateTruncation(granularity: 'day' | 'week'): string {
   switch (granularity) {
     case 'day':
@@ -56,9 +43,6 @@ export function getDateTruncation(granularity: 'day' | 'week'): string {
   }
 }
 
-/**
- * Format date for display with optional timezone
- */
 export function formatDateForDisplay(date: Date, tz?: string): string {
   if (!tz || tz === 'UTC') {
     return date.toISOString().split('T')[0];
@@ -72,14 +56,10 @@ export function formatDateForDisplay(date: Date, tz?: string): string {
       day: '2-digit',
     }).format(date);
   } catch {
-    // Fallback to UTC if timezone is invalid
     return date.toISOString().split('T')[0];
   }
 }
 
-/**
- * Get default date ranges for common periods
- */
 export function getDefaultRanges(): Record<string, DateRange> {
   const now = new Date();
 
@@ -107,9 +87,6 @@ export function getDefaultRanges(): Record<string, DateRange> {
   };
 }
 
-/**
- * Validate timezone string (IANA format)
- */
 export function isValidTimezone(tz: string): boolean {
   try {
     Intl.DateTimeFormat(undefined, { timeZone: tz });
