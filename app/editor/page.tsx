@@ -56,13 +56,14 @@ export default function EditorPage() {
   const [selectedLength, setSelectedLength] = useState<
     'keep' | 'shorter' | 'longer'
   >('keep');
+  const [contentHistory, setContentHistory] = useState<string[]>(['']);
+  const [historyIndex, setHistoryIndex] = useState(0);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
 
   const isLoading = loadingType !== null || isLoadingDraft;
 
-  // Load user's preferred tone from settings on mount
   useEffect(() => {
     async function loadUserTone() {
       try {
@@ -89,6 +90,45 @@ export default function EditorPage() {
     loadUserTone();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const textarea = document.querySelector('textarea');
+      if (document.activeElement !== textarea) return;
+
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key.toLowerCase()) {
+          case 'z':
+            e.preventDefault();
+            if (e.shiftKey) {
+              redo();
+            } else {
+              undo();
+            }
+            break;
+          case 'y':
+            e.preventDefault();
+            redo();
+            break;
+          case 'b':
+            e.preventDefault();
+            formatText('bold');
+            break;
+          case 'i':
+            e.preventDefault();
+            formatText('italic');
+            break;
+          case '`':
+            e.preventDefault();
+            formatText('code');
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [content, historyIndex, contentHistory]);
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTitle(e.target.value);
 
@@ -100,8 +140,135 @@ export default function EditorPage() {
   const handleToggleThumbnailGenerator = () =>
     setShowThumbnailGenerator(prev => !prev);
 
-  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    setContent(e.target.value);
+  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+
+    // Add to history when content changes
+    addToHistory(newContent);
+  };
+
+  // Undo/Redo functionality
+  const addToHistory = (newContent: string) => {
+    setContentHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push(newContent);
+      // Keep only last 50 entries to prevent memory issues
+      if (newHistory.length > 50) {
+        newHistory.shift();
+      }
+      return newHistory;
+    });
+    setHistoryIndex(prev => prev + 1);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setContent(contentHistory[newIndex]);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < contentHistory.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setContent(contentHistory[newIndex]);
+    }
+  };
+
+  const formatText = (format: string) => {
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+
+    if (selectedText.length === 0) {
+      const before = content.substring(0, start);
+      const after = content.substring(end);
+
+      let newText = '';
+      switch (format) {
+        case 'bold':
+          newText = before + '**bold text**' + after;
+          break;
+        case 'italic':
+          newText = before + '*italic text*' + after;
+          break;
+        case 'code':
+          newText = before + '`code`' + after;
+          break;
+        case 'quote':
+          newText = before + '> quoted text' + after;
+          break;
+        case 'bullet-list':
+          newText = before + '- list item' + after;
+          break;
+        case 'numbered-list':
+          newText = before + '1. list item' + after;
+          break;
+      }
+
+      setContent(newText);
+      addToHistory(newText);
+
+      setTimeout(() => {
+        textarea.focus();
+        const newPosition =
+          start + newText.length - before.length - after.length;
+        textarea.setSelectionRange(newPosition - 8, newPosition - 1);
+      }, 0);
+    } else {
+      const before = content.substring(0, start);
+      const after = content.substring(end);
+
+      let newText = '';
+      switch (format) {
+        case 'bold':
+          newText = before + `**${selectedText}**` + after;
+          break;
+        case 'italic':
+          newText = before + `*${selectedText}*` + after;
+          break;
+        case 'code':
+          newText = before + `\`${selectedText}\`` + after;
+          break;
+        case 'quote':
+          const quotedLines = selectedText
+            .split('\n')
+            .map(line => `> ${line}`)
+            .join('\n');
+          newText = before + quotedLines + after;
+          break;
+        case 'bullet-list':
+          const bulletLines = selectedText
+            .split('\n')
+            .map(line => `- ${line}`)
+            .join('\n');
+          newText = before + bulletLines + after;
+          break;
+        case 'numbered-list':
+          const numberedLines = selectedText
+            .split('\n')
+            .map((line, index) => `${index + 1}. ${line}`)
+            .join('\n');
+          newText = before + numberedLines + after;
+          break;
+      }
+
+      setContent(newText);
+      addToHistory(newText);
+
+      setTimeout(() => {
+        textarea.focus();
+        const formattedLength = newText.length - before.length - after.length;
+        textarea.setSelectionRange(start, start + formattedLength);
+      }, 0);
+    }
+  };
 
   const handleRewrite = async () => {
     if (!content.trim() || isLoading) return;
@@ -117,7 +284,10 @@ export default function EditorPage() {
 
       const result = await improveText({ text: content, goals });
       if (result.success && result.data) {
-        setContent((result.data as { improvedText: string }).improvedText);
+        const improvedText = (result.data as { improvedText: string })
+          .improvedText;
+        setContent(improvedText);
+        addToHistory(improvedText);
       } else {
         console.error('Rewrite failed:', result.error);
         toast.error('Failed to rewrite content. Please try again.');
@@ -136,7 +306,10 @@ export default function EditorPage() {
     try {
       const result = await adjustTone({ text: content, tone: selectedTone });
       if (result.success && result.data) {
-        setContent((result.data as { adjustedText: string }).adjustedText);
+        const adjustedText = (result.data as { adjustedText: string })
+          .adjustedText;
+        setContent(adjustedText);
+        addToHistory(adjustedText);
         toast.success(`Content adjusted to ${selectedTone} tone`);
       } else {
         console.error('Tone adjustment failed:', result.error);
@@ -152,7 +325,6 @@ export default function EditorPage() {
   const handleApplyRewriteSettings = async () => {
     if (isLoading) return;
 
-    // If no content, just save the settings and close modal
     if (!content.trim()) {
       toast.success('Settings saved for when you add content');
       setShowRewriteSettings(false);
@@ -163,11 +335,13 @@ export default function EditorPage() {
     try {
       let result;
 
-      // Apply tone adjustment if not professional
       if (selectedTone !== 'professional') {
         result = await adjustTone({ text: content, tone: selectedTone });
         if (result.success && result.data) {
-          setContent((result.data as { adjustedText: string }).adjustedText);
+          const adjustedText = (result.data as { adjustedText: string })
+            .adjustedText;
+          setContent(adjustedText);
+          addToHistory(adjustedText);
         } else {
           console.error('Tone adjustment failed:', result.error);
           toast.error('Failed to adjust tone. Please try again.');
@@ -183,7 +357,10 @@ export default function EditorPage() {
           goals: [lengthInstruction],
         });
         if (result.success && result.data) {
-          setContent((result.data as { improvedText: string }).improvedText);
+          const improvedText = (result.data as { improvedText: string })
+            .improvedText;
+          setContent(improvedText);
+          addToHistory(improvedText);
         } else {
           console.error('Length adjustment failed:', result.error);
           toast.error('Failed to adjust length. Please try again.');
@@ -208,7 +385,9 @@ export default function EditorPage() {
     try {
       const result = await summarizeText({ text: content, style: 'paragraph' });
       if (result.success && result.data) {
-        setContent((result.data as { summary: string }).summary);
+        const summary = (result.data as { summary: string }).summary;
+        setContent(summary);
+        addToHistory(summary);
       } else {
         console.error('Summarize failed:', result.error);
         toast.error('Failed to summarize content. Please try again.');
@@ -249,7 +428,9 @@ export default function EditorPage() {
     if (suggestion) {
       const timestamp = new Date().toLocaleTimeString();
       const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion.suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
-      setContent(prev => prev + suggestionNote);
+      const newContent = content + suggestionNote;
+      setContent(newContent);
+      addToHistory(newContent);
 
       setSuggestions(prev =>
         prev.map(s => (s.id === suggestionId ? { ...s, applied: true } : s))
@@ -545,6 +726,7 @@ export default function EditorPage() {
         onRewrite={handleRewrite}
         onTone={handleTone}
         onSummarize={handleSummarize}
+        onFormatText={formatText}
         isAiLoading={isLoading}
         hasContent={!!content.trim()}
       />
