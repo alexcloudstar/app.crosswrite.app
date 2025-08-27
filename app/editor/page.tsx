@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Save, Eye, Send, Settings, X } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
@@ -90,6 +90,153 @@ export default function EditorPage() {
     loadUserTone();
   }, []);
 
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setTitle(e.target.value);
+
+  const handleToggleRewriteSettings = () =>
+    setShowRewriteSettings(!showRewriteSettings);
+
+  const handleTogglePreview = () => setShowPreview(prev => !prev);
+
+  const handleToggleThumbnailGenerator = () =>
+    setShowThumbnailGenerator(prev => !prev);
+
+  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+
+    addToHistory(newContent);
+  };
+
+  const addToHistory = useCallback(
+    (newContent: string) => {
+      setContentHistory(prev => {
+        const newHistory = prev.slice(0, historyIndex + 1);
+        newHistory.push(newContent);
+
+        if (newHistory.length > 50) {
+          newHistory.shift();
+        }
+        return newHistory;
+      });
+      setHistoryIndex(prev => prev + 1);
+    },
+    [historyIndex]
+  );
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setContent(contentHistory[newIndex]);
+    }
+  }, [historyIndex, contentHistory]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < contentHistory.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setContent(contentHistory[newIndex]);
+    }
+  }, [historyIndex, contentHistory]);
+
+  const formatText = useCallback(
+    (format: string) => {
+      const textarea = document.querySelector(
+        'textarea'
+      ) as HTMLTextAreaElement;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = content.substring(start, end);
+
+      if (selectedText.length === 0) {
+        const before = content.substring(0, start);
+        const after = content.substring(end);
+
+        let newText = '';
+        switch (format) {
+          case 'bold':
+            newText = before + '**bold text**' + after;
+            break;
+          case 'italic':
+            newText = before + '*italic text*' + after;
+            break;
+          case 'code':
+            newText = before + '`code`' + after;
+            break;
+          case 'quote':
+            newText = before + '> quoted text' + after;
+            break;
+          case 'bullet-list':
+            newText = before + '- list item' + after;
+            break;
+          case 'numbered-list':
+            newText = before + '1. list item' + after;
+            break;
+        }
+
+        setContent(newText);
+        addToHistory(newText);
+
+        setTimeout(() => {
+          textarea.focus();
+          const newPosition =
+            start + newText.length - before.length - after.length;
+          textarea.setSelectionRange(newPosition - 8, newPosition - 1);
+        }, 0);
+      } else {
+        const before = content.substring(0, start);
+        const after = content.substring(end);
+
+        let newText = '';
+        switch (format) {
+          case 'bold':
+            newText = before + `**${selectedText}**` + after;
+            break;
+          case 'italic':
+            newText = before + `*${selectedText}*` + after;
+            break;
+          case 'code':
+            newText = before + `\`${selectedText}\`` + after;
+            break;
+          case 'quote':
+            const quotedLines = selectedText
+              .split('\n')
+              .map(line => `> ${line}`)
+              .join('\n');
+            newText = before + quotedLines + after;
+            break;
+          case 'bullet-list':
+            const bulletLines = selectedText
+              .split('\n')
+              .map(line => `- ${line}`)
+              .join('\n');
+            newText = before + bulletLines + after;
+            break;
+          case 'numbered-list':
+            const numberedLines = selectedText
+              .split('\n')
+              .map((line, index) => `${index + 1}. ${line}`)
+              .join('\n');
+            newText = before + numberedLines + after;
+            break;
+        }
+
+        setContent(newText);
+        addToHistory(newText);
+
+        setTimeout(() => {
+          textarea.focus();
+          const formattedLength = newText.length - before.length - after.length;
+          textarea.setSelectionRange(start, start + formattedLength);
+        }, 0);
+      }
+    },
+    [content, addToHistory]
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const textarea = document.querySelector('textarea');
@@ -127,148 +274,7 @@ export default function EditorPage() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [content, historyIndex, contentHistory]);
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setTitle(e.target.value);
-
-  const handleToggleRewriteSettings = () =>
-    setShowRewriteSettings(!showRewriteSettings);
-
-  const handleTogglePreview = () => setShowPreview(prev => !prev);
-
-  const handleToggleThumbnailGenerator = () =>
-    setShowThumbnailGenerator(prev => !prev);
-
-  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setContent(newContent);
-
-    // Add to history when content changes
-    addToHistory(newContent);
-  };
-
-  // Undo/Redo functionality
-  const addToHistory = (newContent: string) => {
-    setContentHistory(prev => {
-      const newHistory = prev.slice(0, historyIndex + 1);
-      newHistory.push(newContent);
-      // Keep only last 50 entries to prevent memory issues
-      if (newHistory.length > 50) {
-        newHistory.shift();
-      }
-      return newHistory;
-    });
-    setHistoryIndex(prev => prev + 1);
-  };
-
-  const undo = () => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setContent(contentHistory[newIndex]);
-    }
-  };
-
-  const redo = () => {
-    if (historyIndex < contentHistory.length - 1) {
-      const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      setContent(contentHistory[newIndex]);
-    }
-  };
-
-  const formatText = (format: string) => {
-    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = content.substring(start, end);
-
-    if (selectedText.length === 0) {
-      const before = content.substring(0, start);
-      const after = content.substring(end);
-
-      let newText = '';
-      switch (format) {
-        case 'bold':
-          newText = before + '**bold text**' + after;
-          break;
-        case 'italic':
-          newText = before + '*italic text*' + after;
-          break;
-        case 'code':
-          newText = before + '`code`' + after;
-          break;
-        case 'quote':
-          newText = before + '> quoted text' + after;
-          break;
-        case 'bullet-list':
-          newText = before + '- list item' + after;
-          break;
-        case 'numbered-list':
-          newText = before + '1. list item' + after;
-          break;
-      }
-
-      setContent(newText);
-      addToHistory(newText);
-
-      setTimeout(() => {
-        textarea.focus();
-        const newPosition =
-          start + newText.length - before.length - after.length;
-        textarea.setSelectionRange(newPosition - 8, newPosition - 1);
-      }, 0);
-    } else {
-      const before = content.substring(0, start);
-      const after = content.substring(end);
-
-      let newText = '';
-      switch (format) {
-        case 'bold':
-          newText = before + `**${selectedText}**` + after;
-          break;
-        case 'italic':
-          newText = before + `*${selectedText}*` + after;
-          break;
-        case 'code':
-          newText = before + `\`${selectedText}\`` + after;
-          break;
-        case 'quote':
-          const quotedLines = selectedText
-            .split('\n')
-            .map(line => `> ${line}`)
-            .join('\n');
-          newText = before + quotedLines + after;
-          break;
-        case 'bullet-list':
-          const bulletLines = selectedText
-            .split('\n')
-            .map(line => `- ${line}`)
-            .join('\n');
-          newText = before + bulletLines + after;
-          break;
-        case 'numbered-list':
-          const numberedLines = selectedText
-            .split('\n')
-            .map((line, index) => `${index + 1}. ${line}`)
-            .join('\n');
-          newText = before + numberedLines + after;
-          break;
-      }
-
-      setContent(newText);
-      addToHistory(newText);
-
-      setTimeout(() => {
-        textarea.focus();
-        const formattedLength = newText.length - before.length - after.length;
-        textarea.setSelectionRange(start, start + formattedLength);
-      }, 0);
-    }
-  };
+  }, [formatText, undo, redo]);
 
   const handleRewrite = async () => {
     if (!content.trim() || isLoading) return;

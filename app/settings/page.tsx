@@ -75,8 +75,10 @@ export default function SettingsPage() {
       const result = await getUserSettings();
 
       if (result.success && result.data) {
-        setUser((result.data as any).user);
-        setSettings((result.data as any).settings);
+        setUser((result.data as { user: User; settings: UserSettings }).user);
+        setSettings(
+          (result.data as { user: User; settings: UserSettings }).settings
+        );
       } else {
         toast.error('Failed to load user settings');
       }
