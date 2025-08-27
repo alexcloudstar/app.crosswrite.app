@@ -8,10 +8,13 @@ import {
   MessageSquare,
   FileText,
   Zap,
+  Loader2,
 } from 'lucide-react';
+import { getSuggestions } from '@/app/actions/ai';
 
 interface AiSuggestionsPanelProps {
   content: string;
+  draftId?: string;
 }
 
 interface Suggestion {
@@ -23,45 +26,12 @@ interface Suggestion {
   applied: boolean;
 }
 
-export function AiSuggestionsPanel({}: AiSuggestionsPanelProps) {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([
-    {
-      id: '1',
-      type: 'improvement',
-      title: 'Improve Introduction',
-      description: 'Make the opening more engaging',
-      suggestion:
-        "Consider starting with a compelling hook or question to grab readers' attention immediately.",
-      applied: false,
-    },
-    {
-      id: '2',
-      type: 'tone',
-      title: 'Adjust Tone',
-      description: 'Make it more conversational',
-      suggestion:
-        'The current tone is quite formal. Consider using more casual language and personal pronouns to connect better with readers.',
-      applied: false,
-    },
-    {
-      id: '3',
-      type: 'summary',
-      title: 'Add Summary',
-      description: 'Include a brief overview',
-      suggestion:
-        "Add a 2-3 sentence summary at the beginning to give readers a quick overview of what they'll learn.",
-      applied: false,
-    },
-    {
-      id: '4',
-      type: 'rewrite',
-      title: 'Rewrite Section',
-      description: 'Improve the features section',
-      suggestion:
-        'The features section could be more benefit-focused. Instead of listing features, explain how each one helps the user.',
-      applied: false,
-    },
-  ]);
+export function AiSuggestionsPanel({
+  content,
+  draftId,
+}: AiSuggestionsPanelProps) {
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleApply = (id: string) =>
     setSuggestions(prev =>
@@ -70,6 +40,44 @@ export function AiSuggestionsPanel({}: AiSuggestionsPanelProps) {
 
   const handleInsert = (id: string) => {
     console.log('Inserting suggestion:', id);
+  };
+
+  const generateSuggestions = async () => {
+    if (!content.trim()) {
+      alert('Please add some content to get AI suggestions');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await getSuggestions({
+        text: content,
+        draftId,
+        maxIdeas: 5,
+      });
+
+      if (result.success && result.data) {
+        const data = result.data as { suggestions: string[]; count: number };
+        const newSuggestions: Suggestion[] = data.suggestions.map(
+          (suggestion: string, index: number) => ({
+            id: `suggestion-${index}`,
+            type: 'improvement' as const,
+            title: `Suggestion ${index + 1}`,
+            description: 'AI-generated improvement',
+            suggestion,
+            applied: false,
+          })
+        );
+        setSuggestions(newSuggestions);
+      } else {
+        alert(result.error || 'Failed to generate suggestions');
+      }
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+      alert('Failed to generate suggestions');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getIcon = (type: string) => {
@@ -154,9 +162,17 @@ export function AiSuggestionsPanel({}: AiSuggestionsPanelProps) {
       </div>
 
       <div className='p-4 border-t border-base-300'>
-        <button className='btn btn-outline btn-sm w-full'>
-          <Sparkles size={16} className='mr-2' />
-          Generate More Suggestions
+        <button
+          className='btn btn-outline btn-sm w-full'
+          onClick={generateSuggestions}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader2 size={16} className='mr-2 animate-spin' />
+          ) : (
+            <Sparkles size={16} className='mr-2' />
+          )}
+          {isLoading ? 'Generating...' : 'Generate Suggestions'}
         </button>
       </div>
     </div>

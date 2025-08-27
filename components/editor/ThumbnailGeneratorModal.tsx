@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Check,
 } from 'lucide-react';
+import { generateThumbnail } from '@/app/actions/ai';
 import Image from 'next/image';
 import { useAppStore } from '@/lib/store';
 
@@ -62,8 +63,7 @@ export function ThumbnailGeneratorModal({
   onClose,
   onSelect,
 }: ThumbnailGeneratorModalProps) {
-  const { canGenerateThumbnail, incrementThumbnailUsage, userPlan } =
-    useAppStore();
+  const { canGenerateThumbnail, incrementThumbnailUsage } = useAppStore();
   const [selectedPreset, setSelectedPreset] = useState(0);
   const [customPrompt, setCustomPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('16:9');
@@ -81,31 +81,28 @@ export function ThumbnailGeneratorModal({
     setIsGenerating(true);
 
     try {
-      const response = await fetch('/api/ai/thumbnail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: currentPrompt,
-          aspectRatio,
-          size,
-          planId: userPlan.planId,
-          usage: userPlan.usage,
-        }),
+      const result = await generateThumbnail({
+        title: currentPrompt,
+        style: 'clean',
+        aspect: aspectRatio as '16:9' | '1:1' | '4:5',
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate thumbnails');
+      if (result.success && result.data) {
+        const data = result.data as {
+          imageUrl: string;
+          title: string;
+          style: string;
+          aspect: string;
+        };
+        incrementThumbnailUsage();
+        setGeneratedImages([data.imageUrl]);
+        setSelectedImage(data.imageUrl);
+      } else {
+        throw new Error(result.error || 'Failed to generate thumbnail');
       }
-
-      setGeneratedImages(data.images);
-      incrementThumbnailUsage();
     } catch (error) {
-      console.error('Failed to generate thumbnails:', error);
-      // You could add a toast notification here
+      console.error('Failed to generate thumbnail:', error);
+      alert('Failed to generate thumbnail. Please try again.');
     } finally {
       setIsGenerating(false);
     }
