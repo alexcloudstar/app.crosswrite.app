@@ -1,6 +1,3 @@
-// Prompt templates for AI actions
-// These templates are used by the AI server actions to generate specific content
-
 export const PROMPT_TEMPLATES = {
   improveText: (text: string, goals?: string[]) => {
     const goalsText = goals?.length ? `\n\nGoals: ${goals.join(', ')}` : '';

@@ -4,11 +4,18 @@ import { useState } from 'react';
 import { Check, Crown, Loader2 } from 'lucide-react';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
-import { useAppStore } from '@/lib/store';
+import { usePlan } from '@/hooks/use-plan';
 import { PLAN_FEATURES, PLAN_PRICING } from '@/lib/plans';
 
 export default function BillingPage() {
-  const { userPlan, setUserPlan } = useAppStore();
+  const {
+    userPlan,
+    updatePlan,
+    getPricing,
+    isFree,
+    isPro,
+    PlanId,
+  } = usePlan();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isDowngrading, setIsDowngrading] = useState(false);
 
@@ -16,7 +23,7 @@ export default function BillingPage() {
     setIsUpgrading(true);
     // Mock upgrade process
     await new Promise(resolve => setTimeout(resolve, 2000));
-    setUserPlan({ planId: 'PRO' });
+    updatePlan(PlanId.PRO);
     setIsUpgrading(false);
   };
 
@@ -24,7 +31,7 @@ export default function BillingPage() {
     setIsDowngrading(true);
     // Mock downgrade process
     await new Promise(resolve => setTimeout(resolve, 1500));
-    setUserPlan({ planId: 'FREE' });
+    updatePlan(PlanId.FREE);
     setIsDowngrading(false);
   };
 
@@ -81,13 +88,11 @@ export default function BillingPage() {
           <div className='card-body'>
             <div className='text-center mb-6'>
               <h3 className='text-2xl font-bold mb-2'>Free</h3>
-              <div className='text-3xl font-bold mb-4'>
-                $0<span className='text-lg font-normal'>/month</span>
-              </div>
+              <div className='text-3xl font-bold mb-4'>{getPricing()}</div>
               <p className='text-base-content/70 mb-4'>
                 Perfect for getting started with content creation
               </p>
-              {userPlan.planId === 'FREE' && (
+              {isFree() && (
                 <div className='badge badge-primary'>Current Plan</div>
               )}
             </div>
@@ -101,7 +106,7 @@ export default function BillingPage() {
               ))}
             </div>
 
-            {userPlan.planId !== 'FREE' && (
+            {!isFree() && (
               <button
                 onClick={handleDowngrade}
                 disabled={isDowngrading}
@@ -137,7 +142,7 @@ export default function BillingPage() {
               <p className='text-primary-content/70 mb-4'>
                 For serious content creators and teams
               </p>
-              {userPlan.planId === 'PRO' && (
+              {isPro() && (
                 <div className='badge badge-secondary'>Current Plan</div>
               )}
             </div>
@@ -154,7 +159,7 @@ export default function BillingPage() {
               ))}
             </div>
 
-            {userPlan.planId !== 'PRO' ? (
+            {!isPro() ? (
               <button
                 onClick={handleUpgrade}
                 disabled={isUpgrading}
@@ -220,9 +225,9 @@ export default function BillingPage() {
             <div>
               <h4 className='font-medium mb-2'>How does AI work?</h4>
               <p className='text-sm text-base-content/70'>
-                AI features are powered by Cross Write using our server-side API keys. 
-                This ensures secure, reliable AI generation without requiring you to 
-                manage your own API keys.
+                AI features are powered by Cross Write using our server-side API
+                keys. This ensures secure, reliable AI generation without
+                requiring you to manage your own API keys.
               </p>
             </div>
             <div>

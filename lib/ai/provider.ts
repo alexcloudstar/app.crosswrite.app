@@ -1,6 +1,3 @@
-// AI Provider for OpenAI integration with deployment mode key selection
-// This file handles all AI operations with proper key management and rate limiting
-
 import OpenAI from 'openai';
 import {
   getApiKeyForGeneration,
@@ -8,7 +5,6 @@ import {
 } from '@/lib/config/serverConfig';
 import { checkRateLimit } from '@/lib/utils/rateLimit';
 
-// Allowed models for cost/latency optimization
 type AllowedModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-3.5-turbo';
 
 interface ModelConfig {
@@ -23,18 +19,16 @@ interface InvokeParams {
   modelConfig?: ModelConfig;
 }
 
-// Rate limiting per user + purpose
 function getRateLimitKey(userId: string, purpose: string): string {
   return `${userId}:${purpose}`;
 }
 
-// Input size limits per action
 const INPUT_LIMITS: Record<string, number> = {
   improveText: 8000,
   adjustTone: 6000,
   summarizeText: 10000,
   generateSuggestions: 8000,
-  generateThumbnail: 500, // Prompt length for DALL-E
+  generateThumbnail: 500,
 };
 
 export class AIProvider {
@@ -46,7 +40,6 @@ export class AIProvider {
   }
 
   async invoke({ purpose, input, modelConfig }: InvokeParams): Promise<string> {
-    // Validate input length
     const maxLength = INPUT_LIMITS[purpose] || 5000;
     if (input.length > maxLength) {
       throw new Error(
@@ -54,8 +47,7 @@ export class AIProvider {
       );
     }
 
-    // Rate limiting (5 requests per minute per user + purpose)
-    const userId = 'temp'; // TODO: Get from session
+    const userId = 'temp';
     const rateLimitResult = checkRateLimit(
       getRateLimitKey(userId, purpose),
       5,
@@ -113,5 +105,4 @@ export class AIProvider {
   }
 }
 
-// Singleton instance
 export const aiProvider = new AIProvider();
