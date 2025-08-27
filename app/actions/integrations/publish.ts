@@ -18,6 +18,7 @@ import {
 } from '@/lib/integrations/_core';
 import { createDevtoClient } from '@/lib/integrations/devto';
 import { createHashnodeClient } from '@/lib/integrations/hashnode';
+import { Draft } from '@/lib/types/drafts';
 
 export async function publishToPlatforms(input: unknown) {
   try {
@@ -92,13 +93,16 @@ export async function publishToPlatforms(input: unknown) {
         const integration = integrationMap.get(platform)!;
         const result = await publishToSinglePlatform(
           {
-            id: draft.id,
-            title: draft.title,
-            content: draft.content,
-            tags: draft.tags || undefined,
+            ...draft,
+            tags: draft.tags || [],
+            platforms: draft.platforms || [],
+            status: draft.status as 'draft' | 'scheduled' | 'published',
+            contentPreview: draft.contentPreview || undefined,
             thumbnailUrl: draft.thumbnailUrl || undefined,
             seoTitle: draft.seoTitle || undefined,
             seoDescription: draft.seoDescription || undefined,
+            publishedAt: draft.publishedAt || undefined,
+            scheduledAt: draft.scheduledAt || undefined,
           },
           {
             platform: integration.platform,
@@ -167,15 +171,7 @@ export async function publishToPlatforms(input: unknown) {
 }
 
 async function publishToSinglePlatform(
-  draft: {
-    id: string;
-    title: string;
-    content: string;
-    tags?: string[];
-    thumbnailUrl?: string;
-    seoTitle?: string;
-    seoDescription?: string;
-  },
+  draft: Draft,
   integration: {
     platform: string;
     apiKey?: string;
@@ -189,23 +185,11 @@ async function publishToSinglePlatform(
     setAsCanonical?: boolean;
   }
 ): Promise<{ platformPostId: string; platformUrl: string }> {
-  const mappedContent = mapContentForPlatform(
-    {
-      id: draft.id,
-      title: draft.title,
-      content: draft.content,
-      tags: draft.tags || [],
-      thumbnailUrl: draft.thumbnailUrl,
-      seoTitle: draft.seoTitle,
-      seoDescription: draft.seoDescription,
-    },
-    integration.platform,
-    {
-      publishAsDraft: options.publishAsDraft,
-      publicationId: options.publicationId,
-      setAsCanonical: options.setAsCanonical,
-    }
-  );
+  const mappedContent = mapContentForPlatform(draft, integration.platform, {
+    publishAsDraft: options.publishAsDraft,
+    publicationId: options.publicationId,
+    setAsCanonical: options.setAsCanonical,
+  });
 
   switch (integration.platform) {
     case 'devto':
