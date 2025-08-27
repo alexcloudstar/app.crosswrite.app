@@ -1,15 +1,10 @@
-/**
- * Main processing engine for the scheduler
- * Orchestrates the processing of due scheduled posts
- */
-
-import { db } from '@/db/client';
-import { scheduledPosts, drafts, integrations } from '@/db/schema';
-import { eq, and, lte, inArray } from 'drizzle-orm';
-import { isDueForProcessing, SCHEDULER_CONFIG } from './time';
-import { acquireLock, releaseLock, isAlreadyPublished } from './locks';
-import { shouldRetry, updateWithRetryInfo, resetRetryInfo } from './retry';
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
+import { db } from '@/db/client';
+import { drafts, integrations, scheduledPosts } from '@/db/schema';
+import { and, eq, inArray, lte } from 'drizzle-orm';
+import { acquireLock, isAlreadyPublished, releaseLock } from './locks';
+import { resetRetryInfo, shouldRetry, updateWithRetryInfo } from './retry';
+import { SCHEDULER_CONFIG } from './time';
 
 export interface ProcessingResult {
   processed: number;
@@ -19,10 +14,6 @@ export interface ProcessingResult {
   errors: string[];
 }
 
-/**
- * Find due scheduled posts that need processing
- * Uses grace window and status filtering
- */
 async function findDueJobs(): Promise<
   Array<{
     id: string;
@@ -58,17 +49,12 @@ async function findDueJobs(): Promise<
     )
     .limit(SCHEDULER_CONFIG.MAX_CONCURRENCY);
 
-  // Handle nullable retryCount by defaulting to 0
   return results.map(result => ({
     ...result,
     retryCount: result.retryCount ?? 0,
   }));
 }
 
-/**
- * Process a single scheduled post
- * Handles locking, publishing, and status updates
- */
 async function processScheduledPost(scheduledPost: {
   id: string;
   draftId: string;
@@ -80,17 +66,14 @@ async function processScheduledPost(scheduledPost: {
   const { id, draftId, userId, platforms, retryCount } = scheduledPost;
 
   try {
-    // Try to acquire lock
     const lockAcquired = await acquireLock(id);
     if (!lockAcquired) {
       return { success: false, error: 'Job already being processed' };
     }
 
     try {
-      // Check if already published
       const alreadyPublished = await isAlreadyPublished(id, draftId, platforms);
       if (alreadyPublished) {
-        // Mark as published since it was already successful
         await db
           .update(scheduledPosts)
           .set({
@@ -103,7 +86,6 @@ async function processScheduledPost(scheduledPost: {
         return { success: true };
       }
 
-      // Get draft content
       const [draft] = await db
         .select()
         .from(drafts)
@@ -114,7 +96,6 @@ async function processScheduledPost(scheduledPost: {
         throw new Error('Draft not found');
       }
 
-      // Verify user has integrations for all platforms
       const userIntegrations = await db
         .select()
         .from(integrations)
@@ -137,20 +118,16 @@ async function processScheduledPost(scheduledPost: {
         );
       }
 
-      // Publish to platforms using existing action
       const publishResult = await publishToPlatforms({
         draftId,
         platforms,
-        options: {
-          // Pass any additional options here
-        },
+        options: {},
       });
 
       if (!publishResult.success) {
         throw new Error(publishResult.error || 'Publishing failed');
       }
 
-      // Determine final status based on platform results
       const platformResults = publishResult.data as Array<{
         platform: string;
         success: boolean;
@@ -171,7 +148,6 @@ async function processScheduledPost(scheduledPost: {
         finalStatus = 'failed';
       }
 
-      // Update scheduled post status
       await db
         .update(scheduledPosts)
         .set({
@@ -181,18 +157,15 @@ async function processScheduledPost(scheduledPost: {
         })
         .where(eq(scheduledPosts.id, id));
 
-      // Reset retry info on success
       if (finalStatus === 'published') {
         await resetRetryInfo(id);
       }
 
       return { success: true };
     } finally {
-      // Always release the lock
       await releaseLock(id);
     }
   } catch (error) {
-    // Handle retry logic
     const retryResult = shouldRetry(error, retryCount);
 
     if (retryResult.shouldRetry) {
@@ -203,7 +176,6 @@ async function processScheduledPost(scheduledPost: {
         retryResult.errorMessage
       );
     } else {
-      // Mark as failed
       await updateWithRetryInfo(
         id,
         retryCount + 1,
@@ -219,10 +191,6 @@ async function processScheduledPost(scheduledPost: {
   }
 }
 
-/**
- * Main function to process all due jobs
- * Called by external cron or manual trigger
- */
 export async function processDueJobs(): Promise<ProcessingResult> {
   const result: ProcessingResult = {
     processed: 0,
@@ -233,7 +201,6 @@ export async function processDueJobs(): Promise<ProcessingResult> {
   };
 
   try {
-    // Find due jobs
     const dueJobs = await findDueJobs();
 
     if (dueJobs.length === 0) {
@@ -243,7 +210,6 @@ export async function processDueJobs(): Promise<ProcessingResult> {
 
     console.log(`Found ${dueJobs.length} due jobs to process`);
 
-    // Process jobs concurrently (up to max concurrency)
     const processingPromises = dueJobs.map(async job => {
       result.processed++;
 
@@ -267,7 +233,6 @@ export async function processDueJobs(): Promise<ProcessingResult> {
       }
     });
 
-    // Wait for all jobs to complete
     await Promise.all(processingPromises);
 
     console.log(

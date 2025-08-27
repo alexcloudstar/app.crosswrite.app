@@ -1,5 +1,5 @@
 import { processDueJobs, ProcessingResult } from './engine';
-import { successResult, errorResult } from '@/app/actions/_utils';
+import { successResult } from '@/app/actions/_utils';
 
 export async function processScheduledPostsCron(): Promise<{
   success: boolean;

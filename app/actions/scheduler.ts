@@ -313,17 +313,8 @@ export async function bulkSchedule(input: unknown) {
   }
 }
 
-/**
- * Server action for processing due jobs
- * Can be called manually or by external cron
- */
 export async function processDueJobsAction() {
   try {
-    const session = await requireAuth();
-
-    // Only allow admin users or specific triggers
-    // For now, allow any authenticated user (can be restricted later)
-
     const result = await processDueJobs();
 
     return successResult(result);
