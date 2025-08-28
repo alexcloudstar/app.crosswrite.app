@@ -9,7 +9,15 @@ import { StatCard } from '@/components/ui/StatCard';
 import { useAppStore } from '@/lib/store';
 import { DashboardStats, Draft } from '@/lib/types/dashboard';
 import { formatDate, getPlatformDisplayName } from '@/lib/utils';
-import { Calendar, Edit3, FileText, Plus, TrendingUp } from 'lucide-react';
+import {
+  Calendar,
+  Edit3,
+  FileText,
+  Plus,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -118,6 +126,60 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className='mb-8'>
+        <div className='flex items-center justify-between mb-4'>
+          <h2 className='text-xl font-semibold'>Quick Actions</h2>
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <Link
+            href='/editor'
+            className='card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary/50 group'
+          >
+            <div className='card-body text-center'>
+              <div className='w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary group-hover:text-white transition-all duration-200'>
+                <Plus size={24} />
+              </div>
+              <h3 className='font-semibold mb-2'>Create New Draft</h3>
+              <p className='text-sm text-base-content/70'>
+                Start writing your next piece of content
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href='/scheduler'
+            className='card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary/50 group'
+          >
+            <div className='card-body text-center'>
+              <div className='w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-500 group-hover:text-white transition-all duration-200'>
+                <Calendar size={24} />
+              </div>
+              <h3 className='font-semibold mb-2'>Schedule Content</h3>
+              <p className='text-sm text-base-content/70'>
+                Plan and schedule your posts
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href='/integrations'
+            className='card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary/50 group'
+          >
+            <div className='card-body text-center'>
+              <div className='w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-500 group-hover:text-white transition-all duration-200'>
+                <CheckCircle size={24} />
+              </div>
+              <h3 className='font-semibold mb-2'>Manage Platforms</h3>
+              <p className='text-sm text-base-content/70'>
+                Connect and configure your platforms
+              </p>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
         <StatCard
           title='Drafts'
@@ -128,7 +190,7 @@ export default function DashboardPage() {
         <StatCard
           title='Scheduled'
           value={stats.scheduled}
-          icon={<Calendar size={20} />}
+          icon={<Clock size={20} />}
           description='Ready to publish'
         />
         <StatCard
@@ -146,96 +208,87 @@ export default function DashboardPage() {
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-        <div className='card bg-base-100 border border-base-300 shadow-sm'>
-          <div className='card-body'>
-            <h2 className='card-title text-lg mb-4'>Recent Activity</h2>
-            <div className='space-y-4'>
-              <div className='text-center py-8'>
-                <p className='text-base-content/70'>No recent activity</p>
-                <p className='text-sm text-base-content/50 mt-1'>
-                  Your publishing activity will appear here
-                </p>
+        {/* Continue Drafting - Made larger and more prominent */}
+        <div className='lg:col-span-2'>
+          <div className='card bg-base-100 border border-base-300 shadow-sm'>
+            <div className='card-body'>
+              <div className='flex items-center justify-between mb-6'>
+                <h2 className='card-title text-lg'>Continue Drafting</h2>
+                <Link href='/editor' className='btn btn-primary btn-sm'>
+                  <Plus size={16} className='mr-2' />
+                  New Draft
+                </Link>
               </div>
+
+              {recentDrafts.length === 0 ? (
+                <EmptyState
+                  icon={<Edit3 />}
+                  title='No drafts yet'
+                  description='Start writing your first draft to see it here.'
+                  action={
+                    <Link href='/editor' className='btn btn-primary'>
+                      Start Writing
+                    </Link>
+                  }
+                />
+              ) : (
+                <div className='space-y-4'>
+                  {recentDrafts.map(draft => (
+                    <Link
+                      key={draft.id}
+                      href={`/editor?id=${draft.id}`}
+                      className='block p-4 border border-base-300 rounded-lg hover:border-primary hover:bg-base-50 transition-all duration-200 group'
+                    >
+                      <div className='flex items-start justify-between'>
+                        <div className='flex-1 pr-4'>
+                          <h3 className='font-semibold text-base mb-2 group-hover:text-primary transition-colors'>
+                            {draft.title}
+                          </h3>
+                          <p className='text-sm text-base-content/60 mb-3 leading-relaxed'>
+                            {draft.contentPreview &&
+                            draft.contentPreview.length > 80
+                              ? `${draft.contentPreview.substring(0, 80)}...`
+                              : draft.contentPreview || 'No preview available'}
+                          </p>
+                          <div className='space-y-2'>
+                            <div className='flex items-center space-x-2'>
+                              {draft.platforms
+                                ?.slice(0, 3)
+                                .map((platform: string) => (
+                                  <span
+                                    key={platform}
+                                    className='px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md'
+                                  >
+                                    {getPlatformDisplayName(platform)}
+                                  </span>
+                                ))}
+                              {draft.platforms &&
+                                draft.platforms.length > 3 && (
+                                  <span className='text-xs text-base-content/50'>
+                                    +{draft.platforms.length - 3} more
+                                  </span>
+                                )}
+                            </div>
+                            <div className='text-xs text-base-content/50'>
+                              {formatDate(new Date(draft.updatedAt))}
+                            </div>
+                          </div>
+                        </div>
+                        <div className='flex-shrink-0'>
+                          <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-200'>
+                            <Edit3 size={16} />
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className='card bg-base-100 border border-base-300 shadow-sm'>
-          <div className='card-body'>
-            <div className='flex items-center justify-between mb-6'>
-              <h2 className='card-title text-lg'>Continue Drafting</h2>
-              <Link href='/editor' className='btn btn-primary btn-sm'>
-                <Plus size={16} className='mr-2' />
-                New Draft
-              </Link>
-            </div>
-
-            {recentDrafts.length === 0 ? (
-              <EmptyState
-                icon={<Edit3 />}
-                title='No drafts yet'
-                description='Start writing your first draft to see it here.'
-                action={
-                  <Link href='/editor' className='btn btn-primary'>
-                    Start Writing
-                  </Link>
-                }
-              />
-            ) : (
-              <div className='space-y-4'>
-                {recentDrafts.map(draft => (
-                  <Link
-                    key={draft.id}
-                    href={`/editor?id=${draft.id}`}
-                    className='block p-4 border border-base-300 rounded-lg hover:border-primary hover:bg-base-50 transition-all duration-200 group'
-                  >
-                    <div className='flex items-start justify-between'>
-                      <div className='flex-1 pr-4'>
-                        <h3 className='font-semibold text-base mb-2 group-hover:text-primary transition-colors'>
-                          {draft.title}
-                        </h3>
-                        <p className='text-sm text-base-content/60 mb-3 leading-relaxed'>
-                          {draft.contentPreview &&
-                          draft.contentPreview.length > 80
-                            ? `${draft.contentPreview.substring(0, 80)}...`
-                            : draft.contentPreview || 'No preview available'}
-                        </p>
-                        <div className='space-y-2'>
-                          <div className='flex items-center space-x-2'>
-                            {draft.platforms
-                              ?.slice(0, 3)
-                              .map((platform: string) => (
-                                <span
-                                  key={platform}
-                                  className='px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md'
-                                >
-                                  {getPlatformDisplayName(platform)}
-                                </span>
-                              ))}
-                            {draft.platforms && draft.platforms.length > 3 && (
-                              <span className='text-xs text-base-content/50'>
-                                +{draft.platforms.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                          <div className='text-xs text-base-content/50'>
-                            {formatDate(new Date(draft.updatedAt))}
-                          </div>
-                        </div>
-                      </div>
-                      <div className='flex-shrink-0'>
-                        <div className='w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-200'>
-                          <Edit3 size={16} />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
+        {/* News Updates - Made smaller but still prominent */}
         <div className='lg:col-span-1'>
           <NewsUpdates />
         </div>
