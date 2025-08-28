@@ -48,9 +48,11 @@ OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
 - **Database**: Neon Postgres with Drizzle ORM
 - **Styling**: Tailwind CSS v4 + DaisyUI (peachsorbet theme)
 - **Icons**: lucide-react
-
 - **State Management**: Zustand
-- **Forms**: react-hook-form + zod (UI only)
+- **Validation**: Zod
+- **Notifications**: react-hot-toast
+- **AI Integration**: OpenAI
+- **Email**: Resend
 - **Animations**: CSS transitions and micro-interactions
 
 ## 📦 Installation
@@ -243,7 +245,6 @@ components/
 ├── providers/            # Context providers
 │   ├── SessionProvider.tsx # Session provider
 │   └── ToastProvider.tsx # Toast notifications
-
 
 lib/
 ├── actions/              # Action utilities
