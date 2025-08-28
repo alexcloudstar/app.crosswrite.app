@@ -67,7 +67,6 @@ export default function OnboardingPage() {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding
       router.push('/');
     }
   };
@@ -111,7 +110,6 @@ export default function OnboardingPage() {
   return (
     <div className='min-h-screen bg-base-100 flex items-center justify-center p-6'>
       <div className='w-full max-w-2xl'>
-        {/* Progress Bar */}
         <div className='mb-8'>
           <div className='flex items-center justify-between mb-4'>
             {steps.map((step, index) => {
@@ -157,7 +155,6 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* Step Content */}
         <div className='card bg-base-100 border border-base-300 shadow-lg'>
           <div className='card-body'>
             {currentStep === 1 && (
@@ -284,7 +281,6 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Navigation */}
             <div className='flex items-center justify-between pt-6'>
               <button
                 onClick={handleBack}

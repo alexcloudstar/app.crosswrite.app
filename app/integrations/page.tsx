@@ -40,7 +40,6 @@ export default function IntegrationsPage() {
   const [setAsCanonical, setSetAsCanonical] = useState(false);
   const [publishAsDraft, setPublishAsDraft] = useState(false);
 
-  // Connection form states
   const [apiKey, setApiKey] = useState('');
   const [publicationId, setPublicationId] = useState('');
   const [publications, setPublications] = useState<
@@ -55,7 +54,6 @@ export default function IntegrationsPage() {
   const [selectedPublicationName, setSelectedPublicationName] =
     useState<string>('');
 
-  // Load integrations on component mount
   useEffect(() => {
     async function loadIntegrations() {
       try {
@@ -81,7 +79,6 @@ export default function IntegrationsPage() {
     loadIntegrations();
   }, []);
 
-  // Create a list of all available platforms with their connection status
   const getPlatformsWithStatus = () => {
     const connectedPlatforms = new Map(
       integrations.map(integration => [integration.platform, integration])
@@ -119,7 +116,6 @@ export default function IntegrationsPage() {
       const result = await disconnectIntegration({ id: integration.id });
 
       if (result.success) {
-        // Reload integrations to get the updated list
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
           setIntegrations(
@@ -155,7 +151,6 @@ export default function IntegrationsPage() {
 
       if (result.success) {
         toast.success(`Connection test successful for ${platform}`);
-        // Reload integrations to get updated lastSync
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
           setIntegrations(
@@ -193,7 +188,6 @@ export default function IntegrationsPage() {
 
       if (result.success) {
         toast.success(`Analytics sync completed for ${platform}`);
-        // Reload integrations to get updated lastSync
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
           setIntegrations(
@@ -233,7 +227,6 @@ export default function IntegrationsPage() {
         typeof result.data === 'object' &&
         'publications' in result.data
       ) {
-        // Transform Hashnode publications to match expected format
         const rawPublications = (
           result.data as {
             publications: Array<{
@@ -245,7 +238,6 @@ export default function IntegrationsPage() {
           }
         ).publications;
 
-        // Transform to match UI expectations
         const transformedPublications = rawPublications.map(pub => ({
           id: pub._id,
           name: pub.title,
@@ -268,13 +260,11 @@ export default function IntegrationsPage() {
     setConnecting(platform);
 
     try {
-      // Validate required fields
       if (!apiKey.trim()) {
         toast.error('API key is required');
         return;
       }
 
-      // Prepare integration data based on platform
       let integrationData: {
         platform: string;
         apiKey: string;
@@ -284,7 +274,6 @@ export default function IntegrationsPage() {
         apiKey: '',
       };
 
-      // Add platform-specific fields
       switch (platform) {
         case 'devto':
           integrationData = {
@@ -302,11 +291,9 @@ export default function IntegrationsPage() {
           break;
       }
 
-      // Call the server action to create the integration
       const result = await connectIntegration(integrationData);
 
       if (result.success) {
-        // Reload integrations to get the updated list
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
           setIntegrations(
@@ -320,7 +307,6 @@ export default function IntegrationsPage() {
           );
         }
 
-        // Clear form data
         setApiKey('');
         setPublicationId('');
         setSelectedPublicationName('');
@@ -331,7 +317,6 @@ export default function IntegrationsPage() {
           publicationId: publicationId || 'none',
         });
       } else {
-        // Show error message
         toast.error(`Failed to connect: ${result.error}`);
       }
     } catch (error) {
@@ -537,7 +522,6 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {/* Publication Selector Modal */}
       {showPublicationSelector && (
         <div className='modal modal-open'>
           <div className='modal-box max-w-2xl'>
@@ -555,7 +539,6 @@ export default function IntegrationsPage() {
                     setPublicationId(publication.id);
                     setSelectedPublicationName(publication.name);
                     setShowPublicationSelector(false);
-                    // Show a brief success message
                     const successMessage = document.createElement('div');
                     successMessage.className =
                       'alert alert-success fixed top-4 right-4 z-50 max-w-sm';
@@ -606,7 +589,6 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {/* Connection Settings Modal */}
       {showSettings && (
         <div className='modal modal-open'>
           <div className='modal-box max-w-2xl'>
@@ -619,7 +601,6 @@ export default function IntegrationsPage() {
             </h3>
 
             <div className='space-y-6'>
-              {/* Platform-specific connection instructions */}
               {showSettings === 'devto' && (
                 <div className='space-y-4'>
                   <div className='alert alert-info'>
@@ -713,7 +694,6 @@ export default function IntegrationsPage() {
                 </div>
               )}
 
-              {/* Publishing Defaults */}
               <div>
                 <h4 className='font-semibold mb-3'>Publishing Defaults</h4>
                 <div className='space-y-4'>
