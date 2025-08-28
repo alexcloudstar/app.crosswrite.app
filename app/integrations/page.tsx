@@ -1,25 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  Settings,
-  RefreshCw,
-  Check,
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
-import {
-  listIntegrations,
   connectIntegration,
   disconnectIntegration,
-  testIntegration,
   getPlatformPublications,
-  syncPlatformAnalytics,
+  listIntegrations,
+  testIntegration,
 } from '@/app/actions/integrations';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { platformConfig } from '@/lib/config/platforms';
+import {
+  Check,
+  CheckCircle,
+  ExternalLink,
+  RefreshCw,
+  Settings,
+  XCircle,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<
@@ -35,7 +34,6 @@ export default function IntegrationsPage() {
   const [showSettings, setShowSettings] = useState<string | null>(null);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState<string | null>(null);
 
   const [setAsCanonical, setSetAsCanonical] = useState(false);
   const [publishAsDraft, setPublishAsDraft] = useState(false);
@@ -171,43 +169,6 @@ export default function IntegrationsPage() {
       toast.error('Failed to test connection. Please try again.');
     } finally {
       setTesting(null);
-    }
-  };
-
-  const handleSyncAnalytics = async (platform: string) => {
-    const integration = integrations.find(i => i.platform === platform);
-    if (!integration) return;
-
-    setSyncing(platform);
-
-    try {
-      const result = await syncPlatformAnalytics({
-        platform: platform as 'devto' | 'hashnode',
-        integrationId: integration.id,
-      });
-
-      if (result.success) {
-        toast.success(`Analytics sync completed for ${platform}`);
-        const reloadResult = await listIntegrations();
-        if (reloadResult.success && reloadResult.data) {
-          setIntegrations(
-            reloadResult.data as Array<{
-              id: string;
-              platform: string;
-              status: string;
-              connectedAt?: Date;
-              lastSync?: Date;
-            }>
-          );
-        }
-      } else {
-        toast.error(`Analytics sync failed: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Failed to sync analytics for', platform, error);
-      toast.error('Failed to sync analytics. Please try again.');
-    } finally {
-      setSyncing(null);
     }
   };
 
@@ -470,49 +431,30 @@ export default function IntegrationsPage() {
                         </span>
                         <span>{platform.lastSync.toLocaleDateString()}</span>
                       </div>
-                      <div className='flex items-center space-x-2 mt-2'>
-                        <button
-                          onClick={handleSyncAnalytics.bind(
-                            null,
-                            platform.platform
+                      {platform.platform === 'hashnode' && (
+                        <div className='flex items-center space-x-2 mt-2'>
+                          {selectedPublicationName && (
+                            <span className='text-xs text-base-content/70'>
+                              Selected: {selectedPublicationName}
+                            </span>
                           )}
-                          disabled={syncing === platform.platform}
-                          className='btn btn-ghost btn-xs'
-                        >
-                          {syncing === platform.platform ? (
-                            <>
-                              <div className='loading loading-spinner loading-xs'></div>
-                              Syncing...
-                            </>
-                          ) : (
-                            'Sync Analytics'
-                          )}
-                        </button>
-                        {platform.platform === 'hashnode' && (
-                          <div className='flex items-center space-x-2'>
-                            {selectedPublicationName && (
-                              <span className='text-xs text-base-content/70'>
-                                Selected: {selectedPublicationName}
-                              </span>
+                          <button
+                            onClick={handleLoadPublications.bind(
+                              null,
+                              platform.platform
                             )}
-                            <button
-                              onClick={handleLoadPublications.bind(
-                                null,
-                                platform.platform
-                              )}
-                              className={`btn btn-xs ${
-                                selectedPublicationName
-                                  ? 'btn-success'
-                                  : 'btn-ghost'
-                              }`}
-                            >
-                              {selectedPublicationName
-                                ? 'Change Publication'
-                                : 'Select Publication'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                            className={`btn btn-xs ${
+                              selectedPublicationName
+                                ? 'btn-success'
+                                : 'btn-ghost'
+                            }`}
+                          >
+                            {selectedPublicationName
+                              ? 'Change Publication'
+                              : 'Select Publication'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

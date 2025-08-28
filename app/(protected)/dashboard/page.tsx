@@ -1,33 +1,17 @@
 'use client';
 
-import {
-  FileText,
-  Calendar,
-  TrendingUp,
-  Eye,
-  Clock,
-  Plus,
-  Edit3,
-  BarChart3,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { StatCard } from '@/components/ui/StatCard';
-import { Sparkline } from '@/components/charts/Sparkline';
+import { listDrafts } from '@/app/actions/drafts';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { NewsUpdates } from '@/components/ui/NewsUpdates';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
-import { NewsUpdates } from '@/components/ui/NewsUpdates';
-import { formatDate, getPlatformDisplayName } from '@/lib/utils';
+import { StatCard } from '@/components/ui/StatCard';
 import { useAppStore } from '@/lib/store';
-import { listDrafts } from '@/app/actions/drafts';
-import { getOverview, getReadsOverTime } from '@/app/actions/analytics';
-import {
-  Draft,
-  AnalyticsData,
-  ReadsData,
-  DashboardStats,
-} from '@/lib/types/dashboard';
+import { DashboardStats, Draft } from '@/lib/types/dashboard';
+import { formatDate, getPlatformDisplayName } from '@/lib/utils';
+import { Calendar, Edit3, FileText, Plus, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   const { userPlan } = useAppStore();
@@ -38,12 +22,7 @@ export default function DashboardPage() {
     published30Days: 0,
   });
   const [recentDrafts, setRecentDrafts] = useState<Draft[]>([]);
-  const [analytics, setAnalytics] = useState<AnalyticsData>({
-    reads: 0,
-    engagement: 0,
-    followers: 0,
-  });
-  const [readsData, setReadsData] = useState<ReadsData[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -84,31 +63,6 @@ export default function DashboardPage() {
             )
             .slice(0, 3);
           setRecentDrafts(recent);
-        }
-
-        const analyticsResult = await getOverview({ range: '30d' });
-        if (analyticsResult.success && analyticsResult.data) {
-          const analyticsData = analyticsResult.data as {
-            reads: number;
-            engagement: number;
-          };
-          setAnalytics({
-            reads: analyticsData.reads || 0,
-            engagement: analyticsData.engagement || 0,
-            followers: 0, // TODO: Get from platform integrations
-          });
-        }
-
-        const readsResult = await getReadsOverTime({ range: '7d' });
-        if (readsResult.success && readsResult.data) {
-          const readsData = (
-            readsResult.data as { data: Array<{ date: string; reads: number }> }
-          ).data;
-          const data = readsData.map(item => ({
-            date: item.date,
-            value: item.reads || 0,
-          }));
-          setReadsData(data);
         }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -189,47 +143,6 @@ export default function DashboardPage() {
           icon={<TrendingUp size={20} />}
           description='Last month'
         />
-      </div>
-
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
-        <div className='card bg-base-100 border border-base-300 shadow-sm'>
-          <div className='card-body p-6'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='font-semibold'>Total Reads</h3>
-              <Eye size={20} className='text-base-content/50' />
-            </div>
-            <div className='text-2xl font-bold mb-2'>
-              {analytics.reads.toLocaleString()}
-            </div>
-            <Sparkline data={readsData} />
-          </div>
-        </div>
-
-        <div className='card bg-base-100 border border-base-300 shadow-sm'>
-          <div className='card-body p-6'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='font-semibold'>Engagement</h3>
-              <BarChart3 size={20} className='text-base-content/50' />
-            </div>
-            <div className='text-2xl font-bold mb-2'>
-              {analytics.engagement}
-            </div>
-            <Sparkline data={readsData} color='#7ad3a3' />
-          </div>
-        </div>
-
-        <div className='card bg-base-100 border border-base-300 shadow-sm'>
-          <div className='card-body p-6'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='font-semibold'>Followers</h3>
-              <Clock size={20} className='text-base-content/50' />
-            </div>
-            <div className='text-2xl font-bold mb-2'>
-              {analytics.followers.toLocaleString()}
-            </div>
-            <Sparkline data={readsData} color='#89b4fa' />
-          </div>
-        </div>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>

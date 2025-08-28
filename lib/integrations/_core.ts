@@ -6,7 +6,6 @@ export interface IntegrationClient {
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }>;
   syncStatus?(params?: SyncParams): Promise<void>;
-  syncAnalytics?(params?: SyncParams): Promise<void>;
 }
 
 export interface MappedContent {

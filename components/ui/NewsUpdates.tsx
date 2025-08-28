@@ -21,15 +21,6 @@ const newsItems: NewsItemSummary[] = [
     date: '2024-01-05',
     type: 'update',
   },
-  {
-    id: '3',
-    title: 'Analytics Dashboard',
-    description:
-      'Track your content performance with detailed analytics and insights.',
-    date: '2024-01-01',
-    type: 'feature',
-    link: '/analytics',
-  },
 ];
 
 function getTypeIcon(type: NewsItemSummary['type']) {

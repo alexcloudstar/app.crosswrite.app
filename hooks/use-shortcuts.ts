@@ -113,11 +113,6 @@ export function useShortcuts() {
             console.log('Go to analytics shortcut triggered');
             router.push('/analytics');
             return;
-          case '7':
-            event.preventDefault();
-            console.log('Go to settings shortcut triggered');
-            router.push('/settings');
-            return;
         }
       }
 

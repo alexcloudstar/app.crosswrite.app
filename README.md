@@ -37,7 +37,7 @@ OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
 - **AI-Assisted Editor**: Get real-time writing suggestions and improvements
 - **Multi-Platform Publishing**: Support for dev.to and Hashnode
 - **Smart Scheduling**: Schedule posts for optimal publishing times
-- **Analytics Dashboard**: Track performance across all platforms
+
 - **Command Palette**: Quick access to all features with keyboard shortcuts
 - **Responsive Design**: Works beautifully on desktop, tablet, and mobile
 
@@ -136,7 +136,6 @@ The app includes a protected layout (`app/(protected)/layout.tsx`) that:
 
 ### Dashboard (`/dashboard`)
 - Quick stats cards (Drafts, Scheduled, Published)
-- Sparkline charts for analytics
 - Recent activity feed
 - Continue drafting section
 
@@ -164,12 +163,7 @@ The app includes a protected layout (`app/(protected)/layout.tsx`) that:
 - Publishing defaults configuration
 - Connection status indicators
 
-### Analytics (`/analytics`)
-- KPI cards with trend indicators
-- Area charts for time series data
-- Bar charts for platform breakdowns
-- Pie charts for success rates
-- Top posts table
+
 
 ### Settings (`/settings`)
 - Profile configuration
@@ -203,7 +197,7 @@ app/
 │   ├── drafts/           # Drafts management
 │   ├── scheduler/        # Content scheduling
 │   ├── integrations/     # Platform connections
-│   ├── analytics/        # Performance metrics
+
 │   └── settings/         # User preferences
 ├── onboarding/           # New user setup
 └── layout.tsx            # Root layout with app shell
@@ -239,7 +233,7 @@ The application uses comprehensive mock data located in `/lib/mock.ts`:
 
 - **Drafts**: Sample content with different statuses and platforms
 - **Activities**: Recent user actions and system events
-- **Analytics**: Performance metrics and time series data
+
 - **Integrations**: Platform connection states and settings
 
 All data is realistic and demonstrates the full functionality of the application.
@@ -256,13 +250,9 @@ All data is realistic and demonstrates the full functionality of the application
 - Support for major developer platforms
 - Automatic formatting for each platform
 - Scheduled publishing with timezone support
-- Cross-platform analytics
 
-### Smart Analytics
-- Performance tracking across platforms
-- Engagement metrics and trends
-- Success rate monitoring
-- Top content identification
+
+
 
 ### User Experience
 - Responsive design for all devices
@@ -283,7 +273,7 @@ All data is realistic and demonstrates the full functionality of the application
    - Create a new draft in the editor
    - Connect platforms in integrations
    - Schedule content in the scheduler
-   - View analytics and performance
+   - View your content and performance
 
 4. **Try keyboard shortcuts**:
    - Press `⌘K` to open the command palette

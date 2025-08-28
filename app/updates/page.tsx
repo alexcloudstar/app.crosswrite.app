@@ -49,18 +49,7 @@ const allNewsItems: NewsItem[] = [
     link: '/scheduler',
     tags: ['Scheduling', 'Automation', 'Multi-platform'],
   },
-  {
-    id: '4',
-    title: 'Real Analytics Dashboard',
-    description:
-      'Track your content performance with real data, detailed insights, and export capabilities.',
-    detailedDescription:
-      'Our analytics dashboard now provides real-time insights into your content performance across all platforms. Track reads, reactions, clicks, and shares with beautiful visualizations, custom date ranges, and export functionality for detailed analysis.',
-    date: '2025-08-20',
-    type: 'feature',
-    link: '/analytics',
-    tags: ['Analytics', 'Insights', 'Performance'],
-  },
+
   {
     id: '5',
     title: 'Enhanced Draft Management',
@@ -119,18 +108,6 @@ const allNewsItems: NewsItem[] = [
     date: '2025-08-08',
     type: 'update',
     tags: ['Security', 'Performance', 'Optimization'],
-  },
-  {
-    id: '10',
-    title: 'Analytics Export & Reporting',
-    description:
-      'Export your analytics data and generate custom reports for detailed analysis.',
-    detailedDescription:
-      'Export your analytics data in CSV or JSON format for external analysis. Generate custom reports with date ranges, platform comparisons, and performance insights to track your content strategy effectiveness.',
-    date: '2025-08-05',
-    type: 'feature',
-    link: '/analytics',
-    tags: ['Analytics', 'Export', 'Reporting'],
   },
 ];
 

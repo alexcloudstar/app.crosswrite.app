@@ -122,7 +122,7 @@ export function NotificationSettings({
             <div>
               <h3 className='font-medium'>Weekly Report</h3>
               <p className='text-sm text-base-content/50'>
-                Get a weekly analytics report
+                Get a weekly content report
               </p>
             </div>
             <input
@@ -134,6 +134,7 @@ export function NotificationSettings({
           </div>
         </div>
       </div>
+
       <div className='flex justify-end'>
         <button
           className='btn btn-primary'
