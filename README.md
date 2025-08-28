@@ -35,7 +35,7 @@ OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
 ## 🚀 Features
 
 - **AI-Assisted Editor**: Get real-time writing suggestions and improvements
-- **Multi-Platform Publishing**: Support for dev.to and Hashnode
+- **Multi-Platform Publishing**: Support for Dev.to and Hashnode
 - **Smart Scheduling**: Schedule posts for optimal publishing times
 
 - **Command Palette**: Quick access to all features with keyboard shortcuts
@@ -48,7 +48,7 @@ OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
 - **Database**: Neon Postgres with Drizzle ORM
 - **Styling**: Tailwind CSS v4 + DaisyUI (peachsorbet theme)
 - **Icons**: lucide-react
-- **Charts**: recharts
+
 - **State Management**: Zustand
 - **Forms**: react-hook-form + zod (UI only)
 - **Animations**: CSS transitions and micro-interactions
@@ -182,10 +182,15 @@ The app includes a protected layout (`app/(protected)/layout.tsx`) that:
 
 - `N` - New draft
 - `⌘K` - Command palette
-- `⌘S` - Save draft
-- `⌘D` - Go to dashboard
+- `⌘D` - Go to drafts
 - `⌘E` - Go to editor
 - `⌘B` - Toggle sidebar
+- `⌘I` - Go to integrations
+- `⌘H` - Go to dashboard
+- `1` - Go to dashboard
+- `2` - Go to editor
+- `3` - Go to drafts
+- `G` - Go to drafts
 
 ## 🗂 Project Structure
 
@@ -197,7 +202,6 @@ app/
 │   ├── drafts/           # Drafts management
 │   ├── scheduler/        # Content scheduling
 │   ├── integrations/     # Platform connections
-
 │   ├── settings/         # User preferences
 │   ├── updates/          # News and updates
 │   ├── onboarding/       # New user setup
@@ -235,7 +239,7 @@ components/
 │   ├── SignOutButton.tsx # Sign out button
 │   ├── DeploymentModeBadge.tsx # Deployment mode indicator
 │   ├── CustomCheckbox.tsx # Custom checkbox component
-│   └── NewsUpdates.tsx   # News updates component
+
 ├── providers/            # Context providers
 │   ├── SessionProvider.tsx # Session provider
 │   └── ToastProvider.tsx # Toast notifications
@@ -279,7 +283,7 @@ db/
 - Grammar and style suggestions
 
 ### Multi-Platform Publishing
-- Support for major developer platforms
+- Support for Dev.to and Hashnode
 - Automatic formatting for each platform
 - Scheduled publishing with timezone support
 
@@ -310,7 +314,7 @@ db/
 4. **Try keyboard shortcuts**:
    - Press `⌘K` to open the command palette
    - Use `N` to create a new draft
-   - Navigate with `⌘D` and `⌘E`
+   - Navigate with `⌘D` (drafts), `⌘E` (editor), `⌘I` (integrations)
 
 ## 🔧 Development
 
