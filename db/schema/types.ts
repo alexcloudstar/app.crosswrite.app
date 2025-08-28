@@ -10,7 +10,7 @@ import { drafts } from './drafts';
 import { draftVersions } from './draft-versions';
 import { platformPosts } from './platform-posts';
 import { integrations } from './integrations';
-import { analytics } from './analytics';
+
 import { scheduledPosts } from './scheduled-posts';
 import { userUsage } from './user-usage';
 
@@ -35,8 +35,7 @@ export type PlatformPost = InferSelectModel<typeof platformPosts>;
 export type NewPlatformPost = InferInsertModel<typeof platformPosts>;
 export type Integration = InferSelectModel<typeof integrations>;
 export type NewIntegration = InferInsertModel<typeof integrations>;
-export type Analytics = InferSelectModel<typeof analytics>;
-export type NewAnalytics = InferInsertModel<typeof analytics>;
+
 export type ScheduledPost = InferSelectModel<typeof scheduledPosts>;
 export type NewScheduledPost = InferInsertModel<typeof scheduledPosts>;
 export type UserUsage = InferSelectModel<typeof userUsage>;

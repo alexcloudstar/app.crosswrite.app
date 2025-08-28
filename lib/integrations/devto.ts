@@ -2,7 +2,6 @@ import {
   IntegrationClient,
   MappedContent,
   normalizeError,
-  retryWithBackoff,
   validateTitle,
 } from './_core';
 
@@ -78,7 +77,14 @@ export class DevtoClient implements IntegrationClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.id) {
+        throw new Error('Invalid API response from Dev.to');
       }
 
       return { success: true };
@@ -93,136 +99,53 @@ export class DevtoClient implements IntegrationClient {
   async publish(
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }> {
-    return retryWithBackoff(async () => {
-      const titleValidation = validateTitle(content.title, 'devto');
-      if (!titleValidation.valid) {
-        throw new Error(titleValidation.error);
-      }
+    const titleValidation = validateTitle(content.title, 'devto');
+    if (!titleValidation.valid) {
+      throw new Error(titleValidation.error);
+    }
 
-      if (!content.title?.trim()) {
-        throw new Error('Title is required for Dev.to publishing');
-      }
+    const normalizedMarkdown = normalizeDevtoMarkdown(
+      content.body,
+      content.publishAsDraft || false
+    );
 
-      if (!content.body?.trim()) {
-        throw new Error('Body content is required for Dev.to publishing');
-      }
-
-      const normalizedMarkdown = normalizeDevtoMarkdown(
-        content.body,
-        content.publishAsDraft || false
-      );
-
-      const tags = (content.tags || []).slice(0, 4);
-
-      const shouldPublish = !content.publishAsDraft;
-
-      console.log('Dev.to publishing:', {
-        title:
-          content.title.substring(0, 50) +
-          (content.title.length > 50 ? '...' : ''),
-        hasFrontMatter: content.body.includes('---'),
-        publishIntent: shouldPublish ? 'publish' : 'draft',
-        tagCount: tags.length,
-        hasCoverImage: !!content.coverUrl,
-        hasCanonicalUrl: !!content.canonicalUrl,
-      });
-
-      const requestBody = {
+    const response = await fetch(`${this.baseUrl}/articles`, {
+      method: 'POST',
+      headers: {
+        'api-key': this.integration.apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         article: {
-          title: content.title.trim(),
+          title: content.title,
           body_markdown: normalizedMarkdown,
-          tags,
-          published: shouldPublish,
-          cover_image: content.coverUrl,
+          tags: content.tags || [],
           canonical_url: content.canonicalUrl,
+          cover_image: content.coverUrl,
+          published: !content.publishAsDraft,
         },
-      };
-
-      const response = await fetch(`${this.baseUrl}/articles`, {
-        method: 'POST',
-        headers: {
-          'api-key': this.integration.apiKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Dev.to API Error Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorText,
-        });
-        throw new Error(`Dev.to API error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-
-      console.log('Dev.to API Success Response:', {
-        id: data.id,
-        url: data.url,
-        published: data.published,
-        published_at: data.published_at,
-      });
-
-      if (shouldPublish && (!data.published || !data.published_at)) {
-        console.log(
-          'Dev.to safety net: Article was created as draft, attempting to publish...'
-        );
-
-        try {
-          const updateResponse = await fetch(
-            `${this.baseUrl}/articles/${data.id}`,
-            {
-              method: 'PUT',
-              headers: {
-                'api-key': this.integration.apiKey,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                article: {
-                  published: true,
-                  body_markdown: normalizedMarkdown,
-                },
-              }),
-            }
-          );
-
-          if (updateResponse.ok) {
-            const updateData = await updateResponse.json();
-            console.log('Dev.to safety net: Successfully published article:', {
-              id: updateData.id,
-              published: updateData.published,
-              published_at: updateData.published_at,
-            });
-          } else {
-            console.warn(
-              'Dev.to safety net: Failed to publish article:',
-              updateResponse.status
-            );
-          }
-        } catch (error) {
-          console.warn(
-            'Dev.to safety net: Error during follow-up publish:',
-            error
-          );
-        }
-      }
-
-      return {
-        platformPostId: data.id.toString(),
-        platformUrl: data.url,
-      };
+      }),
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.id) {
+      throw new Error('Failed to publish to Dev.to');
+    }
+
+    return {
+      platformPostId: data.id.toString(),
+      platformUrl: data.url,
+    };
   }
 
   async syncStatus(): Promise<void> {
     throw new Error('Status sync not implemented for Dev.to');
-  }
-
-  async syncAnalytics(): Promise<void> {
-    throw new Error('Analytics sync not implemented for Dev.to');
   }
 }
 

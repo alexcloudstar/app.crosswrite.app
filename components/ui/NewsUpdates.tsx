@@ -4,31 +4,78 @@ import Link from 'next/link';
 import { Bell, ExternalLink, Calendar, Star } from 'lucide-react';
 import { NewsItemSummary } from '@/lib/types/news';
 
+// Import the actual news data from the updates page
 const newsItems: NewsItemSummary[] = [
   {
     id: '1',
-    title: 'Multi-Platform Publishing',
+    title: 'AI-Powered Content Assistant',
     description:
-      'Write once, publish everywhere. Support for Dev.to, Hashnode, and more.',
-    date: '2024-01-15',
+      'Advanced AI integration with real-time writing suggestions, content improvement, and SEO optimization.',
+    date: '2025-08-28',
     type: 'feature',
+    link: '/editor',
   },
   {
     id: '2',
-    title: 'Enhanced Editor Experience',
+    title: 'Multi-Platform Publishing',
     description:
-      'Improved markdown editor with real-time preview and AI suggestions.',
-    date: '2024-01-05',
-    type: 'update',
+      'Publish to Dev.to, Hashnode, and Beehiiv with automatic formatting and optimization.',
+    date: '2025-08-25',
+    type: 'feature',
+    link: '/integrations',
   },
   {
     id: '3',
-    title: 'Analytics Dashboard',
+    title: 'Advanced Content Scheduling',
     description:
-      'Track your content performance with detailed analytics and insights.',
-    date: '2024-01-01',
+      'Schedule posts across multiple platforms with intelligent timing and automatic publishing.',
+    date: '2025-08-22',
     type: 'feature',
-    link: '/analytics',
+    link: '/scheduler',
+  },
+  {
+    id: '5',
+    title: 'Enhanced Draft Management',
+    description:
+      'Organize your content with version control, collaboration features, and advanced organization.',
+    date: '2025-08-18',
+    type: 'feature',
+    link: '/drafts',
+  },
+  {
+    id: '6',
+    title: 'AI Content Generation',
+    description:
+      'Generate SEO metadata, content summaries, and thumbnail suggestions with AI.',
+    date: '2025-08-15',
+    type: 'feature',
+    link: '/editor',
+  },
+  {
+    id: '7',
+    title: 'Platform-Specific Optimizations',
+    description:
+      'Automatic content formatting and optimization for each publishing platform.',
+    date: '2025-08-12',
+    type: 'update',
+    link: '/integrations',
+  },
+  {
+    id: '8',
+    title: 'Background Job Processing',
+    description:
+      'Reliable scheduled post processing with retry logic and error handling.',
+    date: '2025-08-10',
+    type: 'update',
+    link: '/scheduler',
+  },
+  {
+    id: '9',
+    title: 'Enhanced Security & Performance',
+    description:
+      'Improved authentication, rate limiting, and overall platform performance.',
+    date: '2025-08-08',
+    type: 'update',
   },
 ];
 

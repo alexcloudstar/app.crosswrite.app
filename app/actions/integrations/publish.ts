@@ -2,7 +2,7 @@
 
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/db/client';
-import { drafts, integrations, platformPosts } from '@/db/schema';
+import { drafts, integrations, platformPosts, userUsage } from '@/db/schema';
 import {
   requireAuth,
   successResult,
@@ -19,6 +19,35 @@ import {
 import { createDevtoClient } from '@/lib/integrations/devto';
 import { createHashnodeClient } from '@/lib/integrations/hashnode';
 import { Draft } from '@/lib/types/drafts';
+import { sql } from 'drizzle-orm';
+
+async function trackArticleUsage(userId: string) {
+  const now = new Date();
+  const monthYear = now.toISOString().slice(0, 7);
+
+  try {
+    const result = await db
+      .update(userUsage)
+      .set({
+        articlesPublished: sql`${userUsage.articlesPublished} + 1`,
+        updatedAt: now,
+      })
+      .where(
+        and(eq(userUsage.userId, userId), eq(userUsage.monthYear, monthYear))
+      )
+      .returning();
+
+    if (!result.length) {
+      await db.insert(userUsage).values({
+        userId,
+        monthYear,
+        articlesPublished: 1,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to track article usage:', error);
+  }
+}
 
 export async function publishToPlatforms(input: unknown) {
   try {
@@ -147,8 +176,8 @@ export async function publishToPlatforms(input: unknown) {
         })
         .where(eq(drafts.id, draftId));
 
-      // TODO: Implement proper usage tracking
-      // For now, just log the successful publish
+      await trackArticleUsage(session.id);
+
       console.log(
         `Successfully published to ${successCount} platforms for user ${session.id}`
       );

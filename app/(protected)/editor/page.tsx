@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Save, Eye, Send, Settings, X } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
@@ -21,8 +21,10 @@ import {
   generateSuggestions,
 } from '@/app/actions/ai';
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
-import { createDraft } from '@/app/actions/drafts';
+import { createDraft, getDraft, updateDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
+import { getUserSettings } from '@/app/actions/user-settings';
+
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft } from '@/lib/types/drafts';
 import { Integration, PublishResult } from '@/lib/types/integrations';
@@ -32,6 +34,7 @@ type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | 'saving' | null;
 
 export default function EditorPage() {
   const { userPlan } = useAppStore();
+  const [draftId, setDraftId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled Draft');
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
@@ -46,11 +49,46 @@ export default function EditorPage() {
   const [publishing, setPublishing] = useState(false);
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [selectedTone, setSelectedTone] = useState<
+    'professional' | 'casual' | 'friendly' | 'academic'
+  >('professional');
+  const [selectedLength, setSelectedLength] = useState<
+    'keep' | 'shorter' | 'longer'
+  >('keep');
+  const [contentHistory, setContentHistory] = useState<string[]>(['']);
+  const [historyIndex, setHistoryIndex] = useState(0);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
 
-  const isLoading = loadingType !== null;
+  const isLoading = loadingType !== null || isLoadingDraft;
+
+  useEffect(() => {
+    async function loadUserTone() {
+      try {
+        const result = await getUserSettings();
+        if (result.success && result.data) {
+          const settings = (
+            result.data as { settings: { preferredTone: string } }
+          ).settings;
+          if (settings?.preferredTone) {
+            setSelectedTone(
+              settings.preferredTone as
+                | 'professional'
+                | 'casual'
+                | 'friendly'
+                | 'academic'
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user tone preference:', error);
+      }
+    }
+
+    loadUserTone();
+  }, []);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTitle(e.target.value);
@@ -63,17 +101,199 @@ export default function EditorPage() {
   const handleToggleThumbnailGenerator = () =>
     setShowThumbnailGenerator(prev => !prev);
 
-  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    setContent(e.target.value);
+  const onChangeContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+
+    addToHistory(newContent);
+  };
+
+  const addToHistory = useCallback(
+    (newContent: string) => {
+      setContentHistory(prev => {
+        const newHistory = prev.slice(0, historyIndex + 1);
+        newHistory.push(newContent);
+
+        if (newHistory.length > 50) {
+          newHistory.shift();
+        }
+        return newHistory;
+      });
+      setHistoryIndex(prev => prev + 1);
+    },
+    [historyIndex]
+  );
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setContent(contentHistory[newIndex]);
+    }
+  }, [historyIndex, contentHistory]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < contentHistory.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setContent(contentHistory[newIndex]);
+    }
+  }, [historyIndex, contentHistory]);
+
+  const formatText = useCallback(
+    (format: string) => {
+      const textarea = document.querySelector(
+        'textarea'
+      ) as HTMLTextAreaElement;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = content.substring(start, end);
+
+      if (selectedText.length === 0) {
+        const before = content.substring(0, start);
+        const after = content.substring(end);
+
+        let newText = '';
+        switch (format) {
+          case 'bold':
+            newText = before + '**bold text**' + after;
+            break;
+          case 'italic':
+            newText = before + '*italic text*' + after;
+            break;
+          case 'code':
+            newText = before + '`code`' + after;
+            break;
+          case 'quote':
+            newText = before + '> quoted text' + after;
+            break;
+          case 'bullet-list':
+            newText = before + '- list item' + after;
+            break;
+          case 'numbered-list':
+            newText = before + '1. list item' + after;
+            break;
+        }
+
+        setContent(newText);
+        addToHistory(newText);
+
+        setTimeout(() => {
+          textarea.focus();
+          const newPosition =
+            start + newText.length - before.length - after.length;
+          textarea.setSelectionRange(newPosition - 8, newPosition - 1);
+        }, 0);
+      } else {
+        const before = content.substring(0, start);
+        const after = content.substring(end);
+
+        let newText = '';
+        switch (format) {
+          case 'bold':
+            newText = before + `**${selectedText}**` + after;
+            break;
+          case 'italic':
+            newText = before + `*${selectedText}*` + after;
+            break;
+          case 'code':
+            newText = before + `\`${selectedText}\`` + after;
+            break;
+          case 'quote':
+            const quotedLines = selectedText
+              .split('\n')
+              .map(line => `> ${line}`)
+              .join('\n');
+            newText = before + quotedLines + after;
+            break;
+          case 'bullet-list':
+            const bulletLines = selectedText
+              .split('\n')
+              .map(line => `- ${line}`)
+              .join('\n');
+            newText = before + bulletLines + after;
+            break;
+          case 'numbered-list':
+            const numberedLines = selectedText
+              .split('\n')
+              .map((line, index) => `${index + 1}. ${line}`)
+              .join('\n');
+            newText = before + numberedLines + after;
+            break;
+        }
+
+        setContent(newText);
+        addToHistory(newText);
+
+        setTimeout(() => {
+          textarea.focus();
+          const formattedLength = newText.length - before.length - after.length;
+          textarea.setSelectionRange(start, start + formattedLength);
+        }, 0);
+      }
+    },
+    [content, addToHistory]
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const textarea = document.querySelector('textarea');
+      if (document.activeElement !== textarea) return;
+
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key.toLowerCase()) {
+          case 'z':
+            e.preventDefault();
+            if (e.shiftKey) {
+              redo();
+            } else {
+              undo();
+            }
+            break;
+          case 'y':
+            e.preventDefault();
+            redo();
+            break;
+          case 'b':
+            e.preventDefault();
+            formatText('bold');
+            break;
+          case 'i':
+            e.preventDefault();
+            formatText('italic');
+            break;
+          case '`':
+            e.preventDefault();
+            formatText('code');
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [formatText, undo, redo]);
 
   const handleRewrite = async () => {
     if (!content.trim() || isLoading) return;
 
     setLoadingType('ai');
     try {
-      const result = await improveText({ text: content });
+      const goals = [];
+      if (selectedLength !== 'keep') {
+        goals.push(
+          selectedLength === 'shorter' ? 'Make it shorter' : 'Make it longer'
+        );
+      }
+
+      const result = await improveText({ text: content, goals });
       if (result.success && result.data) {
-        setContent((result.data as { improvedText: string }).improvedText);
+        const improvedText = (result.data as { improvedText: string })
+          .improvedText;
+        setContent(improvedText);
+        addToHistory(improvedText);
       } else {
         console.error('Rewrite failed:', result.error);
         toast.error('Failed to rewrite content. Please try again.');
@@ -90,15 +310,75 @@ export default function EditorPage() {
 
     setLoadingType('ai');
     try {
-      const result = await adjustTone({ text: content, tone: 'professional' });
+      const result = await adjustTone({ text: content, tone: selectedTone });
       if (result.success && result.data) {
-        setContent((result.data as { adjustedText: string }).adjustedText);
+        const adjustedText = (result.data as { adjustedText: string })
+          .adjustedText;
+        setContent(adjustedText);
+        addToHistory(adjustedText);
+        toast.success(`Content adjusted to ${selectedTone} tone`);
       } else {
         console.error('Tone adjustment failed:', result.error);
         toast.error('Failed to adjust tone. Please try again.');
       }
     } catch (error) {
       console.error('Tone adjustment error:', error);
+    } finally {
+      setLoadingType(null);
+    }
+  };
+
+  const handleApplyRewriteSettings = async () => {
+    if (isLoading) return;
+
+    if (!content.trim()) {
+      toast.success('Settings saved for when you add content');
+      setShowRewriteSettings(false);
+      return;
+    }
+
+    setLoadingType('ai');
+    try {
+      let result;
+
+      if (selectedTone !== 'professional') {
+        result = await adjustTone({ text: content, tone: selectedTone });
+        if (result.success && result.data) {
+          const adjustedText = (result.data as { adjustedText: string })
+            .adjustedText;
+          setContent(adjustedText);
+          addToHistory(adjustedText);
+        } else {
+          console.error('Tone adjustment failed:', result.error);
+          toast.error('Failed to adjust tone. Please try again.');
+          return;
+        }
+      }
+
+      if (selectedLength !== 'keep') {
+        const lengthInstruction =
+          selectedLength === 'shorter' ? 'Make it shorter' : 'Make it longer';
+        result = await improveText({
+          text: content,
+          goals: [lengthInstruction],
+        });
+        if (result.success && result.data) {
+          const improvedText = (result.data as { improvedText: string })
+            .improvedText;
+          setContent(improvedText);
+          addToHistory(improvedText);
+        } else {
+          console.error('Length adjustment failed:', result.error);
+          toast.error('Failed to adjust length. Please try again.');
+          return;
+        }
+      }
+
+      toast.success('Content adjusted successfully');
+      setShowRewriteSettings(false);
+    } catch (error) {
+      console.error('Rewrite settings error:', error);
+      toast.error('Failed to apply settings. Please try again.');
     } finally {
       setLoadingType(null);
     }
@@ -111,7 +391,9 @@ export default function EditorPage() {
     try {
       const result = await summarizeText({ text: content, style: 'paragraph' });
       if (result.success && result.data) {
-        setContent((result.data as { summary: string }).summary);
+        const summary = (result.data as { summary: string }).summary;
+        setContent(summary);
+        addToHistory(summary);
       } else {
         console.error('Summarize failed:', result.error);
         toast.error('Failed to summarize content. Please try again.');
@@ -152,9 +434,10 @@ export default function EditorPage() {
     if (suggestion) {
       const timestamp = new Date().toLocaleTimeString();
       const suggestionNote = `\n\n---\n**AI Suggestion (${timestamp}):** ${suggestion.suggestion}\n\n*Note: This suggestion has been applied. You can edit or remove this note as needed.*`;
-      setContent(prev => prev + suggestionNote);
+      const newContent = content + suggestionNote;
+      setContent(newContent);
+      addToHistory(newContent);
 
-      // Mark the suggestion as applied
       setSuggestions(prev =>
         prev.map(s => (s.id === suggestionId ? { ...s, applied: true } : s))
       );
@@ -166,14 +449,28 @@ export default function EditorPage() {
 
     setLoadingType('saving');
     try {
-      const result = await createDraft({
-        title: title.trim(),
-        content: content.trim(),
-        contentPreview:
-          content.substring(0, 200) + (content.length > 200 ? '...' : ''),
-        thumbnailUrl: thumbnailUrl || undefined,
-        tags: [], // TODO: Add tag extraction from content
-      });
+      let result;
+
+      if (draftId) {
+        result = await updateDraft({
+          id: draftId,
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+      } else {
+        result = await createDraft({
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+      }
 
       if (result.success) {
         toast.success('Draft saved successfully!');
@@ -202,25 +499,45 @@ export default function EditorPage() {
 
     setPublishing(true);
     try {
-      const draftResult = await createDraft({
-        title: title.trim(),
-        content: content.trim(),
-        contentPreview:
-          content.substring(0, 200) + (content.length > 200 ? '...' : ''),
-        thumbnailUrl: thumbnailUrl || undefined,
-        tags: [], // TODO: Add tag extraction from content
-      });
+      let currentDraftId = draftId;
 
-      if (!draftResult.success) {
-        console.error('Failed to save draft:', draftResult.error);
-        toast.error('Failed to save draft before publishing.');
-        return;
+      if (!currentDraftId) {
+        const draftResult = await createDraft({
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+
+        if (!draftResult.success) {
+          console.error('Failed to save draft:', draftResult.error);
+          toast.error('Failed to save draft before publishing.');
+          return;
+        }
+
+        currentDraftId = (draftResult.data as Draft).id;
+      } else {
+        const updateResult = await updateDraft({
+          id: currentDraftId,
+          title: title.trim(),
+          content: content.trim(),
+          contentPreview:
+            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          thumbnailUrl: thumbnailUrl || undefined,
+          tags: [], // TODO: Add tag extraction from content
+        });
+
+        if (!updateResult.success) {
+          console.error('Failed to update draft:', updateResult.error);
+          toast.error('Failed to update draft before publishing.');
+          return;
+        }
       }
 
-      const draftId = (draftResult.data as Draft).id;
-
       const result = await publishToPlatforms({
-        draftId,
+        draftId: currentDraftId,
         platforms: selectedPlatforms,
         options: {
           publishAsDraft: false,
@@ -255,6 +572,37 @@ export default function EditorPage() {
         : [...prev, platform]
     );
   };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    if (id) {
+      setDraftId(id);
+      setIsLoadingDraft(true);
+
+      async function loadDraft() {
+        try {
+          const result = await getDraft({ id });
+          if (result.success && result.data) {
+            const draft = result.data as Draft;
+            setTitle(draft.title);
+            setContent(draft.content);
+            setThumbnailUrl(draft.thumbnailUrl || null);
+          } else {
+            toast.error('Failed to load draft');
+          }
+        } catch (error) {
+          console.error('Failed to load draft:', error);
+          toast.error('Failed to load draft');
+        } finally {
+          setIsLoadingDraft(false);
+        }
+      }
+
+      loadDraft();
+    }
+  }, []);
 
   useEffect(() => {
     if (!showPublishModal) return;
@@ -384,7 +732,9 @@ export default function EditorPage() {
         onRewrite={handleRewrite}
         onTone={handleTone}
         onSummarize={handleSummarize}
+        onFormatText={formatText}
         isAiLoading={isLoading}
+        hasContent={!!content.trim()}
       />
 
       <div className='flex-1 flex overflow-hidden'>
@@ -407,7 +757,10 @@ export default function EditorPage() {
               <button
                 onClick={handleSaveDraft}
                 className='btn btn-ghost btn-sm'
-                disabled={isLoading}
+                disabled={isLoading || !content.trim()}
+                title={
+                  !content.trim() ? 'Add some content to save' : 'Save draft'
+                }
               >
                 <Save size={16} className='mr-2' />
                 {loadingType === 'saving' ? 'Saving...' : 'Save Draft'}
@@ -415,7 +768,12 @@ export default function EditorPage() {
               <button
                 onClick={handlePublish}
                 className='btn btn-primary btn-sm'
-                disabled={isLoading}
+                disabled={isLoading || !content.trim()}
+                title={
+                  !content.trim()
+                    ? 'Add some content to publish'
+                    : 'Publish to platforms'
+                }
               >
                 <Send size={16} className='mr-2' />
                 Publish
@@ -463,21 +821,41 @@ export default function EditorPage() {
                 <label className='label'>
                   <span className='label-text'>Tone</span>
                 </label>
-                <select className='select select-bordered w-full'>
-                  <option>Professional</option>
-                  <option>Casual</option>
-                  <option>Friendly</option>
-                  <option>Academic</option>
+                <select
+                  className='select select-bordered w-full'
+                  value={selectedTone}
+                  onChange={e =>
+                    setSelectedTone(
+                      e.target.value as
+                        | 'professional'
+                        | 'casual'
+                        | 'friendly'
+                        | 'academic'
+                    )
+                  }
+                >
+                  <option value='professional'>Professional</option>
+                  <option value='casual'>Casual</option>
+                  <option value='friendly'>Friendly</option>
+                  <option value='academic'>Academic</option>
                 </select>
               </div>
               <div>
                 <label className='label'>
                   <span className='label-text'>Length</span>
                 </label>
-                <select className='select select-bordered w-full'>
-                  <option>Keep current length</option>
-                  <option>Make it shorter</option>
-                  <option>Make it longer</option>
+                <select
+                  className='select select-bordered w-full'
+                  value={selectedLength}
+                  onChange={e =>
+                    setSelectedLength(
+                      e.target.value as 'keep' | 'shorter' | 'longer'
+                    )
+                  }
+                >
+                  <option value='keep'>Keep current length</option>
+                  <option value='shorter'>Make it shorter</option>
+                  <option value='longer'>Make it longer</option>
                 </select>
               </div>
             </div>
@@ -490,7 +868,8 @@ export default function EditorPage() {
               </button>
               <button
                 className='btn btn-primary'
-                onClick={handleToggleRewriteSettings}
+                onClick={handleApplyRewriteSettings}
+                title='Apply settings to content'
               >
                 Apply
               </button>

@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
+import { getUserPlanData } from '@/app/actions/user-plan';
 import {
   type PlanId,
   type UserPlan,
@@ -26,6 +28,34 @@ export function usePlan() {
     incrementArticleUsage,
     incrementThumbnailUsage,
   } = useAppStore();
+
+  // Fetch real plan data from server on mount
+  useEffect(() => {
+    async function fetchUserPlan() {
+      try {
+        const result = await getUserPlanData();
+        if (result.success && result.data) {
+          setUserPlan(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user plan:', error);
+      }
+    }
+
+    fetchUserPlan();
+  }, [setUserPlan]);
+
+  // Function to refresh plan data
+  const refreshPlanData = async () => {
+    try {
+      const result = await getUserPlanData();
+      if (result.success && result.data) {
+        setUserPlan(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to refresh user plan:', error);
+    }
+  };
 
   // Plan checking utilities
   const canUseAIFeatures = () => canUseAI(userPlan.planId);
@@ -89,6 +119,7 @@ export function usePlan() {
     updateUsage,
     incrementArticleUsage,
     incrementThumbnailUsage,
+    refreshPlanData,
 
     // Constants
     PlanId: PlanIdEnum,

@@ -38,7 +38,7 @@ export default function BillingPage() {
     { name: 'AI Articles', free: '5/month', pro: '200/month' },
     { name: 'AI Thumbnails', free: '3/month', pro: '50/month' },
     { name: 'AI Provider', free: 'Cross Write', pro: 'Cross Write' },
-    { name: 'Analytics', free: 'Basic', pro: 'Advanced' },
+
     { name: 'Support', free: 'Community', pro: 'Priority' },
     { name: 'Scheduling', free: 'Basic', pro: 'Custom' },
   ];

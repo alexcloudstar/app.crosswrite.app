@@ -24,12 +24,14 @@ import {
 } from '@/lib/utils';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
-import { listDrafts } from '@/app/actions/drafts';
+import { listDrafts, deleteDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft, DraftsResponse } from '@/lib/types/drafts';
+import { usePlan } from '@/hooks/use-plan';
 
 export default function DraftsPage() {
+  const { refreshPlanData } = usePlan();
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,6 +46,12 @@ export default function DraftsPage() {
   ]);
   const [publishingDraft, setPublishingDraft] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: 'single' | 'bulk';
+    draftId?: string;
+    count?: number;
+  } | null>(null);
   const [integrations, setIntegrations] = useState<
     Array<{
       id: string;
@@ -140,15 +148,72 @@ export default function DraftsPage() {
   };
 
   const handleDeleteDraft = (draftId: string) => {
-    // TODO: Implement delete functionality
+    setDeleteTarget({ type: 'single', draftId });
+    setShowDeleteModal(true);
+    setOpenDropdown(null);
+  };
 
-    console.log('Delete draft:', draftId);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      if (deleteTarget.type === 'single' && deleteTarget.draftId) {
+        const result = await deleteDraft({ id: deleteTarget.draftId });
+
+        if (result.success) {
+          toast.success('Draft deleted successfully');
+          // Remove the draft from the local state
+          setDrafts(prev =>
+            prev.filter(draft => draft.id !== deleteTarget.draftId)
+          );
+          // Remove from selected drafts if it was selected
+          setSelectedDrafts(prev =>
+            prev.filter(id => id !== deleteTarget.draftId)
+          );
+        } else {
+          toast.error(`Failed to delete draft: ${result.error}`);
+        }
+      } else if (deleteTarget.type === 'bulk' && deleteTarget.count) {
+        const deletePromises = selectedDrafts.map(draftId =>
+          deleteDraft({ id: draftId })
+        );
+        const results = await Promise.all(deletePromises);
+
+        const successful = results.filter(result => result.success).length;
+        const failed = results.filter(result => !result.success).length;
+
+        if (successful > 0) {
+          toast.success(`Successfully deleted ${successful} draft(s)`);
+          // Remove deleted drafts from local state
+          setDrafts(prev =>
+            prev.filter(draft => !selectedDrafts.includes(draft.id))
+          );
+        }
+
+        if (failed > 0) {
+          toast.error(`Failed to delete ${failed} draft(s)`);
+        }
+
+        // Clear selection
+        setSelectedDrafts([]);
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete draft(s). Please try again.');
+    } finally {
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
+    }
   };
 
   const handleBulkDelete = () => {
-    // TODO: Implement bulk delete functionality
-    console.log('Delete drafts:', selectedDrafts);
-    setSelectedDrafts([]);
+    if (selectedDrafts.length === 0) {
+      toast.error('No drafts selected for deletion');
+      return;
+    }
+
+    setDeleteTarget({ type: 'bulk', count: selectedDrafts.length });
+    setShowDeleteModal(true);
   };
 
   const handlePublishDraft = async (draftId: string) => {
@@ -211,6 +276,8 @@ export default function DraftsPage() {
         if (reloadResult.success && reloadResult.data) {
           setDrafts((reloadResult.data as DraftsResponse).drafts);
         }
+
+        await refreshPlanData();
       } else {
         console.error('Publish failed:', result.error);
         toast.error(`Publish failed: ${result.error}`);
@@ -658,6 +725,41 @@ export default function DraftsPage() {
               >
                 <Clock size={16} className='mr-2' />
                 Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && deleteTarget && (
+        <div className='modal modal-open'>
+          <div className='modal-box max-w-md'>
+            <div className='flex items-start space-x-3'>
+              <div className='w-8 h-8 rounded-full bg-error/20 text-error flex items-center justify-center flex-shrink-0'>
+                ⚠️
+              </div>
+              <div className='flex-1'>
+                <h3 className='font-bold text-lg mb-2'>Confirm Deletion</h3>
+                <p className='text-base-content/70'>
+                  {deleteTarget.type === 'single'
+                    ? 'Are you sure you want to delete this draft? This action cannot be undone.'
+                    : `Are you sure you want to delete ${deleteTarget.count} draft(s)? This action cannot be undone.`}
+                </p>
+              </div>
+            </div>
+
+            <div className='modal-action'>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteTarget(null);
+                }}
+                className='btn btn-ghost'
+              >
+                Cancel
+              </button>
+              <button onClick={handleConfirmDelete} className='btn btn-error'>
+                Delete
               </button>
             </div>
           </div>

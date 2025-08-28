@@ -1,6 +1,7 @@
 import { db } from '@/db/client';
 import { users } from '@/db/schema/auth';
-import { eq } from 'drizzle-orm';
+import { userUsage } from '@/db/schema/user-usage';
+import { eq, and } from 'drizzle-orm';
 import {
   type PlanId,
   type DatabasePlanTier,
@@ -32,11 +33,22 @@ export class PlanService {
       DatabasePlanTierEnum.FREE) as DatabasePlanTier;
     const planId = databasePlanToPlanId(planTier);
 
-    // TODO: Get actual usage from database
-    // For now, return default usage
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
+    const usageRecord = await db
+      .select({
+        articlesPublished: userUsage.articlesPublished,
+        thumbnailsGenerated: userUsage.thumbnailsGenerated,
+      })
+      .from(userUsage)
+      .where(
+        and(eq(userUsage.userId, userId), eq(userUsage.monthYear, currentMonth))
+      )
+      .limit(1);
+
     const usage: UserUsage = {
-      articlesThisMonth: 0,
-      thumbnailsThisMonth: 0,
+      articlesThisMonth: usageRecord[0]?.articlesPublished || 0,
+      thumbnailsThisMonth: usageRecord[0]?.thumbnailsGenerated || 0,
     };
 
     return {
@@ -128,7 +140,6 @@ export class PlanService {
   }
 }
 
-// Convenience functions for common operations
 export const planService = {
   getUserPlan: PlanService.getUserPlan,
   updateUserPlan: PlanService.updateUserPlan,

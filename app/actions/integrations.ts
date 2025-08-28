@@ -261,19 +261,14 @@ export async function syncIntegration(input: unknown) {
       return errorResult('Integration not found');
     }
 
-    const { syncPlatformStatus, syncPlatformAnalytics } = await import(
-      './integrations/sync'
-    );
+    const { syncPlatformStatus } = await import('./integrations/sync');
 
     const statusResult = await syncPlatformStatus({
       platform: integration.platform,
     });
-    const analyticsResult = await syncPlatformAnalytics({
-      platform: integration.platform,
-    });
 
-    if (!statusResult.success || !analyticsResult.success) {
-      return errorResult('Sync failed for one or more operations');
+    if (!statusResult.success) {
+      return errorResult('Sync failed');
     }
 
     return successResult({
@@ -282,7 +277,6 @@ export async function syncIntegration(input: unknown) {
       platform: integration.platform,
       lastSync: new Date(),
       statusSynced: statusResult.success,
-      analyticsSynced: analyticsResult.success,
     });
   } catch (error) {
     return errorResult(await handleDatabaseError(error));
@@ -328,12 +322,14 @@ export async function getPlatformPublications(input: unknown) {
         const hashnodeClient = createHashnodeClient({
           apiKey: integration.apiKey!,
         });
-        const hashnodeResult = await hashnodeClient.getPublications();
-        if (hashnodeResult.success && hashnodeResult.publications) {
-          publications = hashnodeResult.publications;
-        } else {
+        try {
+          const hashnodeResult = await hashnodeClient.getPublications();
+          publications = hashnodeResult;
+        } catch (error) {
           return errorResult(
-            hashnodeResult.error || 'Failed to fetch Hashnode publications'
+            `Failed to fetch Hashnode publications: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`
           );
         }
         break;
@@ -345,78 +341,6 @@ export async function getPlatformPublications(input: unknown) {
     }
 
     return successResult({ publications });
-  } catch (error) {
-    return errorResult(await handleDatabaseError(error));
-  }
-}
-
-export async function syncPlatformAnalytics(input: unknown) {
-  try {
-    const session = await requireAuth();
-    const { platform, integrationId } = z
-      .object({
-        platform: z.enum(supportedPlatforms),
-        integrationId: z.string().uuid(),
-      })
-      .parse(input);
-
-    const [integration] = await db
-      .select()
-      .from(integrations)
-      .where(
-        and(
-          eq(integrations.id, integrationId),
-          eq(integrations.userId, session.id)
-        )
-      )
-      .limit(1);
-
-    if (!integration) {
-      return errorResult('Integration not found');
-    }
-
-    if (integration.status !== 'connected') {
-      return errorResult('Integration is not connected');
-    }
-
-    let analyticsData: {
-      message: string;
-      lastSync: Date;
-    } = {
-      message: '',
-      lastSync: new Date(),
-    };
-
-    switch (platform) {
-      case 'devto':
-        analyticsData = {
-          message: 'Dev.to analytics are limited and require manual tracking',
-          lastSync: new Date(),
-        };
-        break;
-
-      case 'hashnode':
-        analyticsData = {
-          message: 'Hashnode analytics are limited and require manual tracking',
-          lastSync: new Date(),
-        };
-        break;
-    }
-
-    await db
-      .update(integrations)
-      .set({
-        lastSync: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(integrations.id, integrationId));
-
-    revalidateDashboard();
-    return successResult({
-      platform,
-      analyticsData,
-      syncedAt: new Date(),
-    });
   } catch (error) {
     return errorResult(await handleDatabaseError(error));
   }

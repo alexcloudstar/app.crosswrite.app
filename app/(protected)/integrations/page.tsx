@@ -1,25 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  Settings,
-  RefreshCw,
-  Check,
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
-import {
-  listIntegrations,
   connectIntegration,
   disconnectIntegration,
-  testIntegration,
   getPlatformPublications,
-  syncPlatformAnalytics,
+  listIntegrations,
+  testIntegration,
 } from '@/app/actions/integrations';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { platformConfig } from '@/lib/config/platforms';
+import {
+  Check,
+  CheckCircle,
+  ExternalLink,
+  RefreshCw,
+  Settings,
+  XCircle,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<
@@ -35,12 +34,10 @@ export default function IntegrationsPage() {
   const [showSettings, setShowSettings] = useState<string | null>(null);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState<string | null>(null);
 
   const [setAsCanonical, setSetAsCanonical] = useState(false);
   const [publishAsDraft, setPublishAsDraft] = useState(false);
 
-  // Connection form states
   const [apiKey, setApiKey] = useState('');
   const [publicationId, setPublicationId] = useState('');
   const [publications, setPublications] = useState<
@@ -55,7 +52,6 @@ export default function IntegrationsPage() {
   const [selectedPublicationName, setSelectedPublicationName] =
     useState<string>('');
 
-  // Load integrations on component mount
   useEffect(() => {
     async function loadIntegrations() {
       try {
@@ -81,7 +77,6 @@ export default function IntegrationsPage() {
     loadIntegrations();
   }, []);
 
-  // Create a list of all available platforms with their connection status
   const getPlatformsWithStatus = () => {
     const connectedPlatforms = new Map(
       integrations.map(integration => [integration.platform, integration])
@@ -119,7 +114,6 @@ export default function IntegrationsPage() {
       const result = await disconnectIntegration({ id: integration.id });
 
       if (result.success) {
-        // Reload integrations to get the updated list
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
           setIntegrations(
@@ -155,7 +149,6 @@ export default function IntegrationsPage() {
 
       if (result.success) {
         toast.success(`Connection test successful for ${platform}`);
-        // Reload integrations to get updated lastSync
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
           setIntegrations(
@@ -179,44 +172,6 @@ export default function IntegrationsPage() {
     }
   };
 
-  const handleSyncAnalytics = async (platform: string) => {
-    const integration = integrations.find(i => i.platform === platform);
-    if (!integration) return;
-
-    setSyncing(platform);
-
-    try {
-      const result = await syncPlatformAnalytics({
-        platform: platform as 'devto' | 'hashnode',
-        integrationId: integration.id,
-      });
-
-      if (result.success) {
-        toast.success(`Analytics sync completed for ${platform}`);
-        // Reload integrations to get updated lastSync
-        const reloadResult = await listIntegrations();
-        if (reloadResult.success && reloadResult.data) {
-          setIntegrations(
-            reloadResult.data as Array<{
-              id: string;
-              platform: string;
-              status: string;
-              connectedAt?: Date;
-              lastSync?: Date;
-            }>
-          );
-        }
-      } else {
-        toast.error(`Analytics sync failed: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Failed to sync analytics for', platform, error);
-      toast.error('Failed to sync analytics. Please try again.');
-    } finally {
-      setSyncing(null);
-    }
-  };
-
   const handleLoadPublications = async (platform: string) => {
     const integration = integrations.find(i => i.platform === platform);
     if (!integration) return;
@@ -233,7 +188,6 @@ export default function IntegrationsPage() {
         typeof result.data === 'object' &&
         'publications' in result.data
       ) {
-        // Transform Hashnode publications to match expected format
         const rawPublications = (
           result.data as {
             publications: Array<{
@@ -245,7 +199,6 @@ export default function IntegrationsPage() {
           }
         ).publications;
 
-        // Transform to match UI expectations
         const transformedPublications = rawPublications.map(pub => ({
           id: pub._id,
           name: pub.title,
@@ -268,13 +221,11 @@ export default function IntegrationsPage() {
     setConnecting(platform);
 
     try {
-      // Validate required fields
       if (!apiKey.trim()) {
         toast.error('API key is required');
         return;
       }
 
-      // Prepare integration data based on platform
       let integrationData: {
         platform: string;
         apiKey: string;
@@ -284,7 +235,6 @@ export default function IntegrationsPage() {
         apiKey: '',
       };
 
-      // Add platform-specific fields
       switch (platform) {
         case 'devto':
           integrationData = {
@@ -302,11 +252,9 @@ export default function IntegrationsPage() {
           break;
       }
 
-      // Call the server action to create the integration
       const result = await connectIntegration(integrationData);
 
       if (result.success) {
-        // Reload integrations to get the updated list
         const reloadResult = await listIntegrations();
         if (reloadResult.success && reloadResult.data) {
           setIntegrations(
@@ -320,7 +268,6 @@ export default function IntegrationsPage() {
           );
         }
 
-        // Clear form data
         setApiKey('');
         setPublicationId('');
         setSelectedPublicationName('');
@@ -331,7 +278,6 @@ export default function IntegrationsPage() {
           publicationId: publicationId || 'none',
         });
       } else {
-        // Show error message
         toast.error(`Failed to connect: ${result.error}`);
       }
     } catch (error) {
@@ -485,49 +431,30 @@ export default function IntegrationsPage() {
                         </span>
                         <span>{platform.lastSync.toLocaleDateString()}</span>
                       </div>
-                      <div className='flex items-center space-x-2 mt-2'>
-                        <button
-                          onClick={handleSyncAnalytics.bind(
-                            null,
-                            platform.platform
+                      {platform.platform === 'hashnode' && (
+                        <div className='flex items-center space-x-2 mt-2'>
+                          {selectedPublicationName && (
+                            <span className='text-xs text-base-content/70'>
+                              Selected: {selectedPublicationName}
+                            </span>
                           )}
-                          disabled={syncing === platform.platform}
-                          className='btn btn-ghost btn-xs'
-                        >
-                          {syncing === platform.platform ? (
-                            <>
-                              <div className='loading loading-spinner loading-xs'></div>
-                              Syncing...
-                            </>
-                          ) : (
-                            'Sync Analytics'
-                          )}
-                        </button>
-                        {platform.platform === 'hashnode' && (
-                          <div className='flex items-center space-x-2'>
-                            {selectedPublicationName && (
-                              <span className='text-xs text-base-content/70'>
-                                Selected: {selectedPublicationName}
-                              </span>
+                          <button
+                            onClick={handleLoadPublications.bind(
+                              null,
+                              platform.platform
                             )}
-                            <button
-                              onClick={handleLoadPublications.bind(
-                                null,
-                                platform.platform
-                              )}
-                              className={`btn btn-xs ${
-                                selectedPublicationName
-                                  ? 'btn-success'
-                                  : 'btn-ghost'
-                              }`}
-                            >
-                              {selectedPublicationName
-                                ? 'Change Publication'
-                                : 'Select Publication'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                            className={`btn btn-xs ${
+                              selectedPublicationName
+                                ? 'btn-success'
+                                : 'btn-ghost'
+                            }`}
+                          >
+                            {selectedPublicationName
+                              ? 'Change Publication'
+                              : 'Select Publication'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -537,7 +464,6 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {/* Publication Selector Modal */}
       {showPublicationSelector && (
         <div className='modal modal-open'>
           <div className='modal-box max-w-2xl'>
@@ -555,7 +481,6 @@ export default function IntegrationsPage() {
                     setPublicationId(publication.id);
                     setSelectedPublicationName(publication.name);
                     setShowPublicationSelector(false);
-                    // Show a brief success message
                     const successMessage = document.createElement('div');
                     successMessage.className =
                       'alert alert-success fixed top-4 right-4 z-50 max-w-sm';
@@ -606,7 +531,6 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {/* Connection Settings Modal */}
       {showSettings && (
         <div className='modal modal-open'>
           <div className='modal-box max-w-2xl'>
@@ -619,7 +543,6 @@ export default function IntegrationsPage() {
             </h3>
 
             <div className='space-y-6'>
-              {/* Platform-specific connection instructions */}
               {showSettings === 'devto' && (
                 <div className='space-y-4'>
                   <div className='alert alert-info'>
@@ -713,7 +636,6 @@ export default function IntegrationsPage() {
                 </div>
               )}
 
-              {/* Publishing Defaults */}
               <div>
                 <h4 className='font-semibold mb-3'>Publishing Defaults</h4>
                 <div className='space-y-4'>

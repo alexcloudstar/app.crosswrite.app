@@ -10,6 +10,7 @@ import {
   verificationTokens,
   authenticators,
 } from './db/schema/auth';
+import { eq } from 'drizzle-orm';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -39,6 +40,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   session: {
     strategy: 'database',
+  },
+  callbacks: {
+    async session({ session, user }) {
+      // Fetch the latest user data from the database
+      const userData = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, user.id))
+        .limit(1);
+
+      if (userData.length > 0) {
+        session.user = {
+          ...session.user,
+          id: userData[0].id,
+          name: userData[0].name,
+          email: userData[0].email,
+          image: userData[0].image,
+        };
+      }
+
+      return session;
+    },
   },
   pages: {
     signIn: '/auth/sign-in',
