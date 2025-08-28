@@ -191,52 +191,84 @@ The app includes a protected layout (`app/(protected)/layout.tsx`) that:
 
 ```
 app/
-├── app/          # Main app routes
-│   ├── page.tsx          # Dashboard
+├── (protected)/          # Protected routes (require authentication)
+│   ├── dashboard/        # Main dashboard
 │   ├── editor/           # AI-assisted editor
 │   ├── drafts/           # Drafts management
 │   ├── scheduler/        # Content scheduling
 │   ├── integrations/     # Platform connections
 
-│   └── settings/         # User preferences
-├── onboarding/           # New user setup
-└── layout.tsx            # Root layout with app shell
+│   ├── settings/         # User preferences
+│   ├── updates/          # News and updates
+│   ├── onboarding/       # New user setup
+│   └── layout.tsx        # Protected layout wrapper
+├── auth/                 # Authentication pages
+│   ├── sign-in/          # Sign-in page
+│   └── error/            # Auth error page
+├── api/                  # API routes
+│   ├── auth/             # Auth API endpoints
+│   └── cron/             # Background job endpoints
+├── actions/              # Server actions
+├── globals.css           # Global styles
+├── layout.tsx            # Root layout
+└── page.tsx              # Root page (redirects to dashboard)
 
 components/
 ├── layout/               # App shell components
 │   ├── AppSidebar.tsx    # Collapsible sidebar
 │   ├── Topbar.tsx        # Top navigation bar
-│   └── CommandPalette.tsx # Command palette modal
+│   ├── CommandPalette.tsx # Command palette modal
+│   ├── RootLayoutWrapper.tsx # Layout wrapper
+│   └── ShortcutsProvider.tsx # Keyboard shortcuts provider
 ├── editor/               # Editor components
 │   ├── EditorToolbar.tsx # Formatting toolbar
 │   ├── MarkdownEditor.tsx # Text editor
 │   ├── AiSuggestionsPanel.tsx # AI suggestions
-│   └── PreviewModal.tsx  # Content preview
+│   ├── PreviewModal.tsx  # Content preview
+│   └── ThumbnailGeneratorModal.tsx # Thumbnail generation
 ├── ui/                   # Reusable UI components
 │   ├── StatCard.tsx      # Statistics cards
-│   └── EmptyState.tsx    # Empty state component
-└── charts/               # Chart components
-    └── Sparkline.tsx     # Mini charts
+│   ├── EmptyState.tsx    # Empty state component
+│   ├── PlanBadge.tsx     # Plan tier badge
+│   ├── QuotaHint.tsx     # Usage quota hints
+│   ├── NewsUpdates.tsx   # News updates widget
+│   ├── SignOutButton.tsx # Sign out button
+│   ├── DeploymentModeBadge.tsx # Deployment mode indicator
+│   ├── CustomCheckbox.tsx # Custom checkbox component
+│   └── NewsUpdates.tsx   # News updates component
+├── providers/            # Context providers
+│   ├── SessionProvider.tsx # Session provider
+│   └── ToastProvider.tsx # Toast notifications
+
 
 lib/
-├── mock.ts               # Mock data and types
-├── utils.ts              # Utility functions
-└── store.ts              # Zustand store
+├── actions/              # Action utilities
+├── ai/                   # AI integration
+
+├── auth/                 # Authentication utilities
+├── config/               # Configuration
+├── integrations/         # Platform integrations
+├── plan-service.ts       # Plan management
+├── plans.ts              # Plan definitions
+├── scheduler/            # Scheduling utilities
+├── store.ts              # Zustand store
+├── types/                # TypeScript types
+├── utils/                # Utility functions
+├── validators/           # Validation schemas
+└── utils.ts              # General utilities
 
 hooks/
+├── use-plan.ts           # Plan management hook
 └── use-shortcuts.ts      # Keyboard shortcuts
+
+db/
+├── client.ts             # Database client
+├── migrations/           # Database migrations
+├── schema/               # Database schema
+└── drizzle.config.ts     # Drizzle configuration
 ```
 
-## 📊 Mock Data
 
-The application uses comprehensive mock data located in `/lib/mock.ts`:
-
-- **Drafts**: Sample content with different statuses and platforms
-- **Activities**: Recent user actions and system events
-
-- **Integrations**: Platform connection states and settings
-
-All data is realistic and demonstrates the full functionality of the application.
 
 ## 🎯 Key Features
 
@@ -273,7 +305,7 @@ All data is realistic and demonstrates the full functionality of the application
    - Create a new draft in the editor
    - Connect platforms in integrations
    - Schedule content in the scheduler
-   - View your content and performance
+   - View your content and settings
 
 4. **Try keyboard shortcuts**:
    - Press `⌘K` to open the command palette
