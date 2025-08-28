@@ -34,9 +34,10 @@ export function PublishingSettings({
       if (result.success) {
         toast.success('Publishing settings updated successfully');
         onSave();
-      } else {
-        toast.error(result.error || 'Failed to update publishing settings');
+        return;
       }
+
+      toast.error(result.error || 'Failed to update publishing settings');
     } catch {
       toast.error('Failed to update publishing settings');
     } finally {

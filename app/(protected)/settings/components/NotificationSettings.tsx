@@ -37,9 +37,10 @@ export function NotificationSettings({
       if (result.success) {
         toast.success('Notification settings updated successfully');
         onSave();
-      } else {
-        toast.error(result.error || 'Failed to update notification settings');
+        return;
       }
+
+      toast.error(result.error || 'Failed to update notification settings');
     } catch {
       toast.error('Failed to update notification settings');
     } finally {

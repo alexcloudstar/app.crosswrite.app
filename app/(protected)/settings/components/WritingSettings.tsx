@@ -52,9 +52,10 @@ export function WritingSettings({
       if (result.success) {
         toast.success('Writing defaults updated successfully');
         onSave();
-      } else {
-        toast.error(result.error || 'Failed to update writing defaults');
+        return;
       }
+
+      toast.error(result.error || 'Failed to update writing defaults');
     } catch {
       toast.error('Failed to update writing defaults');
     } finally {

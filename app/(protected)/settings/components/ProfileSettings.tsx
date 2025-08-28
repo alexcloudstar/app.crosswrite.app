@@ -39,9 +39,10 @@ export function ProfileSettings({
         toast.success('Profile updated successfully');
         onSave();
         updateSession();
-      } else {
-        toast.error(result.error || 'Failed to update profile');
+        return;
       }
+
+      toast.error(result.error || 'Failed to update profile');
     } catch {
       toast.error('Failed to update profile');
     } finally {
