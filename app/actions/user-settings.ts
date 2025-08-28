@@ -103,14 +103,16 @@ export async function updateProfile(
       .where(eq(userSettings.userId, session.id))
       .limit(1);
 
-    if (existingSettings.length === 0) {
+    if (!existingSettings.length) {
       await db.insert(userSettings).values({
         userId: session.id,
         bio: validatedInput.bio,
         website: validatedInput.website,
         updatedAt: new Date(),
       });
-    } else {
+    }
+
+    if (existingSettings.length) {
       await db
         .update(userSettings)
         .set({
@@ -121,7 +123,6 @@ export async function updateProfile(
         .where(eq(userSettings.userId, session.id));
     }
 
-    // Revalidate the session to reflect changes
     revalidatePath('/', 'layout');
 
     return successResult('Profile updated successfully');
@@ -144,7 +145,7 @@ export async function updateWritingDefaults(
       .where(eq(userSettings.userId, session.id))
       .limit(1);
 
-    if (existingSettings.length === 0) {
+    if (!existingSettings.length) {
       await db.insert(userSettings).values({
         userId: session.id,
         ...validatedInput,
@@ -180,13 +181,15 @@ export async function updatePublishingSettings(
       .where(eq(userSettings.userId, session.id))
       .limit(1);
 
-    if (existingSettings.length === 0) {
+    if (!existingSettings.length) {
       await db.insert(userSettings).values({
         userId: session.id,
         ...validatedInput,
         updatedAt: new Date(),
       });
-    } else {
+    }
+
+    if (existingSettings.length) {
       await db
         .update(userSettings)
         .set({
@@ -216,13 +219,15 @@ export async function updateNotificationSettings(
       .where(eq(userSettings.userId, session.id))
       .limit(1);
 
-    if (existingSettings.length === 0) {
+    if (!existingSettings.length) {
       await db.insert(userSettings).values({
         userId: session.id,
         notifications: validatedInput,
         updatedAt: new Date(),
       });
-    } else {
+    }
+
+    if (existingSettings.length) {
       await db
         .update(userSettings)
         .set({

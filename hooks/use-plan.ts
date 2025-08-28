@@ -3,7 +3,6 @@ import { useAppStore } from '@/lib/store';
 import { getUserPlanData } from '@/app/actions/user-plan';
 import {
   type PlanId,
-  type UserPlan,
   type UserUsage,
   PlanIdEnum,
   canUseAI,
@@ -29,7 +28,6 @@ export function usePlan() {
     incrementThumbnailUsage,
   } = useAppStore();
 
-  // Fetch real plan data from server on mount
   useEffect(() => {
     async function fetchUserPlan() {
       try {
@@ -45,7 +43,6 @@ export function usePlan() {
     fetchUserPlan();
   }, [setUserPlan]);
 
-  // Function to refresh plan data
   const refreshPlanData = async () => {
     try {
       const result = await getUserPlanData();
@@ -57,7 +54,6 @@ export function usePlan() {
     }
   };
 
-  // Plan checking utilities
   const canUseAIFeatures = () => canUseAI(userPlan.planId);
   const canGenerateThumbnails = () =>
     canGenerateThumbnail(userPlan.planId, userPlan.usage);
@@ -65,16 +61,13 @@ export function usePlan() {
     canPublishArticle(userPlan.planId, userPlan.usage);
   const getUsage = () => getUsageStatus(userPlan.planId, userPlan.usage);
 
-  // Plan comparison utilities
   const isPro = () => isProPlan(userPlan.planId);
   const isFree = () => isFreePlan(userPlan.planId);
   const isSelfHosted = () => isSelfHostedPlan(userPlan.planId);
 
-  // Plan upgrade/downgrade utilities
   const getAvailableUpgrades = () => getUpgradeablePlans(userPlan.planId);
   const getAvailableDowngrades = () => getDowngradeablePlans(userPlan.planId);
 
-  // Plan display utilities
   const getDisplayName = () => getPlanDisplayName(userPlan.planId);
   const getColor = () => getPlanColor(userPlan.planId);
   const getPricing = () =>
@@ -82,46 +75,38 @@ export function usePlan() {
   const getFeatures = () =>
     PLAN_FEATURES[userPlan.planId as keyof typeof PLAN_FEATURES];
 
-  // Plan management
   const updatePlan = (planId: PlanId) => setUserPlan({ planId });
   const updateUsage = (usage: Partial<UserUsage>) =>
     setUserPlan({ usage: { ...userPlan.usage, ...usage } });
 
   return {
-    // Current plan state
     userPlan,
     planId: userPlan.planId,
     usage: userPlan.usage,
 
-    // Plan checking
     canUseAIFeatures,
     canGenerateThumbnails,
     canPublishArticles,
     getUsage,
 
-    // Plan comparison
     isPro,
     isFree,
     isSelfHosted,
 
-    // Plan upgrade/downgrade
     getAvailableUpgrades,
     getAvailableDowngrades,
 
-    // Plan display
     getDisplayName,
     getColor,
     getPricing,
     getFeatures,
 
-    // Plan management
     updatePlan,
     updateUsage,
     incrementArticleUsage,
     incrementThumbnailUsage,
     refreshPlanData,
 
-    // Constants
     PlanId: PlanIdEnum,
   };
 }

@@ -43,14 +43,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async session({ session, user }) {
-      // Fetch the latest user data from the database
       const userData = await db
         .select()
         .from(users)
         .where(eq(users.id, user.id))
         .limit(1);
 
-      if (userData.length > 0) {
+      if (userData.length) {
         session.user = {
           ...session.user,
           id: userData[0].id,

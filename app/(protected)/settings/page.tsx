@@ -52,9 +52,10 @@ export default function SettingsPage() {
         setSettings(
           (result.data as { user: User; settings: UserSettings }).settings
         );
-      } else {
-        toast.error('Failed to load user settings');
+        return;
       }
+
+      toast.error('Failed to load user settings');
     } catch {
       toast.error('Failed to load user settings');
     } finally {

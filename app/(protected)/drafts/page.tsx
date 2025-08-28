@@ -162,11 +162,11 @@ export default function DraftsPage() {
 
         if (result.success) {
           toast.success('Draft deleted successfully');
-          // Remove the draft from the local state
+
           setDrafts(prev =>
             prev.filter(draft => draft.id !== deleteTarget.draftId)
           );
-          // Remove from selected drafts if it was selected
+
           setSelectedDrafts(prev =>
             prev.filter(id => id !== deleteTarget.draftId)
           );
@@ -184,7 +184,7 @@ export default function DraftsPage() {
 
         if (successful > 0) {
           toast.success(`Successfully deleted ${successful} draft(s)`);
-          // Remove deleted drafts from local state
+
           setDrafts(prev =>
             prev.filter(draft => !selectedDrafts.includes(draft.id))
           );
@@ -194,7 +194,6 @@ export default function DraftsPage() {
           toast.error(`Failed to delete ${failed} draft(s)`);
         }
 
-        // Clear selection
         setSelectedDrafts([]);
       }
     } catch (error) {
@@ -458,7 +457,7 @@ export default function DraftsPage() {
                   Schedule
                 </button>
                 <button
-                  onClick={() => handlePublishDraft(selectedDrafts[0])}
+                  onClick={handlePublishDraft.bind(null, selectedDrafts[0])}
                   disabled={publishingDraft !== null}
                   className='btn btn-primary btn-sm'
                 >
@@ -584,10 +583,10 @@ export default function DraftsPage() {
                               </li>
                               <li>
                                 <button
-                                  onClick={() => {
-                                    handlePublishDraft(draft.id);
-                                    setOpenDropdown(null);
-                                  }}
+                                  onClick={handlePublishDraft.bind(
+                                    null,
+                                    draft.id
+                                  )}
                                   disabled={publishingDraft === draft.id}
                                   className={
                                     publishingDraft === draft.id
@@ -603,10 +602,10 @@ export default function DraftsPage() {
                               </li>
                               <li>
                                 <button
-                                  onClick={() => {
-                                    handleScheduleDraft(draft.id);
-                                    setOpenDropdown(null);
-                                  }}
+                                  onClick={handleScheduleDraft.bind(
+                                    null,
+                                    draft.id
+                                  )}
                                 >
                                   <Calendar size={16} />
                                   Schedule
@@ -614,10 +613,10 @@ export default function DraftsPage() {
                               </li>
                               <li>
                                 <button
-                                  onClick={() => {
-                                    handleDeleteDraft(draft.id);
-                                    setOpenDropdown(null);
-                                  }}
+                                  onClick={handleDeleteDraft.bind(
+                                    null,
+                                    draft.id
+                                  )}
                                   className='text-error'
                                 >
                                   <Trash2 size={16} />
