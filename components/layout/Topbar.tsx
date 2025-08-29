@@ -1,23 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import Image from 'next/image';
-import {
-  Search,
-  Plus,
-  Calendar,
-  Zap,
-  User,
-  Settings,
-  LogOut,
-  Bell,
-  X,
-} from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { CommandPalette } from './CommandPalette';
 import { getPlatformShortcut } from '@/lib/utils';
+import { Bell, LogOut, Search, Settings, User, X } from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { CommandPalette } from './CommandPalette';
 
 export function Topbar() {
   const router = useRouter();
@@ -33,12 +23,6 @@ export function Topbar() {
   useEffect(() => {
     setPlatformShortcut(getPlatformShortcut('K'));
   }, []);
-
-  const handleNewDraft = () => router.push('/editor');
-
-  const handleSchedule = () => router.push('/scheduler');
-
-  const handleConnect = () => router.push('/integrations');
 
   const handleProfile = () => {
     router.push('/settings');
@@ -144,7 +128,6 @@ export function Topbar() {
   return (
     <>
       <div className='h-16 bg-base-100 border-b border-base-300 flex items-center justify-between px-6'>
-        {/* Search */}
         <div className='flex-1 max-w-md'>
           <button
             onClick={openCommandPalette}
@@ -157,25 +140,7 @@ export function Topbar() {
           </button>
         </div>
 
-        {/* Quick Actions */}
-        <div className='flex items-center space-x-2 ml-4'>
-          <button onClick={handleNewDraft} className='btn btn-primary btn-sm'>
-            <Plus size={16} className='mr-2' />
-            New Draft
-          </button>
-          <button onClick={handleSchedule} className='btn btn-ghost btn-sm'>
-            <Calendar size={16} className='mr-2' />
-            Schedule
-          </button>
-          <button onClick={handleConnect} className='btn btn-ghost btn-sm'>
-            <Zap size={16} className='mr-2' />
-            Connect
-          </button>
-        </div>
-
-        {/* User Menu */}
         <div className='flex items-center space-x-3 ml-4'>
-          {/* Notifications */}
           <div className='relative' ref={notificationRef}>
             <button
               onClick={onToggleNotifications}
@@ -304,7 +269,6 @@ export function Topbar() {
         </div>
       </div>
 
-      {/* All Notifications Modal */}
       {showAllNotifications && (
         <div className='modal modal-open'>
           <div className='modal-box max-w-2xl'>
