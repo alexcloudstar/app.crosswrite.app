@@ -170,7 +170,12 @@ export class HashnodeClient implements IntegrationClient {
           title: content.title,
           contentMarkdown: content.body,
           publicationId: publicationId,
-          tags: content.tags || [],
+          tags: content.tags
+            ? content.tags.map(tag => ({
+                slug: tag,
+                name: tag,
+              }))
+            : [],
           ...(content.coverUrl && {
             coverImageOptions: { coverImageURL: content.coverUrl },
           }),
