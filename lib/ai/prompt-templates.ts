@@ -99,25 +99,14 @@ tag3
 Tags:`;
   },
 
-  generateThumbnail: (prompt: string, aspectRatio: string) => {
-    const aspectInstructions = {
-      '16:9':
-        'widescreen format, perfect for blog headers and YouTube thumbnails',
-      '1:1': 'square format, ideal for social media posts',
-      '4:5': 'portrait format, great for Instagram stories',
-      '2:1': 'landscape format, suitable for newsletter headers',
-    };
-
-    const instruction =
-      aspectInstructions[aspectRatio as keyof typeof aspectInstructions] ||
-      aspectInstructions['16:9'];
-
-    return `Create a ${instruction} thumbnail image based on this description: ${prompt}
+  generateThumbnail: (prompt: string) => {
+    return `Create a widescreen thumbnail image (1792x1024) based on this description: ${prompt}
 
 The image should be:
 - Visually appealing and modern
 - Professional and high-quality
 - Relevant to the content
-- Suitable for digital publishing`;
+- Suitable for digital publishing
+- Optimized for blog headers and social media`;
   },
 };
