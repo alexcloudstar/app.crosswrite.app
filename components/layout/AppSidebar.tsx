@@ -11,6 +11,7 @@ import {
   Calendar,
   Zap,
   BarChart3,
+  Mic,
   Settings,
   HelpCircle,
   User,
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'Scheduler', href: '/scheduler', icon: Calendar },
   { name: 'Integrations', href: '/integrations', icon: Zap },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Cast Mode', href: '/cast-mode', icon: Mic },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
