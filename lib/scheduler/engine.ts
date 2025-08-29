@@ -55,15 +55,14 @@ async function findDueJobs(): Promise<
   }));
 }
 
-async function processScheduledPost(
-  scheduledPost: {
-    id: string;
-    draftId: string;
-    userId: string;
-    platforms: string[];
-    scheduledAt: Date;
-    retryCount: number;
-): Promise<{ success: boolean; error?: string }> {
+async function processScheduledPost(scheduledPost: {
+  id: string;
+  draftId: string;
+  userId: string;
+  platforms: string[];
+  scheduledAt: Date;
+  retryCount: number;
+}): Promise<{ success: boolean; error?: string }> {
   const { id, draftId, userId, platforms, retryCount } = scheduledPost;
 
   try {
