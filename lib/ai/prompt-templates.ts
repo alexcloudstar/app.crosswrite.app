@@ -100,13 +100,16 @@ Tags:`;
   },
 
   generateThumbnail: (prompt: string) => {
-    return `Create a widescreen thumbnail image (1792x1024) based on this description: ${prompt}
+    return `Create a realistic, professional blog header image (1792x1024) based on this description: ${prompt}
 
 The image should be:
-- Visually appealing and modern
-- Professional and high-quality
-- Relevant to the content
-- Suitable for digital publishing
-- Optimized for blog headers and social media`;
+- Photorealistic and natural-looking, not AI-generated
+- Professional and clean, suitable for a tech blog or professional website
+- High-quality with realistic lighting and shadows
+- Subtle and elegant, avoiding overly dramatic or artificial effects
+- Focus on real objects, textures, and environments
+- Use natural color palettes and realistic composition
+- Avoid cartoonish, overly saturated, or obviously AI-generated elements
+- Suitable for digital publishing and social media sharing`;
   },
 };
