@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import toast from 'react-hot-toast';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -27,8 +28,8 @@ export default function SignInPage() {
       if (result?.ok) {
         setIsEmailSent(true);
       }
-    } catch (error) {
-      console.error('Email sign in error:', error);
+    } catch {
+      toast.error('Failed to send sign-in email');
     } finally {
       setIsLoading(false);
     }

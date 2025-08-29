@@ -3,6 +3,7 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { drafts, integrations, platformPosts, userUsage } from '@/db/schema';
+import logger from '@/lib/logger';
 import {
   requireAuth,
   successResult,
@@ -45,7 +46,7 @@ async function trackArticleUsage(userId: string) {
       });
     }
   } catch (error) {
-    console.error('Failed to track article usage:', error);
+    logger.error('Failed to track article usage:', { error, userId });
   }
 }
 
@@ -181,7 +182,7 @@ export async function publishToPlatforms(input: unknown) {
     }
 
     if (!hasSuccess) {
-      console.log('No successful publishes, keeping draft status as draft');
+      logger.info('No successful publishes, keeping draft status as draft');
       return;
     }
 

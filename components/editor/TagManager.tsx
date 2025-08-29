@@ -71,8 +71,7 @@ export function TagManager({
       } else {
         toast.error(result.error || 'Failed to extract tags');
       }
-    } catch (error) {
-      console.error('Extract tags error:', error);
+    } catch {
       toast.error('Failed to extract tags. Please try again.');
     } finally {
       setIsExtracting(false);

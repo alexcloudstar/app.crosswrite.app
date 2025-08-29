@@ -1,5 +1,6 @@
 import { successResult } from '@/app/actions/_utils';
 import { processDueJobs, ProcessingResult } from './engine';
+import logger from '../logger';
 
 export async function processScheduledPostsCron(): Promise<{
   success: boolean;
@@ -7,11 +8,11 @@ export async function processScheduledPostsCron(): Promise<{
   error?: string;
 }> {
   try {
-    console.log('Starting scheduled posts processing...');
+    logger.info('Starting scheduled posts processing...');
 
     const result = await processDueJobs();
 
-    console.log('Scheduled posts processing completed:', {
+    logger.info('Scheduled posts processing completed:', {
       processed: result.processed,
       successful: result.successful,
       failed: result.failed,
@@ -21,7 +22,7 @@ export async function processScheduledPostsCron(): Promise<{
 
     return successResult(result);
   } catch (error) {
-    console.error('Error in scheduled posts cron:', error);
+    logger.error('Error in scheduled posts cron:', { error });
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred';
     return { success: false, error: errorMessage };
@@ -67,7 +68,7 @@ export async function getSchedulerStatus(): Promise<{
       pendingJobs: pendingJobs.length,
     });
   } catch (error) {
-    console.error('Error checking scheduler status:', error);
+    logger.error('Error checking scheduler status:', { error });
     return successResult({
       status: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',

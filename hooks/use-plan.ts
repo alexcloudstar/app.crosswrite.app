@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { getUserPlanData } from '@/app/actions/user-plan';
+import toast from 'react-hot-toast';
 import {
   type PlanId,
   type UserUsage,
@@ -36,7 +37,7 @@ export function usePlan() {
           setUserPlan(result.data);
         }
       } catch (error) {
-        console.error('Failed to fetch user plan:', error);
+        toast.error('Failed to fetch user plan');
       }
     }
 
@@ -50,7 +51,7 @@ export function usePlan() {
         setUserPlan(result.data);
       }
     } catch (error) {
-      console.error('Failed to refresh user plan:', error);
+      toast.error('Failed to fetch user plan');
     }
   };
 

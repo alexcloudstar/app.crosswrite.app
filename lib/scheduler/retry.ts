@@ -4,6 +4,7 @@ import {
   getNextRetryTime,
   normalizeErrorMessage,
 } from './time';
+import logger from '../logger';
 
 export interface RetryResult {
   shouldRetry: boolean;
@@ -71,7 +72,7 @@ export async function updateWithRetryInfo(
       .set(updateData)
       .where(eq(scheduledPosts.id, scheduledPostId));
   } catch (error) {
-    console.error('Failed to update retry info:', error);
+    logger.error('Failed to update retry info:', { error, scheduledPostId, retryCount });
   }
 }
 
@@ -90,7 +91,7 @@ export async function resetRetryInfo(scheduledPostId: string): Promise<void> {
       })
       .where(eq(scheduledPosts.id, scheduledPostId));
   } catch (error) {
-    console.error('Failed to reset retry info:', error);
+    logger.error('Failed to reset retry info:', { error, scheduledPostId });
   }
 }
 

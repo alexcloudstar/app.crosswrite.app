@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getSession } from '@/lib/auth/session';
+import logger from '@/lib/logger';
 
 export type ActionResult<T = unknown> = {
   success: boolean;
@@ -37,7 +38,7 @@ export async function revalidatePathHelper(path: string) {
 }
 
 export async function handleDatabaseError(error: unknown): Promise<string> {
-  console.error('Database error:', error);
+  logger.error('Database error:', { error });
 
   if (error instanceof Error) {
     if (error.message.includes('duplicate key')) {

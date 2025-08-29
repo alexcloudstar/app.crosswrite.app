@@ -21,6 +21,7 @@ import {
 import { db } from '@/db/client';
 import { userUsage } from '@/db/schema/user-usage';
 import { planService } from '@/lib/plan-service';
+import logger from '@/lib/logger';
 
 async function trackAIUsage(
   userId: string,
@@ -52,7 +53,7 @@ async function trackAIUsage(
       });
     }
   } catch (error) {
-    console.error('Failed to track AI usage:', error);
+    logger.error('Failed to track AI usage:', { error, userId, action });
   }
 }
 
@@ -82,7 +83,7 @@ export async function improveText(input: ImproveTextInput) {
 
     return await successResult({ improvedText });
   } catch (error) {
-    console.error('Improve text failed:', error);
+    logger.error('Improve text failed:', { error });
     return await errorResult(
       error instanceof Error ? error.message : 'Failed to improve text'
     );
@@ -115,7 +116,7 @@ export async function adjustTone(input: AdjustToneInput) {
 
     return await successResult({ adjustedText });
   } catch (error) {
-    console.error('Adjust tone failed:', error);
+    logger.error('Adjust tone failed:', { error });
     return await errorResult(
       error instanceof Error ? error.message : 'Failed to adjust tone'
     );
@@ -149,7 +150,7 @@ export async function summarizeText(input: SummarizeTextInput) {
 
     return await successResult({ summary });
   } catch (error) {
-    console.error('Summarize text failed:', error);
+    logger.error('Summarize text failed:', { error });
     return await errorResult(
       error instanceof Error ? error.message : 'Failed to summarize text'
     );
@@ -187,7 +188,7 @@ export async function generateSuggestions(input: GenerateSuggestionsInput) {
 
     return await successResult({ suggestions });
   } catch (error) {
-    console.error('Generate suggestions failed:', error);
+    logger.error('Generate suggestions failed:', { error });
     return await errorResult(
       error instanceof Error ? error.message : 'Failed to generate suggestions'
     );
@@ -230,7 +231,7 @@ export async function extractTags(input: ExtractTagsInput) {
 
     return await successResult({ tags });
   } catch (error) {
-    console.error('Extract tags failed:', error);
+    logger.error('Extract tags failed:', { error });
     return await errorResult(
       error instanceof Error ? error.message : 'Failed to extract tags'
     );
@@ -256,7 +257,7 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
 
     return await successResult({ images });
   } catch (error) {
-    console.error('Generate thumbnail failed:', error);
+    logger.error('Generate thumbnail failed:', { error });
     return await errorResult(
       error instanceof Error ? error.message : 'Failed to generate thumbnail'
     );

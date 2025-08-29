@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Clock, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { formatDateTime, getPlatformDisplayName } from '@/lib/utils';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
@@ -27,8 +28,8 @@ export default function SchedulerPage() {
           const draftsData = (result.data as { drafts: Draft[] }).drafts;
           setDrafts(draftsData);
         }
-      } catch (error) {
-        console.error('Failed to load drafts:', error);
+      } catch {
+        toast.error('Failed to load drafts');
       } finally {
         setLoading(false);
       }

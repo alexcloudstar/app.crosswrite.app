@@ -87,8 +87,8 @@ export default function DraftsPage() {
             }>
           );
         }
-      } catch (error) {
-        console.error('Failed to load data:', error);
+      } catch {
+        toast.error('Failed to load drafts');
       } finally {
         setLoading(false);
       }
@@ -160,7 +160,6 @@ export default function DraftsPage() {
       if (result.success) {
         toast.success('Scheduled post reset successfully');
 
-        // Reload drafts to show updated status
         const reloadResult = await listDrafts({
           page: 1,
           limit: 100,
@@ -171,8 +170,7 @@ export default function DraftsPage() {
       } else {
         toast.error(`Failed to reset scheduled post: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Error resetting scheduled post:', error);
+    } catch {
       toast.error('Failed to reset scheduled post');
     }
     setOpenDropdown(null);
@@ -221,8 +219,7 @@ export default function DraftsPage() {
 
         setSelectedDrafts([]);
       }
-    } catch (error) {
-      console.error('Delete error:', error);
+    } catch {
       toast.error('Failed to delete draft(s). Please try again.');
     } finally {
       setShowDeleteModal(false);
@@ -301,17 +298,13 @@ export default function DraftsPage() {
         }
 
         await refreshPlanData();
-      } else {
-        console.error('Publish failed:', result?.error);
+      }
+
+      if (!result?.success) {
         toast.error(`Publish failed: ${result?.error}`);
       }
-    } catch (error) {
-      console.error('Publish error:', error);
-      toast.error(
-        `Publish error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      );
+    } catch {
+      toast.error('Failed to publish');
     } finally {
       setPublishingDraft(null);
     }
@@ -390,13 +383,8 @@ export default function DraftsPage() {
       } else {
         toast.error(`Failed to schedule drafts: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Schedule error:', error);
-      toast.error(
-        `Schedule error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      );
+    } catch {
+      toast.error('Failed to schedule drafts');
     } finally {
       setShowScheduleModal(false);
       setScheduleDraftId(null);

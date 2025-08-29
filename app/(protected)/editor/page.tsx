@@ -86,8 +86,8 @@ export default function EditorPage() {
             );
           }
         }
-      } catch (error) {
-        console.error('Failed to load user tone preference:', error);
+      } catch {
+        toast.error('Failed to load user tone preference');
       }
     }
 
@@ -298,12 +298,13 @@ export default function EditorPage() {
           .improvedText;
         setContent(improvedText);
         addToHistory(improvedText);
-      } else {
-        console.error('Rewrite failed:', result.error);
+      }
+
+      if (!result.success) {
         toast.error('Failed to rewrite content. Please try again.');
       }
-    } catch (error) {
-      console.error('Rewrite error:', error);
+    } catch {
+      toast.error('Failed to rewrite text');
     } finally {
       setLoadingType(null);
     }
@@ -321,12 +322,12 @@ export default function EditorPage() {
         setContent(adjustedText);
         addToHistory(adjustedText);
         toast.success(`Content adjusted to ${selectedTone} tone`);
-      } else {
-        console.error('Tone adjustment failed:', result.error);
+      }
+      if (!result.success) {
         toast.error('Failed to adjust tone. Please try again.');
       }
-    } catch (error) {
-      console.error('Tone adjustment error:', error);
+    } catch {
+      toast.error('Failed to adjust tone');
     } finally {
       setLoadingType(null);
     }
@@ -353,7 +354,6 @@ export default function EditorPage() {
           setContent(adjustedText);
           addToHistory(adjustedText);
         } else {
-          console.error('Tone adjustment failed:', result.error);
           toast.error('Failed to adjust tone. Please try again.');
           return;
         }
@@ -372,7 +372,6 @@ export default function EditorPage() {
           setContent(improvedText);
           addToHistory(improvedText);
         } else {
-          console.error('Length adjustment failed:', result.error);
           toast.error('Failed to adjust length. Please try again.');
           return;
         }
@@ -380,8 +379,7 @@ export default function EditorPage() {
 
       toast.success('Content adjusted successfully');
       setShowRewriteSettings(false);
-    } catch (error) {
-      console.error('Rewrite settings error:', error);
+    } catch {
       toast.error('Failed to apply settings. Please try again.');
     } finally {
       setLoadingType(null);
@@ -399,11 +397,10 @@ export default function EditorPage() {
         setContent(summary);
         addToHistory(summary);
       } else {
-        console.error('Summarize failed:', result.error);
         toast.error('Failed to summarize content. Please try again.');
       }
-    } catch (error) {
-      console.error('Summarize error:', error);
+    } catch {
+      toast.error('Failed to summarize content');
     } finally {
       setLoadingType(null);
     }
@@ -423,11 +420,10 @@ export default function EditorPage() {
         ).suggestions;
         setSuggestions(suggestionsData);
       } else {
-        console.error('Generate suggestions failed:', result.error);
         toast.error('Failed to generate suggestions. Please try again.');
       }
-    } catch (error) {
-      console.error('Generate suggestions error:', error);
+    } catch {
+      toast.error('Failed to generate suggestions');
     } finally {
       setLoadingType(null);
     }
@@ -479,11 +475,12 @@ export default function EditorPage() {
       if (result.success) {
         toast.success('Draft saved successfully!');
         window.location.href = '/drafts';
-      } else {
+      }
+
+      if (!result.success) {
         toast.error(`Failed to save draft: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Save draft error:', error);
+    } catch {
       toast.error('Failed to save draft. Please try again.');
     } finally {
       setLoadingType(null);
@@ -516,7 +513,6 @@ export default function EditorPage() {
         });
 
         if (!draftResult.success) {
-          console.error('Failed to save draft:', draftResult.error);
           toast.error('Failed to save draft before publishing.');
           return;
         }
@@ -534,7 +530,6 @@ export default function EditorPage() {
         });
 
         if (!updateResult.success) {
-          console.error('Failed to update draft:', updateResult.error);
           toast.error('Failed to update draft before publishing.');
           return;
         }
@@ -561,11 +556,10 @@ export default function EditorPage() {
           router.push('/drafts');
         }, 1000);
       } else {
-        console.error('Publish failed:', result?.error);
         toast.error(`Publish failed: ${result?.error}`);
       }
-    } catch (error) {
-      console.error('Publish error:', error);
+    } catch {
+      toast.error('Failed to publish');
     } finally {
       setPublishing(false);
     }
@@ -599,8 +593,7 @@ export default function EditorPage() {
           } else {
             toast.error('Failed to load draft');
           }
-        } catch (error) {
-          console.error('Failed to load draft:', error);
+        } catch {
           toast.error('Failed to load draft');
         } finally {
           setIsLoadingDraft(false);
@@ -625,8 +618,8 @@ export default function EditorPage() {
             .map((integration: Integration) => integration.platform);
           setConnectedPlatforms(connected);
         }
-      } catch (error) {
-        console.error('Failed to load integrations:', error);
+      } catch {
+        toast.error('Failed to load integrations');
       }
     }
 
