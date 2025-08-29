@@ -177,7 +177,13 @@ export class HashnodeClient implements IntegrationClient {
               }))
             : [],
           ...(content.coverUrl && {
-            coverImageOptions: { coverImageURL: content.coverUrl },
+            coverImageOptions: {
+              coverImageURL: content.coverUrl,
+              isCoverAttributionHidden: true,
+              coverImageAttribution: '',
+              coverImagePhotographer: '',
+              stickCoverToBottom: false,
+            },
           }),
         },
       },
