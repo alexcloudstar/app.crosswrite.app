@@ -49,8 +49,6 @@ export default function SchedulerPage() {
 
   const draftDrafts = drafts.filter(draft => draft.status === 'draft');
 
-  console.log('Scheduled drafts:', scheduledDrafts);
-
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -80,7 +78,7 @@ export default function SchedulerPage() {
         draft.scheduledAt &&
         draft.scheduledAt.toDateString() === date.toDateString()
     );
-    console.log(`Posts for ${date.toDateString()}:`, posts);
+
     return posts;
   };
 
@@ -132,10 +130,15 @@ export default function SchedulerPage() {
             Schedule your content for optimal publishing times
           </p>
         </div>
-        <button onClick={toggleShowSchedulingForm} className='btn btn-primary'>
-          <Plus size={16} className='mr-2' />
-          Schedule Post
-        </button>
+        <div className='flex items-center space-x-2'>
+          <button
+            onClick={toggleShowSchedulingForm}
+            className='btn btn-primary'
+          >
+            <Plus size={16} className='mr-2' />
+            Schedule Post
+          </button>
+        </div>
       </div>
 
       {drafts.length === 0 ? (
@@ -290,39 +293,6 @@ export default function SchedulerPage() {
                 </div>
               </div>
             )}
-
-            <div className='card bg-base-100 border border-base-300 shadow-sm'>
-              <div className='card-body'>
-                <h3 className='font-semibold mb-2 flex items-center'>
-                  <Clock size={16} className='mr-2' />
-                  Best Publishing Times
-                </h3>
-                <div className='space-y-2 text-sm'>
-                  <div className='flex justify-between'>
-                    <span>dev.to</span>
-                    <span className='text-base-content/50'>
-                      9:00 AM - 11:00 AM
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span className='text-base-content/50'>
-                      7:00 AM - 9:00 AM
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span>Hashnode</span>
-                    <span className='text-base-content/50'>
-                      10:00 AM - 12:00 PM
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span className='text-base-content/50'>
-                      6:00 AM - 8:00 AM
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}

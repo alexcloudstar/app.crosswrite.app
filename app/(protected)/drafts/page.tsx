@@ -26,6 +26,7 @@ import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { listDrafts, deleteDraft } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
+import { bulkSchedule, resetScheduledPost } from '@/app/actions/scheduler';
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft, DraftsResponse } from '@/lib/types/drafts';
 import { usePlan } from '@/hooks/use-plan';
@@ -142,7 +143,6 @@ export default function DraftsPage() {
   };
 
   const handleScheduleDraft = (draftId: string) => {
-    console.log('clicked');
     setScheduleDraftId(draftId);
     setShowScheduleModal(true);
   };
@@ -150,6 +150,31 @@ export default function DraftsPage() {
   const handleDeleteDraft = (draftId: string) => {
     setDeleteTarget({ type: 'single', draftId });
     setShowDeleteModal(true);
+    setOpenDropdown(null);
+  };
+
+  const handleResetScheduledPost = async (draftId: string) => {
+    try {
+      const result = await resetScheduledPost({ draftId });
+
+      if (result.success) {
+        toast.success('Scheduled post reset successfully');
+
+        // Reload drafts to show updated status
+        const reloadResult = await listDrafts({
+          page: 1,
+          limit: 100,
+        });
+        if (reloadResult.success && reloadResult.data) {
+          setDrafts((reloadResult.data as DraftsResponse).drafts);
+        }
+      } else {
+        toast.error(`Failed to reset scheduled post: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error resetting scheduled post:', error);
+      toast.error('Failed to reset scheduled post');
+    }
     setOpenDropdown(null);
   };
 
@@ -242,7 +267,6 @@ export default function DraftsPage() {
             draftId: string;
           };
         };
-        console.log('Published successfully:', data);
 
         if (data.summary) {
           const { successful, total } = data.summary;
@@ -293,24 +317,96 @@ export default function DraftsPage() {
     }
   };
 
-  const handleScheduleSubmit = () => {
-    // TODO: Implement schedule functionality
-    console.log('Scheduling:', {
-      draftId: scheduleDraftId,
-      selectedDrafts: scheduleDraftId ? null : selectedDrafts,
-      date: scheduleDate,
-      time: scheduleTime,
-      platforms: selectedPlatforms,
-    });
+  const handleScheduleSubmit = async () => {
+    if (!scheduleDate || !scheduleTime) {
+      toast.error('Please select both date and time');
+      return;
+    }
 
-    setShowScheduleModal(false);
-    setScheduleDraftId(null);
-    setScheduleDate('');
-    setScheduleTime('');
-    setSelectedPlatforms([...supportedPlatforms]);
+    const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}`);
 
-    if (!scheduleDraftId) {
-      setSelectedDrafts([]);
+    if (scheduledDateTime <= new Date()) {
+      toast.error('Scheduled date must be in the future');
+      return;
+    }
+
+    try {
+      const draftIds = scheduleDraftId ? [scheduleDraftId] : selectedDrafts;
+
+      if (draftIds.length === 0) {
+        toast.error('No drafts selected for scheduling');
+        return;
+      }
+
+      const schedules = draftIds.map(draftId => ({
+        draftId,
+        platforms: selectedPlatforms,
+        scheduledAt: scheduledDateTime.toISOString(),
+        userTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }));
+
+      const result = await bulkSchedule({ schedules });
+
+      if (result.success) {
+        const data = result.data as {
+          results: Array<{
+            success: boolean;
+            draftId: string;
+            error?: string;
+          }>;
+          summary: {
+            total: number;
+            successful: number;
+            failed: number;
+          };
+        };
+
+        const { successful, total } = data.summary;
+
+        if (successful > 0) {
+          toast.success(
+            `Successfully scheduled ${successful} out of ${total} draft(s)!`
+          );
+
+          // Reload drafts to show updated status
+          const reloadResult = await listDrafts({
+            page: 1,
+            limit: 100,
+          });
+          if (reloadResult.success && reloadResult.data) {
+            setDrafts((reloadResult.data as DraftsResponse).drafts);
+          }
+        }
+
+        if (data.summary.failed > 0) {
+          const failedResults = data.results.filter(r => !r.success);
+          const errorMessages = failedResults
+            .map(r => `Draft ${r.draftId}: ${r.error}`)
+            .join('\n');
+          toast.error(
+            `Failed to schedule ${data.summary.failed} draft(s):\n\n${errorMessages}`
+          );
+        }
+      } else {
+        toast.error(`Failed to schedule drafts: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Schedule error:', error);
+      toast.error(
+        `Schedule error: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    } finally {
+      setShowScheduleModal(false);
+      setScheduleDraftId(null);
+      setScheduleDate('');
+      setScheduleTime('');
+      setSelectedPlatforms([...supportedPlatforms]);
+
+      if (!scheduleDraftId) {
+        setSelectedDrafts([]);
+      }
     }
   };
 
@@ -560,10 +656,7 @@ export default function DraftsPage() {
                           onClick={e => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log(
-                              'Dropdown clicked for draft:',
-                              draft.id
-                            );
+
                             setOpenDropdown(
                               openDropdown === draft.id ? null : draft.id
                             );
@@ -611,6 +704,20 @@ export default function DraftsPage() {
                                   Schedule
                                 </button>
                               </li>
+                              {draft.status === 'scheduled' && (
+                                <li>
+                                  <button
+                                    onClick={handleResetScheduledPost.bind(
+                                      null,
+                                      draft.id
+                                    )}
+                                    className='text-warning'
+                                  >
+                                    <Clock size={16} />
+                                    Reset Schedule
+                                  </button>
+                                </li>
+                              )}
                               <li>
                                 <button
                                   onClick={handleDeleteDraft.bind(
@@ -638,6 +745,7 @@ export default function DraftsPage() {
 
       {showScheduleModal && (
         <div className='modal modal-open'>
+          <div className='modal-backdrop' onClick={toggleModal}></div>
           <div className='modal-box max-w-md'>
             <div className='flex items-center justify-between mb-4'>
               <h3 className='font-bold text-lg flex items-center'>

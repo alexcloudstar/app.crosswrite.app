@@ -55,14 +55,15 @@ async function findDueJobs(): Promise<
   }));
 }
 
-async function processScheduledPost(scheduledPost: {
-  id: string;
-  draftId: string;
-  userId: string;
-  platforms: string[];
-  scheduledAt: Date;
-  retryCount: number;
-}): Promise<{ success: boolean; error?: string }> {
+async function processScheduledPost(
+  scheduledPost: {
+    id: string;
+    draftId: string;
+    userId: string;
+    platforms: string[];
+    scheduledAt: Date;
+    retryCount: number;
+): Promise<{ success: boolean; error?: string }> {
   const { id, draftId, userId, platforms, retryCount } = scheduledPost;
 
   try {
@@ -114,7 +115,9 @@ async function processScheduledPost(scheduledPost: {
 
       if (missingPlatforms.length > 0) {
         throw new Error(
-          `Missing integrations for: ${missingPlatforms.join(', ')}`
+          `Missing integrations for: ${missingPlatforms.join(
+            ', '
+          )}. Please go to Integrations page and connect these platforms.`
         );
       }
 
@@ -157,8 +160,27 @@ async function processScheduledPost(scheduledPost: {
         })
         .where(eq(scheduledPosts.id, id));
 
+      // Update draft status based on publishing result
       if (finalStatus === 'published') {
+        await db
+          .update(drafts)
+          .set({
+            status: 'published',
+            publishedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(drafts.id, draftId));
         await resetRetryInfo(id);
+      } else if (finalStatus === 'failed') {
+        // Revert draft status back to draft if publishing failed
+        await db
+          .update(drafts)
+          .set({
+            status: 'draft',
+            scheduledAt: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(drafts.id, draftId));
       }
 
       return { success: true };

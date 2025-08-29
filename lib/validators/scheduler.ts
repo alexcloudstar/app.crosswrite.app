@@ -10,10 +10,19 @@ export const createScheduledPostSchema = z
     scheduledAt: z.string().datetime('Invalid scheduled date'),
     userTz: z.string().optional(),
   })
-  .refine(data => new Date(data.scheduledAt) > new Date(), {
-    message: 'Scheduled date must be in the future',
-    path: ['scheduledAt'],
-  });
+  .refine(
+    data => {
+      const scheduledDate = new Date(data.scheduledAt);
+      const now = new Date();
+
+      // Simple comparison - no timezone conversion for now
+      return scheduledDate > now;
+    },
+    {
+      message: 'Scheduled date must be in the future',
+      path: ['scheduledAt'],
+    }
+  );
 
 export const updateScheduledPostSchema = z
   .object({
@@ -26,7 +35,10 @@ export const updateScheduledPostSchema = z
   .refine(
     data => {
       if (data.scheduledAt) {
-        return new Date(data.scheduledAt) > new Date();
+        const scheduledDate = new Date(data.scheduledAt);
+        const now = new Date();
+
+        return scheduledDate > now;
       }
       return true;
     },

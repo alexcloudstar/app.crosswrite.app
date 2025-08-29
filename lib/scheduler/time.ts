@@ -25,7 +25,9 @@ export function fromUTC(date: Date, userTz?: string): Date {
     return date;
   }
 
-  return date;
+  const userDate = new Date(date.toLocaleString('en-US', { timeZone: userTz }));
+
+  return userDate;
 }
 
 export function getNextRetryTime(retryCount: number): Date {

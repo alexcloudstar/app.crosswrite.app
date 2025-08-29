@@ -101,6 +101,15 @@ export async function createScheduledPost(input: unknown) {
       })
       .returning();
 
+    await db
+      .update(drafts)
+      .set({
+        status: 'scheduled',
+        scheduledAt: scheduledAtUTC,
+        updatedAt: new Date(),
+      })
+      .where(eq(drafts.id, validated.draftId));
+
     revalidateDashboard();
     return successResult(scheduledPost);
   } catch (error) {
@@ -188,6 +197,15 @@ export async function cancelScheduledPost(input: unknown) {
       return errorResult('Scheduled post not found or cannot be cancelled');
     }
 
+    await db
+      .update(drafts)
+      .set({
+        status: 'draft',
+        scheduledAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(drafts.id, scheduledPost.draftId));
+
     revalidateDashboard();
     return successResult({ cancelled: true });
   } catch (error) {
@@ -255,11 +273,27 @@ export async function bulkSchedule(input: unknown) {
           .limit(1);
 
         if (existing) {
-          results.push({
-            success: false,
-            draftId: validated.draftId,
-            error: 'Draft is already scheduled',
-          });
+          if (draft.status !== 'scheduled') {
+            await db
+              .update(drafts)
+              .set({
+                status: 'scheduled',
+                scheduledAt: existing.scheduledAt,
+                updatedAt: new Date(),
+              })
+              .where(eq(drafts.id, validated.draftId));
+
+            results.push({
+              success: true,
+              draftId: validated.draftId,
+            });
+          } else {
+            results.push({
+              success: false,
+              draftId: validated.draftId,
+              error: 'Draft is already scheduled',
+            });
+          }
           continue;
         }
 
@@ -274,6 +308,15 @@ export async function bulkSchedule(input: unknown) {
           userId: session.id,
           scheduledAt: scheduledAtUTC,
         });
+
+        await db
+          .update(drafts)
+          .set({
+            status: 'scheduled',
+            scheduledAt: scheduledAtUTC,
+            updatedAt: new Date(),
+          })
+          .where(eq(drafts.id, validated.draftId));
 
         results.push({
           success: true,
@@ -311,6 +354,36 @@ export async function processDueJobsAction() {
     const result = await processDueJobs();
 
     return successResult(result);
+  } catch (error) {
+    return errorResult(await handleDatabaseError(error));
+  }
+}
+
+export async function resetScheduledPost(input: { draftId: string }) {
+  try {
+    const session = await requireAuth();
+    const { draftId } = input;
+
+    await db
+      .delete(scheduledPosts)
+      .where(
+        and(
+          eq(scheduledPosts.draftId, draftId),
+          eq(scheduledPosts.userId, session.id)
+        )
+      );
+
+    await db
+      .update(drafts)
+      .set({
+        status: 'draft',
+        scheduledAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(drafts.id, draftId));
+
+    revalidateDashboard();
+    return successResult({ reset: true });
   } catch (error) {
     return errorResult(await handleDatabaseError(error));
   }
