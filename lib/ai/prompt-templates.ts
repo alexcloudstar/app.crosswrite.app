@@ -3,6 +3,8 @@ export const PROMPT_TEMPLATES = {
     const goalsText = goals?.length ? `\n\nGoals: ${goals.join(', ')}` : '';
     return `Please improve the following text to make it more engaging, clear, and professional. Focus on better flow, stronger language, and improved readability.${goalsText}
 
+Important: Use regular hyphens (-) instead of em dashes (—) or en dashes (–).
+
 Text to improve:
 ${text}
 
@@ -22,6 +24,8 @@ Improved version:`;
       toneInstructions.friendly;
 
     return `Please rewrite the following text to have a ${instruction} tone while maintaining the same meaning and key information.
+
+Important: Use regular hyphens (-) instead of em dashes (—) or en dashes (–).
 
 Original text:
 ${text}
@@ -51,7 +55,7 @@ Summary:`;
   },
 
   generateSuggestions: (content: string, maxSuggestions: number = 4) => {
-    return `Analyze the following content and provide ${maxSuggestions} specific writing improvement suggestions. Each suggestion should be actionable and include:
+    return `Analyze the following content and provide exactly ${maxSuggestions} specific writing improvement suggestions. Each suggestion should be actionable and include:
 1. A clear title
 2. A brief description of the improvement
 3. A specific suggestion or example
@@ -59,12 +63,40 @@ Summary:`;
 Content to analyze:
 ${content}
 
-Provide ${maxSuggestions} suggestions in this format:
+Provide exactly ${maxSuggestions} suggestions in this exact format (one suggestion per block):
+
 - Title: [Suggestion Title]
-- Description: [Brief description]
+- Description: [Brief description of the improvement]
 - Suggestion: [Specific improvement advice]
 
-Suggestions:`;
+- Title: [Suggestion Title]
+- Description: [Brief description of the improvement]
+- Suggestion: [Specific improvement advice]
+
+Continue this format for all ${maxSuggestions} suggestions.`;
+  },
+
+  extractTags: (content: string, maxTags: number = 5) => {
+    return `Analyze the following content and extract ${maxTags} relevant tags that would help with content discovery and categorization.
+
+Guidelines for tag extraction:
+- Focus on key topics, technologies, concepts, and themes
+- Include both broad and specific tags
+- Use single words or short phrases (2-3 words max)
+- Avoid generic terms like "article", "post", "content"
+- Prioritize tags that would help readers find this content
+- Consider technical terms, frameworks, languages, and methodologies mentioned
+
+Content to analyze:
+${content}
+
+Provide exactly ${maxTags} tags, one per line, in this format:
+tag1
+tag2
+tag3
+...
+
+Tags:`;
   },
 
   generateThumbnail: (prompt: string, aspectRatio: string) => {

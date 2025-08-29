@@ -9,11 +9,13 @@ import {
   adjustToneSchema,
   summarizeTextSchema,
   generateSuggestionsSchema,
+  extractTagsSchema,
   generateThumbnailSchema,
   type ImproveTextInput,
   type AdjustToneInput,
   type SummarizeTextInput,
   type GenerateSuggestionsInput,
+  type ExtractTagsInput,
   type GenerateThumbnailInput,
 } from '@/lib/validators/ai';
 import { db } from '@/db/client';
@@ -192,6 +194,49 @@ export async function generateSuggestions(input: GenerateSuggestionsInput) {
   }
 }
 
+export async function extractTags(input: ExtractTagsInput) {
+  try {
+    const user = await requireAuth();
+    const validatedInput = extractTagsSchema.parse(input);
+
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
+    ) {
+      return errorResult('AI features are not available for your plan');
+    }
+
+    let contentToAnalyze = validatedInput.content;
+    if (contentToAnalyze.length > 11000) {
+      contentToAnalyze =
+        contentToAnalyze.substring(0, 7000) +
+        '\n\n[...content truncated...]\n\n' +
+        contentToAnalyze.substring(contentToAnalyze.length - 4000);
+    }
+
+    const prompt = PROMPT_TEMPLATES.extractTags(
+      contentToAnalyze,
+      validatedInput.maxTags
+    );
+
+    const response = await aiProvider.invoke({
+      purpose: 'extractTags',
+      input: prompt,
+      modelConfig: { temperature: 0.3, maxTokens: 500 },
+    });
+
+    const tags = parseTagsFromResponse(response, validatedInput.maxTags);
+
+    await trackAIUsage(user.id, 'aiSuggestionsUsed');
+
+    return await successResult({ tags });
+  } catch (error) {
+    console.error('Extract tags failed:', error);
+    return await errorResult(
+      error instanceof Error ? error.message : 'Failed to extract tags'
+    );
+  }
+}
+
 export async function generateThumbnail(input: GenerateThumbnailInput) {
   try {
     const user = await requireAuth();
@@ -260,7 +305,12 @@ function parseSuggestionsFromResponse(
 
   for (const line of lines) {
     if (line.startsWith('- Title:')) {
-      if (Object.keys(currentSuggestion).length > 0) {
+      // If we have a previous suggestion with content, save it
+      if (
+        currentSuggestion.title &&
+        currentSuggestion.description &&
+        currentSuggestion.suggestion
+      ) {
         suggestions.push(currentSuggestion);
       }
 
@@ -283,9 +333,28 @@ function parseSuggestionsFromResponse(
     }
   }
 
-  if (Object.keys(currentSuggestion).length > 0) {
+  // Don't forget to add the last suggestion if it's complete
+  if (
+    currentSuggestion.title &&
+    currentSuggestion.description &&
+    currentSuggestion.suggestion
+  ) {
     suggestions.push(currentSuggestion);
   }
 
   return suggestions.slice(0, maxSuggestions);
+}
+
+function parseTagsFromResponse(response: string, maxTags: number) {
+  const lines = response.split('\n').filter(line => line.trim());
+  const tags: string[] = [];
+
+  for (const line of lines) {
+    const tag = line.trim();
+    if (tag && !tag.startsWith('-') && !tag.startsWith('Tags:')) {
+      tags.push(tag);
+    }
+  }
+
+  return tags.slice(0, maxTags);
 }
