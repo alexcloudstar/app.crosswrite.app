@@ -824,6 +824,8 @@ export default function EditorPage() {
           onGeneratingChange={isGenerating =>
             setLoadingType(isGenerating ? 'thumbnail' : null)
           }
+          articleTitle={title}
+          articleContent={content}
         />
       )}
 

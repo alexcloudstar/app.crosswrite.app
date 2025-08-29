@@ -29,7 +29,7 @@ const INPUT_LIMITS: Record<string, number> = {
   summarizeText: 10000,
   generateSuggestions: 8000,
   extractTags: 12000,
-  generateThumbnail: 500,
+  generateThumbnail: 2000,
 };
 
 export class AIProvider {
@@ -89,7 +89,7 @@ export class AIProvider {
     try {
       const response = await this.client.images.generate({
         model: 'dall-e-3',
-        prompt,
+        prompt: prompt,
         n: 1,
         size: size as '1024x1024' | '1792x1024' | '1024x1792',
       });

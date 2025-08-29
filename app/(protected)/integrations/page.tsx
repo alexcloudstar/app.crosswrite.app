@@ -6,6 +6,7 @@ import {
   getPlatformPublications,
   listIntegrations,
   testIntegration,
+  updateIntegrationPublicationId,
 } from '@/app/actions/integrations';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 import { platformConfig } from '@/lib/config/platforms';
@@ -57,15 +58,22 @@ export default function IntegrationsPage() {
       try {
         const result = await listIntegrations();
         if (result.success && result.data) {
-          setIntegrations(
-            result.data as Array<{
-              id: string;
-              platform: string;
-              status: string;
-              connectedAt?: Date;
-              lastSync?: Date;
-            }>
+          const integrationsData = result.data as Array<{
+            id: string;
+            platform: string;
+            status: string;
+            connectedAt?: Date;
+            lastSync?: Date;
+            publicationId?: string;
+          }>;
+          setIntegrations(integrationsData);
+
+          const hashnodeIntegration = integrationsData.find(
+            i => i.platform === 'hashnode'
           );
+          if (hashnodeIntegration?.publicationId) {
+            setPublicationId(hashnodeIntegration.publicationId);
+          }
         }
       } catch (error) {
         console.error('Failed to load integrations:', error);
@@ -76,6 +84,17 @@ export default function IntegrationsPage() {
 
     loadIntegrations();
   }, []);
+
+  useEffect(() => {
+    if (publicationId && !selectedPublicationName && publications.length > 0) {
+      const existingPublication = publications.find(
+        pub => pub.id === publicationId
+      );
+      if (existingPublication) {
+        setSelectedPublicationName(existingPublication.name);
+      }
+    }
+  }, [publicationId, selectedPublicationName, publications]);
 
   const getPlatformsWithStatus = () => {
     const connectedPlatforms = new Map(
@@ -172,6 +191,74 @@ export default function IntegrationsPage() {
     }
   };
 
+  const loadPublicationsForName = async (platform: string) => {
+    const integration = integrations.find(i => i.platform === platform);
+    if (!integration) return;
+
+    try {
+      const result = await getPlatformPublications({
+        platform: platform as 'hashnode',
+        integrationId: integration.id,
+      });
+
+      if (
+        result.success &&
+        result.data &&
+        typeof result.data === 'object' &&
+        'publications' in result.data
+      ) {
+        const rawPublications = (
+          result.data as {
+            publications: Array<{
+              id: string;
+              title: string;
+              description?: string;
+              domain?: string;
+            }>;
+          }
+        ).publications;
+
+        const transformedPublications = rawPublications.map(pub => ({
+          id: pub.id,
+          name: pub.title,
+          description: pub.description,
+          domain: pub.domain,
+        }));
+
+        setPublications(transformedPublications);
+
+        if (publicationId) {
+          const existingPublication = transformedPublications.find(
+            pub => pub.id === publicationId
+          );
+          if (existingPublication) {
+            setSelectedPublicationName(existingPublication.name);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load publications for name resolution:', error);
+    }
+  };
+
+  // Auto-load publications when we have a publication ID but no name
+  useEffect(() => {
+    if (publicationId && !selectedPublicationName && integrations.length > 0) {
+      const hashnodeIntegration = integrations.find(
+        i => i.platform === 'hashnode'
+      );
+      if (hashnodeIntegration && !showPublicationSelector) {
+        loadPublicationsForName('hashnode');
+      }
+    }
+  }, [
+    publicationId,
+    selectedPublicationName,
+    integrations,
+    loadPublicationsForName,
+    showPublicationSelector,
+  ]);
+
   const handleLoadPublications = async (platform: string) => {
     const integration = integrations.find(i => i.platform === platform);
     if (!integration) return;
@@ -191,7 +278,7 @@ export default function IntegrationsPage() {
         const rawPublications = (
           result.data as {
             publications: Array<{
-              _id: string;
+              id: string;
               title: string;
               description?: string;
               domain?: string;
@@ -200,13 +287,23 @@ export default function IntegrationsPage() {
         ).publications;
 
         const transformedPublications = rawPublications.map(pub => ({
-          id: pub._id,
+          id: pub.id,
           name: pub.title,
           description: pub.description,
           domain: pub.domain,
         }));
 
         setPublications(transformedPublications);
+
+        if (publicationId) {
+          const existingPublication = transformedPublications.find(
+            pub => pub.id === publicationId
+          );
+          if (existingPublication) {
+            setSelectedPublicationName(existingPublication.name);
+          }
+        }
+
         setShowPublicationSelector(true);
       } else {
         toast.error(`Failed to load publications: ${result.error}`);
@@ -433,9 +530,11 @@ export default function IntegrationsPage() {
                       </div>
                       {platform.platform === 'hashnode' && (
                         <div className='flex items-center space-x-2 mt-2'>
-                          {selectedPublicationName && (
+                          {(selectedPublicationName || publicationId) && (
                             <span className='text-xs text-base-content/70'>
-                              Selected: {selectedPublicationName}
+                              Selected:{' '}
+                              {selectedPublicationName ||
+                                `Publication ${publicationId?.slice(0, 8)}...`}
                             </span>
                           )}
                           <button
@@ -444,12 +543,12 @@ export default function IntegrationsPage() {
                               platform.platform
                             )}
                             className={`btn btn-xs ${
-                              selectedPublicationName
+                              selectedPublicationName || publicationId
                                 ? 'btn-success'
                                 : 'btn-ghost'
                             }`}
                           >
-                            {selectedPublicationName
+                            {selectedPublicationName || publicationId
                               ? 'Change Publication'
                               : 'Select Publication'}
                           </button>
@@ -477,27 +576,49 @@ export default function IntegrationsPage() {
                       ? 'bg-primary/10 border-primary'
                       : 'bg-base-200 border-transparent hover:border-primary hover:bg-base-300'
                   }`}
-                  onClick={() => {
-                    setPublicationId(publication.id);
-                    setSelectedPublicationName(publication.name);
-                    setShowPublicationSelector(false);
-                    const successMessage = document.createElement('div');
-                    successMessage.className =
-                      'alert alert-success fixed top-4 right-4 z-50 max-w-sm';
-                    successMessage.innerHTML = `
-                      <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span>Publication "${publication.name}" selected!</span>
-                      </div>
-                    `;
-                    document.body.appendChild(successMessage);
-                    setTimeout(() => {
-                      if (successMessage.parentNode) {
-                        successMessage.parentNode.removeChild(successMessage);
+                  onClick={async () => {
+                    const hashnodeIntegration = integrations.find(
+                      i => i.platform === 'hashnode'
+                    );
+                    if (!hashnodeIntegration) {
+                      toast.error('Hashnode integration not found');
+                      return;
+                    }
+
+                    try {
+                      const result = await updateIntegrationPublicationId({
+                        id: hashnodeIntegration.id,
+                        publicationId: publication.id,
+                      });
+
+                      if (result.success) {
+                        setPublicationId(publication.id);
+                        setSelectedPublicationName(publication.name);
+                        setShowPublicationSelector(false);
+
+                        setIntegrations(prev =>
+                          prev.map(integration =>
+                            integration.platform === 'hashnode'
+                              ? {
+                                  ...integration,
+                                  publicationId: publication.id,
+                                }
+                              : integration
+                          )
+                        );
+
+                        toast.success(
+                          `Publication "${publication.name}" selected and saved!`
+                        );
+                      } else {
+                        toast.error(
+                          `Failed to save publication: ${result.error}`
+                        );
                       }
-                    }, 3000);
+                    } catch (error) {
+                      console.error('Failed to save publication:', error);
+                      toast.error('Failed to save publication selection');
+                    }
                   }}
                 >
                   {publicationId === publication.id && (

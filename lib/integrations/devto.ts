@@ -9,6 +9,17 @@ export interface DevtoIntegration {
   apiKey: string;
 }
 
+interface DevtoArticleData {
+  article: {
+    title: string;
+    body_markdown: string;
+    tags: string[];
+    canonical_url?: string;
+    cover_image?: string;
+    published: boolean;
+  };
+}
+
 function normalizeDevtoMarkdown(
   markdown: string,
   publishAsDraft: boolean
@@ -109,22 +120,33 @@ export class DevtoClient implements IntegrationClient {
       content.publishAsDraft || false
     );
 
+    const articleData: DevtoArticleData = {
+      article: {
+        title: content.title,
+        body_markdown: normalizedMarkdown,
+        tags: content.tags || [],
+        canonical_url: content.canonicalUrl,
+        published: !content.publishAsDraft,
+      },
+    };
+
+    if (content.coverUrl) {
+      articleData.article.cover_image = content.coverUrl;
+      console.log('Adding cover image to Dev.to:', content.coverUrl);
+    } else {
+      console.log('No cover URL provided for Dev.to');
+    }
+
+    console.log('Dev.to article data:', JSON.stringify(articleData, null, 2));
+    console.log('Dev.to coverUrl:', content.coverUrl);
+
     const response = await fetch(`${this.baseUrl}/articles`, {
       method: 'POST',
       headers: {
         'api-key': this.integration.apiKey,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        article: {
-          title: content.title,
-          body_markdown: normalizedMarkdown,
-          tags: content.tags || [],
-          canonical_url: content.canonicalUrl,
-          cover_image: content.coverUrl,
-          published: !content.publishAsDraft,
-        },
-      }),
+      body: JSON.stringify(articleData),
     });
 
     if (!response.ok) {

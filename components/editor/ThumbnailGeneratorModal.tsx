@@ -7,44 +7,20 @@ import {
   Download,
   RefreshCw,
   Check,
+  Sparkles,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAppStore } from '@/lib/store';
-import { generateThumbnail } from '@/app/actions/ai';
+import { generateThumbnail, generateThumbnailPrompt } from '@/app/actions/ai';
 
 interface ThumbnailGeneratorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (imageUrl: string) => void;
   onGeneratingChange?: (isGenerating: boolean) => void;
+  articleTitle?: string;
+  articleContent?: string;
 }
-
-const THUMBNAIL_PRESETS = [
-  {
-    name: 'Tech Blog',
-    prompt:
-      'Modern tech blog header with clean typography, gradient background, tech icons',
-    aspectRatio: '16:9',
-  },
-  {
-    name: 'Tutorial',
-    prompt:
-      'Educational tutorial header with step-by-step visual elements, blue theme',
-    aspectRatio: '16:9',
-  },
-  {
-    name: 'Newsletter',
-    prompt:
-      'Professional newsletter header with elegant typography, subtle patterns',
-    aspectRatio: '2:1',
-  },
-  {
-    name: 'Social Media',
-    prompt:
-      'Eye-catching social media post with bold colors, modern design elements',
-    aspectRatio: '1:1',
-  },
-];
 
 const ASPECT_RATIOS = [
   { value: '16:9', label: 'Widescreen (16:9)' },
@@ -64,49 +40,59 @@ export function ThumbnailGeneratorModal({
   onClose,
   onSelect,
   onGeneratingChange,
+  articleTitle,
+  articleContent,
 }: ThumbnailGeneratorModalProps) {
   const { canGenerateThumbnail, incrementThumbnailUsage } = useAppStore();
-  const [selectedPreset, setSelectedPreset] = useState(0);
-  const [customPrompt, setCustomPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [size, setSize] = useState('medium');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const currentPrompt =
-    customPrompt || THUMBNAIL_PRESETS[selectedPreset].prompt;
-
-  const handleGenerate = async () => {
-    if (!canGenerateThumbnail()) return;
+  const handleGenerateFromArticle = async () => {
+    if (!articleTitle || !articleContent || !canGenerateThumbnail()) return;
 
     setIsGenerating(true);
     onGeneratingChange?.(true);
 
     try {
-      const result = await generateThumbnail({
-        prompt: currentPrompt,
+      // First, generate the AI prompt from the article
+      const promptResult = await generateThumbnailPrompt({
+        title: articleTitle,
+        content: articleContent,
+        aspectRatio: aspectRatio as '16:9' | '1:1' | '4:5' | '2:1',
+      });
+
+      if (!promptResult.success) {
+        throw new Error(promptResult.error || 'Failed to generate AI prompt');
+      }
+
+      const prompt = (promptResult.data as { thumbnailPrompt: string })
+        .thumbnailPrompt;
+
+      // Then generate the thumbnail using the AI prompt
+      const thumbnailResult = await generateThumbnail({
+        prompt: prompt,
         aspectRatio: aspectRatio as '16:9' | '1:1' | '4:5' | '2:1',
         size: size as 'small' | 'medium' | 'large',
       });
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to generate thumbnails');
+      if (!thumbnailResult.success) {
+        throw new Error(
+          thumbnailResult.error || 'Failed to generate thumbnails'
+        );
       }
 
-      setGeneratedImages((result.data as { images: string[] }).images);
+      setGeneratedImages((thumbnailResult.data as { images: string[] }).images);
       incrementThumbnailUsage();
     } catch (error) {
-      console.error('Failed to generate thumbnails:', error);
-      // You could add a toast notification here
+      console.error('Failed to generate thumbnails from article:', error);
     } finally {
       setIsGenerating(false);
       onGeneratingChange?.(false);
     }
   };
-
-  const onChangeCustomPrompt = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    setCustomPrompt(e.target.value);
 
   const onChangeAspectRatio = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setAspectRatio(e.target.value);
@@ -154,40 +140,6 @@ export function ThumbnailGeneratorModal({
           <div className='space-y-6'>
             <div>
               <label className='label'>
-                <span className='label-text font-medium'>Presets</span>
-              </label>
-              <div className='grid grid-cols-2 gap-2'>
-                {THUMBNAIL_PRESETS.map((preset, index) => (
-                  <button
-                    key={preset.name}
-                    onClick={setSelectedPreset.bind(null, index)}
-                    className={`btn btn-outline btn-sm ${
-                      selectedPreset === index ? 'btn-primary' : ''
-                    }`}
-                    disabled={isGenerating}
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className='label'>
-                <span className='label-text font-medium'>Custom Prompt</span>
-              </label>
-              <textarea
-                value={customPrompt}
-                onChange={onChangeCustomPrompt}
-                placeholder='Describe the thumbnail you want to generate...'
-                className='textarea textarea-bordered w-full'
-                rows={3}
-                disabled={isGenerating}
-              />
-            </div>
-
-            <div>
-              <label className='label'>
                 <span className='label-text font-medium'>Aspect Ratio</span>
               </label>
               <select
@@ -223,8 +175,13 @@ export function ThumbnailGeneratorModal({
             </div>
 
             <button
-              onClick={handleGenerate}
-              disabled={!canGenerateThumbnail() || isGenerating}
+              onClick={handleGenerateFromArticle}
+              disabled={
+                !canGenerateThumbnail() ||
+                isGenerating ||
+                !articleTitle ||
+                !articleContent
+              }
               className='btn btn-primary w-full'
             >
               {isGenerating ? (
@@ -234,8 +191,8 @@ export function ThumbnailGeneratorModal({
                 </>
               ) : (
                 <>
-                  <ImageIcon size={16} className='mr-2' />
-                  Generate Thumbnails
+                  <Sparkles size={16} className='mr-2' />
+                  Generate from Article
                 </>
               )}
             </button>
@@ -245,6 +202,15 @@ export function ThumbnailGeneratorModal({
                 <span>
                   You&apos;ve reached your thumbnail generation limit for this
                   month.
+                </span>
+              </div>
+            )}
+
+            {(!articleTitle || !articleContent) && (
+              <div className='alert alert-info'>
+                <span>
+                  Add some content to your article to generate relevant
+                  thumbnails.
                 </span>
               </div>
             )}
@@ -261,40 +227,32 @@ export function ThumbnailGeneratorModal({
                   className='mx-auto mb-4 text-base-content/30'
                 />
                 <p className='text-base-content/50'>
-                  Click &quot;Generate Thumbnails&quot; to create AI-powered
-                  thumbnails
+                  Click &quot;Generate from Article&quot; to create AI-powered
+                  thumbnails based on your content
                 </p>
               </div>
             ) : (
-              <div className='grid grid-cols-2 gap-4'>
+              <div className='grid grid-cols-1 gap-4'>
                 {generatedImages.map((imageUrl, index) => (
                   <div
-                    key={`thumbnail-${index}`}
-                    className={`relative border-2 rounded-lg overflow-hidden ${
+                    key={index}
+                    className={`relative border-2 rounded-lg overflow-hidden cursor-pointer transition-all ${
                       selectedImage === imageUrl
                         ? 'border-primary'
-                        : 'border-base-300'
-                    } ${
-                      isGenerating
-                        ? 'cursor-not-allowed opacity-50'
-                        : 'cursor-pointer'
+                        : 'border-base-300 hover:border-base-400'
                     }`}
-                    onClick={
-                      isGenerating
-                        ? undefined
-                        : handleSelectImage.bind(null, imageUrl)
-                    }
+                    onClick={() => handleSelectImage(imageUrl)}
                   >
                     <Image
                       src={imageUrl}
                       alt={`Generated thumbnail ${index + 1}`}
                       width={400}
-                      height={200}
-                      className='w-full h-32 object-cover'
+                      height={225}
+                      className='w-full h-auto'
                     />
                     {selectedImage === imageUrl && (
                       <div className='absolute top-2 right-2 bg-primary text-primary-content rounded-full p-1'>
-                        <Check size={12} />
+                        <Check size={16} />
                       </div>
                     )}
                   </div>
@@ -302,24 +260,23 @@ export function ThumbnailGeneratorModal({
               </div>
             )}
 
-            {selectedImage && (
-              <div className='space-y-4'>
-                <div className='border rounded-lg p-4'>
-                  <Image
-                    src={selectedImage}
-                    alt='Selected thumbnail'
-                    width={600}
-                    height={300}
-                    className='w-full h-48 object-cover rounded'
-                  />
-                </div>
+            {generatedImages.length > 0 && (
+              <div className='flex gap-2'>
                 <button
                   onClick={handleUseImage}
-                  className='btn btn-success w-full'
-                  disabled={isGenerating}
+                  disabled={!selectedImage}
+                  className='btn btn-primary flex-1'
                 >
                   <Download size={16} className='mr-2' />
-                  Use as Cover
+                  Use Selected Thumbnail
+                </button>
+                <button
+                  onClick={handleGenerateFromArticle}
+                  disabled={!canGenerateThumbnail() || isGenerating}
+                  className='btn btn-outline'
+                >
+                  <RefreshCw size={16} className='mr-2' />
+                  Generate More
                 </button>
               </div>
             )}

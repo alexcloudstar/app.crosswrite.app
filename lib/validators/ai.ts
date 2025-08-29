@@ -41,9 +41,21 @@ export const generateThumbnailSchema = z.object({
   prompt: z
     .string()
     .min(1, 'Prompt cannot be empty')
-    .max(500, 'Prompt is too long (max 500 characters)'),
+    .max(2000, 'Prompt is too long (max 2000 characters)'),
   aspectRatio: z.enum(['16:9', '1:1', '4:5', '2:1']).optional().default('16:9'),
   size: z.enum(['small', 'medium', 'large']).optional().default('medium'),
+});
+
+export const generateThumbnailPromptSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'Title cannot be empty')
+    .max(200, 'Title is too long (max 200 characters)'),
+  content: z
+    .string()
+    .min(1, 'Content cannot be empty')
+    .max(5000, 'Content is too long (max 5,000 characters)'),
+  aspectRatio: z.enum(['16:9', '1:1', '4:5', '2:1']).optional().default('16:9'),
 });
 
 export type ImproveTextInput = z.infer<typeof improveTextSchema>;
@@ -54,3 +66,6 @@ export type GenerateSuggestionsInput = z.infer<
 >;
 export type ExtractTagsInput = z.infer<typeof extractTagsSchema>;
 export type GenerateThumbnailInput = z.infer<typeof generateThumbnailSchema>;
+export type GenerateThumbnailPromptInput = z.infer<
+  typeof generateThumbnailPromptSchema
+>;

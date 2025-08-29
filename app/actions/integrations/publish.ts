@@ -144,8 +144,56 @@ export async function publishToPlatforms(input: unknown) {
         );
         results.push({ platform, success: true, ...result });
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Unknown error';
+        let errorMessage = 'Unknown error';
+
+        if (error instanceof Error) {
+          const message = error.message;
+
+          // Dev.to specific error handling
+          if (platform === 'devto') {
+            if (
+              message.includes(
+                'Title has already been used in the last five minutes'
+              )
+            ) {
+              errorMessage =
+                'This title was recently used. Please try a different title or wait a few minutes.';
+            } else if (message.includes('HTTP 422')) {
+              errorMessage =
+                'Invalid article data. Please check your content and try again.';
+            } else if (message.includes('HTTP 401')) {
+              errorMessage =
+                'Authentication failed. Please reconnect your Dev.to account.';
+            } else if (message.includes('HTTP 429')) {
+              errorMessage =
+                'Rate limit exceeded. Please wait a moment and try again.';
+            } else {
+              errorMessage = `Dev.to error: ${message}`;
+            }
+          }
+
+          // Hashnode specific error handling
+          else if (platform === 'hashnode') {
+            if (message.includes('Unknown type "CreateStoryInput"')) {
+              errorMessage =
+                'Hashnode API has changed. Please try again or contact support.';
+            } else if (message.includes('HTTP 401')) {
+              errorMessage =
+                'Authentication failed. Please reconnect your Hashnode account.';
+            } else if (message.includes('HTTP 400')) {
+              errorMessage =
+                'Invalid article data. Please check your content and try again.';
+            } else {
+              errorMessage = `Hashnode error: ${message}`;
+            }
+          }
+
+          // Generic error handling
+          else {
+            errorMessage = message;
+          }
+        }
+
         results.push({ platform, success: false, error: errorMessage });
       }
     }

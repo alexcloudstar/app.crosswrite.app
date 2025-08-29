@@ -120,4 +120,54 @@ The image should be:
 - Relevant to the content
 - Suitable for digital publishing`;
   },
+
+  generateThumbnailPrompt: (
+    title: string,
+    content: string,
+    aspectRatio: string
+  ) => {
+    const aspectInstructions = {
+      '16:9': 'widescreen format, perfect for blog headers',
+      '1:1': 'square format, ideal for social media posts',
+      '4:5': 'portrait format, great for Instagram stories',
+      '2:1': 'landscape format, suitable for newsletter headers',
+    };
+
+    const instruction =
+      aspectInstructions[aspectRatio as keyof typeof aspectInstructions] ||
+      aspectInstructions['16:9'];
+
+    return `Create a realistic, natural thumbnail description for a ${instruction} image based on this article.
+
+Article Title: ${title}
+
+Article Content (first 800 characters):
+${content.substring(0, 800)}${content.length > 800 ? '...' : ''}
+
+Generate a realistic visual description that:
+
+1. **REALISTIC PHOTOGRAPHY**: Natural, realistic photo style - not perfect or staged
+2. **CONTENT-SPECIFIC**: Focus on actual objects, tools, or scenes mentioned in the article
+3. **NATURAL LIGHTING**: Soft, natural lighting with realistic shadows
+4. **REAL OBJECTS**: Use real, tangible objects that relate to the article topic
+5. **NATURAL COMPOSITION**: Organic, unposed arrangement - not overly designed
+6. **AUTHENTIC TEXTURE**: Include realistic textures, imperfections, and natural materials
+
+Focus on:
+- Real objects, tools, or environments mentioned in your article
+- Natural, everyday settings related to the topic
+- Realistic lighting and shadows
+- Authentic, unposed compositions
+
+Avoid:
+- Perfect, staged, or overly designed scenes
+- Generic stock photo aesthetics
+- Artificial or overly clean appearances
+- Any text or typography
+- Human figures or faces
+
+Make it look like a real photo someone would take, not an AI-generated image.
+
+Description:`;
+  },
 };

@@ -11,9 +11,9 @@ export interface HashnodeIntegration {
 }
 
 export interface HashnodePublication {
-  _id: string;
+  id: string;
   title: string;
-  domain: string;
+  domain?: string;
   description: string;
   isTeam: boolean;
 }
@@ -88,14 +88,13 @@ export class HashnodeClient implements IntegrationClient {
         },
         body: JSON.stringify({
           query: `
-            query {
+            query GetUserPublications {
               me {
                 publications(first: 10) {
                   edges {
                     node {
-                      _id
+                      id
                       title
-                      domain
                       about {
                         text
                       }
@@ -111,12 +110,18 @@ export class HashnodeClient implements IntegrationClient {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.log('Hashnode publications error response:', errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log(
+        'Hashnode publications response:',
+        JSON.stringify(data, null, 2)
+      );
 
       if (data.errors) {
+        console.log('Hashnode GraphQL errors:', data.errors);
         throw new Error(data.errors[0].message);
       }
 
@@ -142,59 +147,72 @@ export class HashnodeClient implements IntegrationClient {
       throw new Error(titleValidation.error);
     }
 
+    const requestBody = {
+      query: `
+        mutation PublishPost($input: PublishPostInput!) {
+          publishPost(input: $input) {
+            post {
+              id
+              slug
+              title
+              url
+              tags {
+                name
+              }
+              coverImage {
+                url
+              }
+              content {
+                markdown
+              }
+            }
+          }
+        }
+      `,
+      variables: {
+        input: {
+          title: content.title,
+          contentMarkdown: content.body,
+          publicationId: publicationId,
+          tags: content.tags?.slice(0, 5) || [],
+          coverImage: content.coverUrl || undefined,
+        },
+      },
+    };
+
+    console.log('Hashnode request body:', JSON.stringify(requestBody, null, 2));
+    console.log('Hashnode coverUrl:', content.coverUrl);
+
     const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.integration.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        query: `
-          mutation CreateStory($input: CreateStoryInput!) {
-            createStory(input: $input) {
-              code
-              success
-              message
-              story {
-                id
-                slug
-                url
-              }
-            }
-          }
-        `,
-        variables: {
-          input: {
-            title: content.title,
-            contentMarkdown: content.body,
-            publicationId: publicationId,
-            tags: content.tags?.slice(0, 5) || [],
-            isRepublished: false,
-            isPartOfPublication: true,
-          },
-        },
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.log('Hashnode error response:', errorText);
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Hashnode response:', JSON.stringify(data, null, 2));
 
     if (data.errors) {
       throw new Error(data.errors[0].message);
     }
 
-    const result = data.data.createStory;
+    const result = data.data.publishPost;
 
-    if (!result.success) {
-      throw new Error(result.message || 'Failed to publish to Hashnode');
+    if (!result || !result.post) {
+      throw new Error('Failed to publish to Hashnode: No post returned');
     }
 
-    const postId = result.story.id;
-    const url = result.story.url;
+    const postId = result.post.id;
+    const url = result.post.url;
 
     return {
       platformPostId: postId,

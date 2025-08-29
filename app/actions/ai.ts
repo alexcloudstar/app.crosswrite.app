@@ -11,12 +11,14 @@ import {
   generateSuggestionsSchema,
   extractTagsSchema,
   generateThumbnailSchema,
+  generateThumbnailPromptSchema,
   type ImproveTextInput,
   type AdjustToneInput,
   type SummarizeTextInput,
   type GenerateSuggestionsInput,
   type ExtractTagsInput,
   type GenerateThumbnailInput,
+  type GenerateThumbnailPromptInput,
 } from '@/lib/validators/ai';
 import { db } from '@/db/client';
 import { userUsage } from '@/db/schema/user-usage';
@@ -237,6 +239,44 @@ export async function extractTags(input: ExtractTagsInput) {
   }
 }
 
+export async function generateThumbnailPrompt(
+  input: GenerateThumbnailPromptInput
+) {
+  try {
+    const user = await requireAuth();
+    const validatedInput = generateThumbnailPromptSchema.parse(input);
+
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
+    ) {
+      return errorResult('AI features are not available for your plan');
+    }
+
+    const prompt = PROMPT_TEMPLATES.generateThumbnailPrompt(
+      validatedInput.title,
+      validatedInput.content,
+      validatedInput.aspectRatio
+    );
+
+    const thumbnailPrompt = await aiProvider.invoke({
+      purpose: 'generateSuggestions',
+      input: prompt,
+      modelConfig: { temperature: 0.7, maxTokens: 300 },
+    });
+
+    await trackAIUsage(user.id, 'aiSuggestionsUsed');
+
+    return await successResult({ thumbnailPrompt: thumbnailPrompt.trim() });
+  } catch (error) {
+    console.error('Generate thumbnail prompt failed:', error);
+    return await errorResult(
+      error instanceof Error
+        ? error.message
+        : 'Failed to generate thumbnail prompt'
+    );
+  }
+}
+
 export async function generateThumbnail(input: GenerateThumbnailInput) {
   try {
     const user = await requireAuth();
@@ -248,11 +288,6 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
       return errorResult('Thumbnail generation is not available for your plan');
     }
 
-    const prompt = PROMPT_TEMPLATES.generateThumbnail(
-      validatedInput.prompt,
-      validatedInput.aspectRatio
-    );
-
     const sizeMap = {
       small: '1024x1024',
       medium: '1792x1024',
@@ -260,7 +295,10 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
     };
     const imageSize = sizeMap[validatedInput.size];
 
-    const images = await aiProvider.generateImage(prompt, imageSize);
+    const images = await aiProvider.generateImage(
+      validatedInput.prompt,
+      imageSize
+    );
 
     await trackAIUsage(user.id, 'thumbnailsGenerated');
 
@@ -305,7 +343,6 @@ function parseSuggestionsFromResponse(
 
   for (const line of lines) {
     if (line.startsWith('- Title:')) {
-      // If we have a previous suggestion with content, save it
       if (
         currentSuggestion.title &&
         currentSuggestion.description &&
@@ -333,7 +370,6 @@ function parseSuggestionsFromResponse(
     }
   }
 
-  // Don't forget to add the last suggestion if it's complete
   if (
     currentSuggestion.title &&
     currentSuggestion.description &&
