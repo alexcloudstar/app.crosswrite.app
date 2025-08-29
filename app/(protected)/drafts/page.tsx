@@ -251,7 +251,7 @@ export default function DraftsPage() {
         },
       });
 
-      if (result.success) {
+      if (result?.success) {
         const data = result.data as {
           results: Array<{
             platform: string;
@@ -302,8 +302,8 @@ export default function DraftsPage() {
 
         await refreshPlanData();
       } else {
-        console.error('Publish failed:', result.error);
-        toast.error(`Publish failed: ${result.error}`);
+        console.error('Publish failed:', result?.error);
+        toast.error(`Publish failed: ${result?.error}`);
       }
     } catch (error) {
       console.error('Publish error:', error);

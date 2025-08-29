@@ -42,8 +42,6 @@ export const generateThumbnailSchema = z.object({
     .string()
     .min(1, 'Prompt cannot be empty')
     .max(500, 'Prompt is too long (max 500 characters)'),
-  aspectRatio: z.enum(['16:9', '1:1', '4:5', '2:1']).optional().default('16:9'),
-  size: z.enum(['small', 'medium', 'large']).optional().default('medium'),
 });
 
 export type ImproveTextInput = z.infer<typeof improveTextSchema>;

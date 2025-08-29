@@ -248,19 +248,9 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
       return errorResult('Thumbnail generation is not available for your plan');
     }
 
-    const prompt = PROMPT_TEMPLATES.generateThumbnail(
-      validatedInput.prompt,
-      validatedInput.aspectRatio
-    );
+    const prompt = PROMPT_TEMPLATES.generateThumbnail(validatedInput.prompt);
 
-    const sizeMap = {
-      small: '1024x1024',
-      medium: '1792x1024',
-      large: '1792x1024',
-    };
-    const imageSize = sizeMap[validatedInput.size];
-
-    const images = await aiProvider.generateImage(prompt, imageSize);
+    const images = await aiProvider.generateImage(prompt, '1792x1024');
 
     await trackAIUsage(user.id, 'thumbnailsGenerated');
 

@@ -11,6 +11,7 @@ import {
 import Image from 'next/image';
 import { useAppStore } from '@/lib/store';
 import { generateThumbnail } from '@/app/actions/ai';
+import toast from 'react-hot-toast';
 
 interface ThumbnailGeneratorModalProps {
   isOpen: boolean;
@@ -24,39 +25,22 @@ const THUMBNAIL_PRESETS = [
     name: 'Tech Blog',
     prompt:
       'Modern tech blog header with clean typography, gradient background, tech icons',
-    aspectRatio: '16:9',
   },
   {
     name: 'Tutorial',
     prompt:
       'Educational tutorial header with step-by-step visual elements, blue theme',
-    aspectRatio: '16:9',
   },
   {
     name: 'Newsletter',
     prompt:
       'Professional newsletter header with elegant typography, subtle patterns',
-    aspectRatio: '2:1',
   },
   {
     name: 'Social Media',
     prompt:
       'Eye-catching social media post with bold colors, modern design elements',
-    aspectRatio: '1:1',
   },
-];
-
-const ASPECT_RATIOS = [
-  { value: '16:9', label: 'Widescreen (16:9)' },
-  { value: '2:1', label: 'Landscape (2:1)' },
-  { value: '1:1', label: 'Square (1:1)' },
-  { value: '4:3', label: 'Standard (4:3)' },
-];
-
-const SIZES = [
-  { value: 'small', label: 'Small (800x450)' },
-  { value: 'medium', label: 'Medium (1200x675)' },
-  { value: 'large', label: 'Large (1920x1080)' },
 ];
 
 export function ThumbnailGeneratorModal({
@@ -68,8 +52,6 @@ export function ThumbnailGeneratorModal({
   const { canGenerateThumbnail, incrementThumbnailUsage } = useAppStore();
   const [selectedPreset, setSelectedPreset] = useState(0);
   const [customPrompt, setCustomPrompt] = useState('');
-  const [aspectRatio, setAspectRatio] = useState('16:9');
-  const [size, setSize] = useState('medium');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -86,8 +68,6 @@ export function ThumbnailGeneratorModal({
     try {
       const result = await generateThumbnail({
         prompt: currentPrompt,
-        aspectRatio: aspectRatio as '16:9' | '1:1' | '4:5' | '2:1',
-        size: size as 'small' | 'medium' | 'large',
       });
 
       if (!result.success) {
@@ -98,7 +78,7 @@ export function ThumbnailGeneratorModal({
       incrementThumbnailUsage();
     } catch (error) {
       console.error('Failed to generate thumbnails:', error);
-      // You could add a toast notification here
+      toast.error('Failed to generate thumbnails');
     } finally {
       setIsGenerating(false);
       onGeneratingChange?.(false);
@@ -107,12 +87,6 @@ export function ThumbnailGeneratorModal({
 
   const onChangeCustomPrompt = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
     setCustomPrompt(e.target.value);
-
-  const onChangeAspectRatio = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setAspectRatio(e.target.value);
-
-  const onSetSize = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setSize(e.target.value);
 
   const handleSelectImage = (imageUrl: string) => setSelectedImage(imageUrl);
 
@@ -184,42 +158,6 @@ export function ThumbnailGeneratorModal({
                 rows={3}
                 disabled={isGenerating}
               />
-            </div>
-
-            <div>
-              <label className='label'>
-                <span className='label-text font-medium'>Aspect Ratio</span>
-              </label>
-              <select
-                value={aspectRatio}
-                onChange={onChangeAspectRatio}
-                className='select select-bordered w-full'
-                disabled={isGenerating}
-              >
-                {ASPECT_RATIOS.map(ratio => (
-                  <option key={ratio.value} value={ratio.value}>
-                    {ratio.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className='label'>
-                <span className='label-text font-medium'>Size</span>
-              </label>
-              <select
-                value={size}
-                onChange={onSetSize}
-                className='select select-bordered w-full'
-                disabled={isGenerating}
-              >
-                {SIZES.map(sizeOption => (
-                  <option key={sizeOption.value} value={sizeOption.value}>
-                    {sizeOption.label}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <button

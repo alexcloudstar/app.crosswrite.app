@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Tag, X, Sparkles } from 'lucide-react';
 import { extractTags } from '@/app/actions/ai';
+import { Sparkles, Tag, X } from 'lucide-react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface TagManagerProps {
