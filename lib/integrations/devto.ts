@@ -4,6 +4,7 @@ import {
   normalizeError,
   validateTitle,
 } from './_core';
+import logger from '../logger';
 
 export interface DevtoIntegration {
   apiKey: string;
@@ -35,7 +36,7 @@ function normalizeDevtoMarkdown(
         }
       }
     } catch (error) {
-      console.warn('Failed to parse existing front matter:', error);
+      logger.warn('Failed to parse existing front matter:', { error });
     }
 
     content = markdown.replace(frontMatterRegex, '');

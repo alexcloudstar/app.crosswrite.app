@@ -6,6 +6,7 @@ import { requireAuth, successResult, errorResult } from './_utils';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import logger from '@/lib/logger';
 
 const updateProfileSchema = z.object({
   name: z.string().optional(),
@@ -78,7 +79,7 @@ export async function getUserSettings() {
       settings: settings[0],
     });
   } catch (error) {
-    console.error('Failed to get user settings:', error);
+    logger.error('Failed to get user settings:', { error });
     return errorResult('Failed to fetch user settings');
   }
 }
@@ -127,7 +128,7 @@ export async function updateProfile(
 
     return successResult('Profile updated successfully');
   } catch (error) {
-    console.error('Failed to update profile:', error);
+    logger.error('Failed to update profile:', { error });
     return errorResult('Failed to update profile');
   }
 }
@@ -163,7 +164,7 @@ export async function updateWritingDefaults(
 
     return successResult('Writing defaults updated successfully');
   } catch (error) {
-    console.error('Failed to update writing defaults:', error);
+    logger.error('Failed to update writing defaults:', { error });
     return errorResult('Failed to update writing defaults');
   }
 }
@@ -201,7 +202,7 @@ export async function updatePublishingSettings(
 
     return successResult('Publishing settings updated successfully');
   } catch (error) {
-    console.error('Failed to update publishing settings:', error);
+    logger.error('Failed to update publishing settings:', { error });
     return errorResult('Failed to update publishing settings');
   }
 }
@@ -239,7 +240,7 @@ export async function updateNotificationSettings(
 
     return successResult('Notification settings updated successfully');
   } catch (error) {
-    console.error('Failed to update notification settings:', error);
+    logger.error('Failed to update notification settings:', { error });
     return errorResult('Failed to update notification settings');
   }
 }

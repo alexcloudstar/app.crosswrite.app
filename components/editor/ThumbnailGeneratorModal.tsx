@@ -76,8 +76,7 @@ export function ThumbnailGeneratorModal({
 
       setGeneratedImages((result.data as { images: string[] }).images);
       incrementThumbnailUsage();
-    } catch (error) {
-      console.error('Failed to generate thumbnails:', error);
+    } catch {
       toast.error('Failed to generate thumbnails');
     } finally {
       setIsGenerating(false);

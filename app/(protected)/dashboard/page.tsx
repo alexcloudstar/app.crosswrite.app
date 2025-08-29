@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
   const { userPlan } = useAppStore();
@@ -72,8 +73,8 @@ export default function DashboardPage() {
             .slice(0, 3);
           setRecentDrafts(recent);
         }
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
+      } catch {
+        toast.error('Failed to load dashboard data');
       } finally {
         setIsLoading(false);
       }

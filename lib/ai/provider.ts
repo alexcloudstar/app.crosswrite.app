@@ -4,6 +4,7 @@ import {
   getKeySource,
 } from '@/lib/config/serverConfig';
 import { checkRateLimit } from '@/lib/utils/rateLimit';
+import logger from '../logger';
 
 type AllowedModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-3.5-turbo';
 
@@ -77,7 +78,7 @@ export class AIProvider {
 
       return result;
     } catch (error) {
-      console.error(`AI invocation failed for ${purpose}:`, error);
+      logger.error(`AI invocation failed for ${purpose}:`, { error, purpose, input: input.substring(0, 100) });
       throw new Error('AI service temporarily unavailable');
     }
   }
@@ -96,7 +97,7 @@ export class AIProvider {
 
       return response.data?.map(img => img.url!).filter(Boolean) || [];
     } catch (error) {
-      console.error('Image generation failed:', error);
+      logger.error('Image generation failed:', { error, prompt: prompt.substring(0, 100) });
       throw new Error('Image generation failed');
     }
   }

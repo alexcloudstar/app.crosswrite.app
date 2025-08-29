@@ -67,8 +67,8 @@ export default function IntegrationsPage() {
             }>
           );
         }
-      } catch (error) {
-        console.error('Failed to load integrations:', error);
+      } catch {
+        toast.error('Failed to load integrations');
       } finally {
         setLoading(false);
       }
@@ -126,12 +126,13 @@ export default function IntegrationsPage() {
             }>
           );
         }
-        console.log('Successfully disconnected from', platform);
-      } else {
+        toast.success(`Successfully disconnected from ${platform}`);
+      }
+
+      if (!result.success) {
         toast.error(`Failed to disconnect: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Failed to disconnect from', platform, error);
+    } catch {
       toast.error('Failed to disconnect. Please try again.');
     } finally {
       setConnecting(null);
@@ -161,11 +162,12 @@ export default function IntegrationsPage() {
             }>
           );
         }
-      } else {
+      }
+
+      if (!result.success) {
         toast.error(`Connection test failed: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Failed to test connection for', platform, error);
+    } catch {
       toast.error('Failed to test connection. Please try again.');
     } finally {
       setTesting(null);
@@ -208,11 +210,12 @@ export default function IntegrationsPage() {
 
         setPublications(transformedPublications);
         setShowPublicationSelector(true);
-      } else {
+      }
+
+      if (!result.success) {
         toast.error(`Failed to load publications: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Failed to load publications for', platform, error);
+    } catch {
       toast.error('Failed to load publications. Please try again.');
     }
   };
@@ -273,15 +276,13 @@ export default function IntegrationsPage() {
         setSelectedPublicationName('');
         setShowSettings(null);
 
-        console.log('Successfully connected to', platform, {
-          apiKey: apiKey ? '***' : 'none',
-          publicationId: publicationId || 'none',
-        });
-      } else {
+        toast.success(`Successfully connected to ${platform}`);
+      }
+
+      if (!result.success) {
         toast.error(`Failed to connect: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Failed to connect to', platform, error);
+    } catch {
       toast.error('Failed to connect. Please try again.');
     } finally {
       setConnecting(null);

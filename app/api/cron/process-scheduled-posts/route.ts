@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processScheduledPostsCron } from '@/lib/scheduler/cron';
+import logger from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error('Error in cron API route:', error);
+    logger.error('Error in cron API route:', { error });
     return NextResponse.json(
       {
         success: false,

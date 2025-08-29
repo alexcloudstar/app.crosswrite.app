@@ -5,6 +5,7 @@ import { and, eq, inArray, lte } from 'drizzle-orm';
 import { acquireLock, isAlreadyPublished, releaseLock } from './locks';
 import { resetRetryInfo, shouldRetry, updateWithRetryInfo } from './retry';
 import { SCHEDULER_CONFIG } from './time';
+import logger from '../logger';
 
 export interface ProcessingResult {
   processed: number;
@@ -225,11 +226,11 @@ export async function processDueJobs(): Promise<ProcessingResult> {
     const dueJobs = await findDueJobs();
 
     if (dueJobs.length === 0) {
-      console.log('No due jobs found');
+      logger.info('No due jobs found');
       return result;
     }
 
-    console.log(`Found ${dueJobs.length} due jobs to process`);
+    logger.info(`Found ${dueJobs.length} due jobs to process`);
 
     const processingPromises = dueJobs.map(async job => {
       result.processed++;
@@ -239,28 +240,30 @@ export async function processDueJobs(): Promise<ProcessingResult> {
 
         if (jobResult.success) {
           result.successful++;
-          console.log(`Successfully processed job ${job.id}`);
+          logger.info(`Successfully processed job ${job.id}`);
         } else {
           result.failed++;
           result.errors.push(`Job ${job.id}: ${jobResult.error}`);
-          console.error(`Failed to process job ${job.id}:`, jobResult.error);
+          logger.error(`Failed to process job ${job.id}:`, {
+            error: jobResult.error,
+          });
         }
       } catch (error) {
         result.failed++;
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error';
         result.errors.push(`Job ${job.id}: ${errorMessage}`);
-        console.error(`Error processing job ${job.id}:`, error);
+        logger.error(`Error processing job ${job.id}:`, { error });
       }
     });
 
     await Promise.all(processingPromises);
 
-    console.log(
+    logger.info(
       `Processing complete: ${result.successful} successful, ${result.failed} failed, ${result.skipped} skipped`
     );
   } catch (error) {
-    console.error('Error in processDueJobs:', error);
+    logger.error('Error in processDueJobs:', { error });
     result.errors.push(
       error instanceof Error ? error.message : 'Unknown error'
     );

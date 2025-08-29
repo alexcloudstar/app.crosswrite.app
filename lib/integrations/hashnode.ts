@@ -4,6 +4,7 @@ import {
   normalizeError,
   validateTitle,
 } from './_core';
+import logger from '../logger';
 
 export interface HashnodeIntegration {
   apiKey: string;
@@ -123,7 +124,7 @@ export class HashnodeClient implements IntegrationClient {
         (edge: { node: HashnodePublication }) => edge.node
       );
     } catch (error) {
-      console.error('Error fetching Hashnode publications:', error);
+      logger.error('Error fetching Hashnode publications:', { error });
       throw new Error(`Failed to fetch publications: ${normalizeError(error)}`);
     }
   }
@@ -207,7 +208,7 @@ export class HashnodeClient implements IntegrationClient {
     const data = await response.json();
 
     if (data.errors) {
-      console.error('Hashnode GraphQL errors:', data.errors);
+      logger.error('Hashnode GraphQL errors:', { errors: data.errors });
       throw new Error(data.errors[0].message);
     }
 
