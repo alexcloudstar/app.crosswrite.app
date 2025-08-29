@@ -142,38 +142,49 @@ export class HashnodeClient implements IntegrationClient {
       throw new Error(titleValidation.error);
     }
 
+    if (!content.body || content.body.trim().length === 0) {
+      throw new Error('Content cannot be empty');
+    }
+
+    const requestBody = {
+      query: `
+        mutation PublishPost($input: PublishPostInput!) {
+          publishPost(input: $input) {
+            post {
+              id
+              slug
+              url
+              title
+              publication {
+                id
+              }
+              content {
+                markdown
+              }
+            }
+          }
+        }
+      `,
+      variables: {
+        input: {
+          title: content.title,
+          contentMarkdown: content.body,
+          publicationId: publicationId,
+          tags: content.tags || [],
+          ...(content.coverUrl && {
+            coverImageOptions: { coverImageURL: content.coverUrl },
+          }),
+        },
+      },
+    };
+
     const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.integration.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        query: `
-          mutation CreateStory($input: CreateStoryInput!) {
-            createStory(input: $input) {
-              code
-              success
-              message
-              story {
-                id
-                slug
-                url
-              }
-            }
-          }
-        `,
-        variables: {
-          input: {
-            title: content.title,
-            contentMarkdown: content.body,
-            publicationId: publicationId,
-            tags: content.tags?.slice(0, 5) || [],
-            isRepublished: false,
-            isPartOfPublication: true,
-          },
-        },
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -184,17 +195,18 @@ export class HashnodeClient implements IntegrationClient {
     const data = await response.json();
 
     if (data.errors) {
+      console.error('Hashnode GraphQL errors:', data.errors);
       throw new Error(data.errors[0].message);
     }
 
-    const result = data.data.createStory;
+    const result = data.data.publishPost;
 
-    if (!result.success) {
-      throw new Error(result.message || 'Failed to publish to Hashnode');
+    if (!result || !result.post) {
+      throw new Error('Failed to publish to Hashnode - no post returned');
     }
 
-    const postId = result.story.id;
-    const url = result.story.url;
+    const postId = result.post.id;
+    const url = result.post.url;
 
     return {
       platformPostId: postId,
