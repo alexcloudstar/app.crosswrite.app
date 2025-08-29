@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Save, Eye, Send, Settings, X } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { EditorToolbar } from '@/components/editor/EditorToolbar';
 import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
@@ -34,6 +35,7 @@ import { Suggestion } from '@/lib/types/ai';
 type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | 'saving' | null;
 
 export default function EditorPage() {
+  const router = useRouter();
   const { userPlan } = useAppStore();
   const [draftId, setDraftId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled Draft');
@@ -548,6 +550,9 @@ export default function EditorPage() {
 
       if (result.success) {
         console.log('Published successfully:', result.data);
+        const publishData = result.data as PublishResult;
+        console.log('Publish summary:', publishData.summary);
+        console.log('Publish results:', publishData.results);
         setShowPublishModal(false);
 
         toast.success(
@@ -555,7 +560,11 @@ export default function EditorPage() {
             (result.data as PublishResult).summary.successful
           } platforms! Redirecting to drafts...`
         );
-        window.location.href = '/drafts';
+
+        // Use router.push for better state management
+        setTimeout(() => {
+          router.push('/drafts');
+        }, 1000);
       } else {
         console.error('Publish failed:', result.error);
         toast.error(`Publish failed: ${result.error}`);
