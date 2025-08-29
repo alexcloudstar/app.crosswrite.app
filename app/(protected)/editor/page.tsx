@@ -10,6 +10,7 @@ import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
 import { AiSuggestionsPanel } from '@/components/editor/AiSuggestionsPanel';
 import { PreviewModal } from '@/components/editor/PreviewModal';
 import { ThumbnailGeneratorModal } from '@/components/editor/ThumbnailGeneratorModal';
+import { TagManager } from '@/components/editor/TagManager';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
@@ -58,6 +59,7 @@ export default function EditorPage() {
   >('keep');
   const [contentHistory, setContentHistory] = useState<string[]>(['']);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
 
   const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
   const readingTime = Math.ceil(wordCount / 200);
@@ -459,7 +461,7 @@ export default function EditorPage() {
           contentPreview:
             content.substring(0, 200) + (content.length > 200 ? '...' : ''),
           thumbnailUrl: thumbnailUrl || undefined,
-          tags: [], // TODO: Add tag extraction from content
+          tags: tags,
         });
       } else {
         result = await createDraft({
@@ -468,7 +470,7 @@ export default function EditorPage() {
           contentPreview:
             content.substring(0, 200) + (content.length > 200 ? '...' : ''),
           thumbnailUrl: thumbnailUrl || undefined,
-          tags: [], // TODO: Add tag extraction from content
+          tags: tags,
         });
       }
 
@@ -508,7 +510,7 @@ export default function EditorPage() {
           contentPreview:
             content.substring(0, 200) + (content.length > 200 ? '...' : ''),
           thumbnailUrl: thumbnailUrl || undefined,
-          tags: [], // TODO: Add tag extraction from content
+          tags: tags,
         });
 
         if (!draftResult.success) {
@@ -526,7 +528,7 @@ export default function EditorPage() {
           contentPreview:
             content.substring(0, 200) + (content.length > 200 ? '...' : ''),
           thumbnailUrl: thumbnailUrl || undefined,
-          tags: [], // TODO: Add tag extraction from content
+          tags: tags,
         });
 
         if (!updateResult.success) {
@@ -589,6 +591,7 @@ export default function EditorPage() {
             setTitle(draft.title);
             setContent(draft.content);
             setThumbnailUrl(draft.thumbnailUrl || null);
+            setTags(draft.tags || []);
           } else {
             toast.error('Failed to load draft');
           }
@@ -782,14 +785,26 @@ export default function EditorPage() {
           </div>
         </div>
 
-        <div className='w-80 border-l border-base-300 bg-base-200 flex-shrink-0'>
-          <AiSuggestionsPanel
-            content={content}
-            suggestions={suggestions}
-            onGenerateSuggestions={handleGenerateSuggestions}
-            isGenerating={loadingType === 'suggestions'}
-            onApplySuggestion={handleApplySuggestion}
-          />
+        <div className='w-80 border-l border-base-300 bg-base-200 flex-shrink-0 flex flex-col'>
+          <div className='flex-1 overflow-y-auto'>
+            <AiSuggestionsPanel
+              content={content}
+              suggestions={suggestions}
+              onGenerateSuggestions={handleGenerateSuggestions}
+              isGenerating={loadingType === 'suggestions'}
+              onApplySuggestion={handleApplySuggestion}
+            />
+          </div>
+
+          <div className='border-t border-base-300 p-4'>
+            <TagManager
+              tags={tags}
+              onTagsChange={setTags}
+              content={content}
+              title={title}
+              disabled={isLoading}
+            />
+          </div>
         </div>
       </div>
 

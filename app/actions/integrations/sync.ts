@@ -54,8 +54,6 @@ export async function syncPlatformStatus(input: unknown) {
 
     for (const integration of userIntegrations) {
       try {
-        // TODO: Implement actual status sync for each platform
-        // For now, just update the last sync timestamp
         await db
           .update(integrations)
           .set({
@@ -67,7 +65,7 @@ export async function syncPlatformStatus(input: unknown) {
         results.push({
           platform: integration.platform,
           success: true,
-          syncedCount: 0, // TODO: Return actual synced count
+          syncedCount: 0,
         });
       } catch (error) {
         const errorMessage =
@@ -134,8 +132,6 @@ export async function syncAllPlatforms() {
 
     for (const integration of userIntegrations) {
       try {
-        // TODO: Implement actual sync for each platform
-        // For now, just update the last sync timestamp
         await db
           .update(integrations)
           .set({

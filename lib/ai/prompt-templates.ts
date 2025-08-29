@@ -3,6 +3,8 @@ export const PROMPT_TEMPLATES = {
     const goalsText = goals?.length ? `\n\nGoals: ${goals.join(', ')}` : '';
     return `Please improve the following text to make it more engaging, clear, and professional. Focus on better flow, stronger language, and improved readability.${goalsText}
 
+Important: Use regular hyphens (-) instead of em dashes (—) or en dashes (–).
+
 Text to improve:
 ${text}
 
@@ -22,6 +24,8 @@ Improved version:`;
       toneInstructions.friendly;
 
     return `Please rewrite the following text to have a ${instruction} tone while maintaining the same meaning and key information.
+
+Important: Use regular hyphens (-) instead of em dashes (—) or en dashes (–).
 
 Original text:
 ${text}
@@ -65,6 +69,29 @@ Provide ${maxSuggestions} suggestions in this format:
 - Suggestion: [Specific improvement advice]
 
 Suggestions:`;
+  },
+
+  extractTags: (content: string, maxTags: number = 8) => {
+    return `Analyze the following content and extract ${maxTags} relevant tags that would help with content discovery and categorization.
+
+Guidelines for tag extraction:
+- Focus on key topics, technologies, concepts, and themes
+- Include both broad and specific tags
+- Use single words or short phrases (2-3 words max)
+- Avoid generic terms like "article", "post", "content"
+- Prioritize tags that would help readers find this content
+- Consider technical terms, frameworks, languages, and methodologies mentioned
+
+Content to analyze:
+${content}
+
+Provide exactly ${maxTags} tags, one per line, in this format:
+tag1
+tag2
+tag3
+...
+
+Tags:`;
   },
 
   generateThumbnail: (prompt: string, aspectRatio: string) => {

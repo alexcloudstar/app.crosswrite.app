@@ -28,6 +28,15 @@ export const generateSuggestionsSchema = z.object({
   maxSuggestions: z.number().min(1).max(10).optional().default(4),
 });
 
+export const extractTagsSchema = z.object({
+  content: z
+    .string()
+    .min(1, 'Content cannot be empty')
+    .max(8000, 'Content is too long (max 8,000 characters)'),
+  maxTags: z.number().min(1).max(15).optional().default(8),
+  includeTitle: z.boolean().optional().default(true),
+});
+
 export const generateThumbnailSchema = z.object({
   prompt: z
     .string()
@@ -43,4 +52,5 @@ export type SummarizeTextInput = z.infer<typeof summarizeTextSchema>;
 export type GenerateSuggestionsInput = z.infer<
   typeof generateSuggestionsSchema
 >;
+export type ExtractTagsInput = z.infer<typeof extractTagsSchema>;
 export type GenerateThumbnailInput = z.infer<typeof generateThumbnailSchema>;

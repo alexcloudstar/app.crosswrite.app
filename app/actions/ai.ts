@@ -9,11 +9,13 @@ import {
   adjustToneSchema,
   summarizeTextSchema,
   generateSuggestionsSchema,
+  extractTagsSchema,
   generateThumbnailSchema,
   type ImproveTextInput,
   type AdjustToneInput,
   type SummarizeTextInput,
   type GenerateSuggestionsInput,
+  type ExtractTagsInput,
   type GenerateThumbnailInput,
 } from '@/lib/validators/ai';
 import { db } from '@/db/client';
@@ -192,6 +194,41 @@ export async function generateSuggestions(input: GenerateSuggestionsInput) {
   }
 }
 
+export async function extractTags(input: ExtractTagsInput) {
+  try {
+    const user = await requireAuth();
+    const validatedInput = extractTagsSchema.parse(input);
+
+    if (
+      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
+    ) {
+      return errorResult('AI features are not available for your plan');
+    }
+
+    const prompt = PROMPT_TEMPLATES.extractTags(
+      validatedInput.content,
+      validatedInput.maxTags
+    );
+
+    const response = await aiProvider.invoke({
+      purpose: 'extractTags',
+      input: prompt,
+      modelConfig: { temperature: 0.3, maxTokens: 500 },
+    });
+
+    const tags = parseTagsFromResponse(response, validatedInput.maxTags);
+
+    await trackAIUsage(user.id, 'aiSuggestionsUsed');
+
+    return await successResult({ tags });
+  } catch (error) {
+    console.error('Extract tags failed:', error);
+    return await errorResult(
+      error instanceof Error ? error.message : 'Failed to extract tags'
+    );
+  }
+}
+
 export async function generateThumbnail(input: GenerateThumbnailInput) {
   try {
     const user = await requireAuth();
@@ -288,4 +325,18 @@ function parseSuggestionsFromResponse(
   }
 
   return suggestions.slice(0, maxSuggestions);
+}
+
+function parseTagsFromResponse(response: string, maxTags: number) {
+  const lines = response.split('\n').filter(line => line.trim());
+  const tags: string[] = [];
+
+  for (const line of lines) {
+    const tag = line.trim();
+    if (tag && !tag.startsWith('-') && !tag.startsWith('Tags:')) {
+      tags.push(tag);
+    }
+  }
+
+  return tags.slice(0, maxTags);
 }
