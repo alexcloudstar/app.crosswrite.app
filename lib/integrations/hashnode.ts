@@ -99,7 +99,6 @@ export class HashnodeClient implements IntegrationClient {
                       about {
                         text
                       }
-                      isTeam
                     }
                   }
                 }
@@ -133,11 +132,13 @@ export class HashnodeClient implements IntegrationClient {
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }> {
     const publicationId = this.integration.publicationId;
+
     if (!publicationId) {
       throw new Error('Publication ID is required for publishing');
     }
 
     const titleValidation = validateTitle(content.title, 'hashnode');
+
     if (!titleValidation.valid) {
       throw new Error(titleValidation.error);
     }

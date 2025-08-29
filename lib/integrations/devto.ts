@@ -121,7 +121,7 @@ export class DevtoClient implements IntegrationClient {
           body_markdown: normalizedMarkdown,
           tags: content.tags || [],
           canonical_url: content.canonicalUrl,
-          cover_image: content.coverUrl,
+          main_image: content.coverUrl,
           published: !content.publishAsDraft,
         },
       }),
