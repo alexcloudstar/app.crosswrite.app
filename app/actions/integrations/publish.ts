@@ -167,8 +167,7 @@ export async function publishToPlatforms(input: unknown) {
     const failureCount = results.filter(r => !r.success).length;
 
     if (hasSuccess) {
-      console.log(`Updating draft ${draftId} status to published`);
-      const updateResult = await db
+      await db
         .update(drafts)
         .set({
           status: 'published',
@@ -178,15 +177,12 @@ export async function publishToPlatforms(input: unknown) {
         .where(eq(drafts.id, draftId))
         .returning();
 
-      console.log('Draft update result:', updateResult);
-
       await trackArticleUsage(session.id);
+    }
 
-      console.log(
-        `Successfully published to ${successCount} platforms for user ${session.id}`
-      );
-    } else {
+    if (!hasSuccess) {
       console.log('No successful publishes, keeping draft status as draft');
+      return;
     }
 
     revalidateDashboard();
