@@ -205,8 +205,16 @@ export async function extractTags(input: ExtractTagsInput) {
       return errorResult('AI features are not available for your plan');
     }
 
+    let contentToAnalyze = validatedInput.content;
+    if (contentToAnalyze.length > 11000) {
+      contentToAnalyze =
+        contentToAnalyze.substring(0, 7000) +
+        '\n\n[...content truncated...]\n\n' +
+        contentToAnalyze.substring(contentToAnalyze.length - 4000);
+    }
+
     const prompt = PROMPT_TEMPLATES.extractTags(
-      validatedInput.content,
+      contentToAnalyze,
       validatedInput.maxTags
     );
 
@@ -297,7 +305,12 @@ function parseSuggestionsFromResponse(
 
   for (const line of lines) {
     if (line.startsWith('- Title:')) {
-      if (Object.keys(currentSuggestion).length > 0) {
+      // If we have a previous suggestion with content, save it
+      if (
+        currentSuggestion.title &&
+        currentSuggestion.description &&
+        currentSuggestion.suggestion
+      ) {
         suggestions.push(currentSuggestion);
       }
 
@@ -320,7 +333,12 @@ function parseSuggestionsFromResponse(
     }
   }
 
-  if (Object.keys(currentSuggestion).length > 0) {
+  // Don't forget to add the last suggestion if it's complete
+  if (
+    currentSuggestion.title &&
+    currentSuggestion.description &&
+    currentSuggestion.suggestion
+  ) {
     suggestions.push(currentSuggestion);
   }
 

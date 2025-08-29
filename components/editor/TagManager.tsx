@@ -59,7 +59,7 @@ export function TagManager({
       const fullContent = title ? `${title}\n\n${content}` : content;
       const result = await extractTags({
         content: fullContent,
-        maxTags: 8,
+        maxTags: 5,
         includeTitle: true,
       });
 
@@ -100,6 +100,8 @@ export function TagManager({
           newTags.length - availableSlots
         } more available but limit reached)`
       );
+    } else if (tagsToAdd.length > 0) {
+      toast.success(`Added ${tagsToAdd.length} tags`);
     }
 
     onTagsChange([...tags, ...tagsToAdd]);
@@ -113,15 +115,40 @@ export function TagManager({
           <h3 className='text-sm font-medium text-base-content'>Tags</h3>
           <span className='text-xs text-base-content/60'>{tags.length}/5</span>
         </div>
-        <button
-          type='button'
-          onClick={handleExtractTags}
-          disabled={disabled || isExtracting || !content.trim()}
-          className='btn btn-xs btn-ghost gap-2'
-        >
-          <Sparkles className='w-3 h-3' />
-          {isExtracting ? 'Extracting...' : 'Extract Tags'}
-        </button>
+        <div className='flex gap-1'>
+          {showSuggestions && (
+            <button
+              type='button'
+              onClick={handleExtractTags}
+              disabled={disabled || isExtracting || !content.trim()}
+              className='btn btn-xs btn-ghost'
+              title='Refresh suggestions'
+            >
+              <svg
+                className='w-3 h-3'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
+                />
+              </svg>
+            </button>
+          )}
+          <button
+            type='button'
+            onClick={handleExtractTags}
+            disabled={disabled || isExtracting || !content.trim()}
+            className='btn btn-xs btn-ghost gap-2'
+          >
+            <Sparkles className='w-3 h-3' />
+            {isExtracting ? 'Extracting...' : 'Extract Tags'}
+          </button>
+        </div>
       </div>
 
       {/* Current Tags */}

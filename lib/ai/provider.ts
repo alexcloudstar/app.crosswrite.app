@@ -28,6 +28,7 @@ const INPUT_LIMITS: Record<string, number> = {
   adjustTone: 6000,
   summarizeText: 10000,
   generateSuggestions: 8000,
+  extractTags: 12000,
   generateThumbnail: 500,
 };
 
