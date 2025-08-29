@@ -126,8 +126,8 @@ async function processScheduledPost(scheduledPost: {
         options: {},
       });
 
-      if (!publishResult.success) {
-        throw new Error(publishResult.error || 'Publishing failed');
+      if (!publishResult?.success) {
+        throw new Error(publishResult?.error || 'Publishing failed');
       }
 
       const platformResults = publishResult.data as Array<{
