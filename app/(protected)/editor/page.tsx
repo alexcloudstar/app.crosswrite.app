@@ -548,11 +548,7 @@ export default function EditorPage() {
         },
       });
 
-      if (result.success) {
-        console.log('Published successfully:', result.data);
-        const publishData = result.data as PublishResult;
-        console.log('Publish summary:', publishData.summary);
-        console.log('Publish results:', publishData.results);
+      if (result?.success) {
         setShowPublishModal(false);
 
         toast.success(
@@ -561,13 +557,12 @@ export default function EditorPage() {
           } platforms! Redirecting to drafts...`
         );
 
-        // Use router.push for better state management
         setTimeout(() => {
           router.push('/drafts');
         }, 1000);
       } else {
-        console.error('Publish failed:', result.error);
-        toast.error(`Publish failed: ${result.error}`);
+        console.error('Publish failed:', result?.error);
+        toast.error(`Publish failed: ${result?.error}`);
       }
     } catch (error) {
       console.error('Publish error:', error);
