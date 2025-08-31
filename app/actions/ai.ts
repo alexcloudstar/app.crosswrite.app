@@ -21,40 +21,20 @@ import {
 import { db } from '@/db/client';
 import { userUsage } from '@/db/schema/user-usage';
 import { planService } from '@/lib/plan-service';
+import { assertWithinLimits } from '@/lib/billing/usage';
 import logger from '@/lib/logger';
 
-async function trackAIUsage(
+async function checkAndTrackUsage(
   userId: string,
-  action: 'aiSuggestionsUsed' | 'thumbnailsGenerated'
+  metric: 'aiSuggestionsUsed' | 'thumbnailsGenerated'
 ) {
-  const now = new Date();
-  const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-    2,
-    '0'
-  )}`;
+  const result = await assertWithinLimits(userId, metric, 1);
 
-  try {
-    const result = await db
-      .update(userUsage)
-      .set({
-        [action]: sql`${userUsage[action]} + 1`,
-        updatedAt: now,
-      })
-      .where(
-        and(eq(userUsage.userId, userId), eq(userUsage.monthYear, monthYear))
-      )
-      .returning();
-
-    if (!result.length) {
-      await db.insert(userUsage).values({
-        userId,
-        monthYear,
-        [action]: 1,
-      });
-    }
-  } catch (error) {
-    logger.error('Failed to track AI usage:', { error, userId, action });
+  if (!result.allowed) {
+    throw new Error(`Usage limit exceeded for ${metric}`);
   }
+
+  return result.warning;
 }
 
 export async function improveText(input: ImproveTextInput) {
@@ -62,11 +42,7 @@ export async function improveText(input: ImproveTextInput) {
     const user = await requireAuth();
     const validatedInput = improveTextSchema.parse(input);
 
-    if (
-      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
-    ) {
-      return errorResult('AI features are not available for your plan');
-    }
+    const warning = await checkAndTrackUsage(user.id, 'aiSuggestionsUsed');
 
     const prompt = PROMPT_TEMPLATES.improveText(
       validatedInput.text,
@@ -79,9 +55,10 @@ export async function improveText(input: ImproveTextInput) {
       modelConfig: { temperature: 0.7, maxTokens: 2000 },
     });
 
-    await trackAIUsage(user.id, 'aiSuggestionsUsed');
-
-    return await successResult({ improvedText });
+    return await successResult({
+      improvedText,
+      warning,
+    });
   } catch (error) {
     logger.error('Improve text failed:', { error });
     return await errorResult(
@@ -95,11 +72,7 @@ export async function adjustTone(input: AdjustToneInput) {
     const user = await requireAuth();
     const validatedInput = adjustToneSchema.parse(input);
 
-    if (
-      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
-    ) {
-      return errorResult('AI features are not available for your plan');
-    }
+    const warning = await checkAndTrackUsage(user.id, 'aiSuggestionsUsed');
 
     const prompt = PROMPT_TEMPLATES.adjustTone(
       validatedInput.text,
@@ -112,9 +85,10 @@ export async function adjustTone(input: AdjustToneInput) {
       modelConfig: { temperature: 0.8, maxTokens: 1500 },
     });
 
-    await trackAIUsage(user.id, 'aiSuggestionsUsed');
-
-    return await successResult({ adjustedText });
+    return await successResult({
+      adjustedText,
+      warning,
+    });
   } catch (error) {
     logger.error('Adjust tone failed:', { error });
     return await errorResult(
@@ -128,11 +102,7 @@ export async function summarizeText(input: SummarizeTextInput) {
     const user = await requireAuth();
     const validatedInput = summarizeTextSchema.parse(input);
 
-    if (
-      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
-    ) {
-      return errorResult('AI features are not available for your plan');
-    }
+    const warning = await checkAndTrackUsage(user.id, 'aiSuggestionsUsed');
 
     const prompt = PROMPT_TEMPLATES.summarizeText(
       validatedInput.text,
@@ -146,9 +116,10 @@ export async function summarizeText(input: SummarizeTextInput) {
       modelConfig: { temperature: 0.5, maxTokens: 1000 },
     });
 
-    await trackAIUsage(user.id, 'aiSuggestionsUsed');
-
-    return await successResult({ summary });
+    return await successResult({
+      summary,
+      warning,
+    });
   } catch (error) {
     logger.error('Summarize text failed:', { error });
     return await errorResult(
@@ -162,11 +133,7 @@ export async function generateSuggestions(input: GenerateSuggestionsInput) {
     const user = await requireAuth();
     const validatedInput = generateSuggestionsSchema.parse(input);
 
-    if (
-      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
-    ) {
-      return errorResult('AI features are not available for your plan');
-    }
+    const warning = await checkAndTrackUsage(user.id, 'aiSuggestionsUsed');
 
     const prompt = PROMPT_TEMPLATES.generateSuggestions(
       validatedInput.content,
@@ -184,9 +151,10 @@ export async function generateSuggestions(input: GenerateSuggestionsInput) {
       validatedInput.maxSuggestions
     );
 
-    await trackAIUsage(user.id, 'aiSuggestionsUsed');
-
-    return await successResult({ suggestions });
+    return await successResult({
+      suggestions,
+      warning,
+    });
   } catch (error) {
     logger.error('Generate suggestions failed:', { error });
     return await errorResult(
@@ -200,11 +168,7 @@ export async function extractTags(input: ExtractTagsInput) {
     const user = await requireAuth();
     const validatedInput = extractTagsSchema.parse(input);
 
-    if (
-      !(await planService.canUserUseAIFeature(user.id, 'aiSuggestionsUsed'))
-    ) {
-      return errorResult('AI features are not available for your plan');
-    }
+    const warning = await checkAndTrackUsage(user.id, 'aiSuggestionsUsed');
 
     let contentToAnalyze = validatedInput.content;
     if (contentToAnalyze.length > 11000) {
@@ -227,9 +191,10 @@ export async function extractTags(input: ExtractTagsInput) {
 
     const tags = parseTagsFromResponse(response, validatedInput.maxTags);
 
-    await trackAIUsage(user.id, 'aiSuggestionsUsed');
-
-    return await successResult({ tags });
+    return await successResult({
+      tags,
+      warning,
+    });
   } catch (error) {
     logger.error('Extract tags failed:', { error });
     return await errorResult(
@@ -243,19 +208,16 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
     const user = await requireAuth();
     const validatedInput = generateThumbnailSchema.parse(input);
 
-    if (
-      !(await planService.canUserUseAIFeature(user.id, 'thumbnailsGenerated'))
-    ) {
-      return errorResult('Thumbnail generation is not available for your plan');
-    }
+    const warning = await checkAndTrackUsage(user.id, 'thumbnailsGenerated');
 
     const prompt = PROMPT_TEMPLATES.generateThumbnail(validatedInput.prompt);
 
     const images = await aiProvider.generateImage(prompt, '1792x1024');
 
-    await trackAIUsage(user.id, 'thumbnailsGenerated');
-
-    return await successResult({ images });
+    return await successResult({
+      images,
+      warning,
+    });
   } catch (error) {
     logger.error('Generate thumbnail failed:', { error });
     return await errorResult(
@@ -296,7 +258,6 @@ function parseSuggestionsFromResponse(
 
   for (const line of lines) {
     if (line.startsWith('- Title:')) {
-      // If we have a previous suggestion with content, save it
       if (
         currentSuggestion.title &&
         currentSuggestion.description &&
@@ -324,7 +285,6 @@ function parseSuggestionsFromResponse(
     }
   }
 
-  // Don't forget to add the last suggestion if it's complete
   if (
     currentSuggestion.title &&
     currentSuggestion.description &&

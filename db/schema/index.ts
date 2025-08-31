@@ -9,5 +9,8 @@ export * from './integrations';
 export * from './scheduled-posts';
 export * from './user-usage';
 
+// Billing tables
+export * from './billing';
+
 // Types
 export * from './types';

@@ -1,6 +1,7 @@
 import { db } from '@/db/client';
 import { users } from '@/db/schema/auth';
 import { userUsage } from '@/db/schema/user-usage';
+import { billingSubscriptions } from '@/db/schema/billing';
 import { eq, and } from 'drizzle-orm';
 import {
   type PlanId,
@@ -20,18 +21,12 @@ import {
   getUpgradeablePlans,
   getDowngradeablePlans,
 } from './plans';
+import { getUserPlanId } from '@/lib/billing/usage';
 
 export class PlanService {
   static async getUserPlan(userId: string): Promise<UserPlan> {
-    const userRecord = await db
-      .select({ planTier: users.planTier })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
-    const planTier = (userRecord[0]?.planTier ||
-      DatabasePlanTierEnum.FREE) as DatabasePlanTier;
-    const planId = databasePlanToPlanId(planTier);
+    // Get plan from Stripe subscription (source of truth)
+    const planId = await getUserPlanId(userId);
 
     const currentMonth = new Date().toISOString().slice(0, 7);
 
@@ -52,7 +47,7 @@ export class PlanService {
     };
 
     return {
-      planId,
+      planId: planId as PlanId,
       usage,
     };
   }
