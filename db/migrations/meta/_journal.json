@@ -71,6 +71,20 @@
       "when": 1756375924727,
       "tag": "0009_panoramic_the_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1756660196906,
+      "tag": "0010_unusual_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1756662614201,
+      "tag": "0011_friendly_rhino",
+      "breakpoints": true
     }
   ]
 }

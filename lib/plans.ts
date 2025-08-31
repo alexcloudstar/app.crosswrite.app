@@ -1,4 +1,4 @@
-// Single source of truth for plan values
+
 export const PLAN_VALUES = {
   FREE: 'free',
   PRO: 'pro',
@@ -14,7 +14,7 @@ export type PlanId = (typeof PLAN_VALUES)[keyof typeof PLAN_VALUES];
 export type DatabasePlanTier =
   (typeof DATABASE_PLAN_VALUES)[keyof typeof DATABASE_PLAN_VALUES];
 
-// String enums for backward compatibility and type safety
+
 export enum PlanIdEnum {
   SELF_HOSTED = 'self_hosted',
   FREE = 'free',
@@ -26,11 +26,11 @@ export enum DatabasePlanTierEnum {
   PRO = 'pro',
 }
 
-// TypeScript utility types for type-safe conversions
+
 export type UppercaseString<T extends string> = Uppercase<T>;
 export type LowercaseString<T extends string> = Lowercase<T>;
 
-// Type-safe conversion utilities
+
 export type PlanIdToDatabase = UppercaseString<PlanId>;
 export type DatabaseToPlanId = PlanId;
 
@@ -96,7 +96,7 @@ export const PLAN_FEATURES = {
   ],
 } as const;
 
-// Plan conversion utilities
+
 export function databasePlanToPlanId(planTier: DatabasePlanTier): PlanId {
   const planMap: Record<DatabasePlanTier, PlanId> = {
     [DATABASE_PLAN_VALUES.FREE]: PLAN_VALUES.FREE,
@@ -109,12 +109,12 @@ export function planIdToDatabasePlan(planId: PlanId): DatabasePlanTier {
   const planMap: Record<PlanId, DatabasePlanTier> = {
     [PLAN_VALUES.FREE]: DATABASE_PLAN_VALUES.FREE,
     [PLAN_VALUES.PRO]: DATABASE_PLAN_VALUES.PRO,
-    [PLAN_VALUES.SELF_HOSTED]: DATABASE_PLAN_VALUES.FREE, // Default to free for self-hosted
+    [PLAN_VALUES.SELF_HOSTED]: DATABASE_PLAN_VALUES.FREE, free for self-hosted
   };
   return planMap[planId];
 }
 
-// Plan display utilities
+
 export function getPlanDisplayName(planId: PlanId): string {
   const names: Record<PlanId, string> = {
     [PLAN_VALUES.FREE]: 'Free',
@@ -133,7 +133,7 @@ export function getPlanColor(planId: PlanId): string {
   return colors[planId];
 }
 
-// Plan checking utilities
+
 export function canUseAI(planId: PlanId): boolean {
   const limits = PLAN_LIMITS[planId];
   return limits.aiEnabled;
@@ -178,7 +178,7 @@ export function canUseAIFeature(
   return true;
 }
 
-// Usage status utilities
+
 export function getUsageStatus(planId: PlanId, usage: UserUsage) {
   const limits = PLAN_LIMITS[planId];
 
@@ -194,7 +194,7 @@ export function getUsageStatus(planId: PlanId, usage: UserUsage) {
   };
 }
 
-// Plan comparison utilities
+
 export function isProPlan(planId: PlanId): boolean {
   return planId === PLAN_VALUES.PRO;
 }
@@ -207,7 +207,7 @@ export function isSelfHostedPlan(planId: PlanId): boolean {
   return planId === PLAN_VALUES.SELF_HOSTED;
 }
 
-// Plan upgrade/downgrade utilities
+
 export function getUpgradeablePlans(currentPlanId: PlanId): PlanId[] {
   switch (currentPlanId) {
     case PLAN_VALUES.FREE:

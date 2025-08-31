@@ -1,37 +1,28 @@
 import { db } from '@/db/client';
 import { users } from '@/db/schema/auth';
 import { userUsage } from '@/db/schema/user-usage';
-import { eq, and } from 'drizzle-orm';
+import { getUserPlanId } from '@/lib/billing/usage';
+import { and, eq } from 'drizzle-orm';
 import {
   type PlanId,
-  type DatabasePlanTier,
   type UserPlan,
   type UserUsage,
-  DatabasePlanTierEnum,
-  databasePlanToPlanId,
-  planIdToDatabasePlan,
-  canUseAI,
   canGenerateThumbnail,
   canPublishArticle,
+  canUseAI,
   canUseAIFeature,
-  getUsageStatus,
-  isProPlan,
-  isFreePlan,
-  getUpgradeablePlans,
+  DatabasePlanTierEnum,
   getDowngradeablePlans,
+  getUpgradeablePlans,
+  getUsageStatus,
+  isFreePlan,
+  isProPlan,
+  planIdToDatabasePlan,
 } from './plans';
 
 export class PlanService {
   static async getUserPlan(userId: string): Promise<UserPlan> {
-    const userRecord = await db
-      .select({ planTier: users.planTier })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
-    const planTier = (userRecord[0]?.planTier ||
-      DatabasePlanTierEnum.FREE) as DatabasePlanTier;
-    const planId = databasePlanToPlanId(planTier);
+    const planId = await getUserPlanId(userId);
 
     const currentMonth = new Date().toISOString().slice(0, 7);
 
@@ -52,7 +43,7 @@ export class PlanService {
     };
 
     return {
-      planId,
+      planId: planId as PlanId,
       usage,
     };
   }

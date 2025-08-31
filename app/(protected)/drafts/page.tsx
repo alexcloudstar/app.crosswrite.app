@@ -361,7 +361,6 @@ export default function DraftsPage() {
             `Successfully scheduled ${successful} out of ${total} draft(s)!`
           );
 
-          // Reload drafts to show updated status
           const reloadResult = await listDrafts({
             page: 1,
             limit: 100,

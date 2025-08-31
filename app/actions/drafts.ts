@@ -163,7 +163,6 @@ export async function publishDraft(input: unknown) {
   try {
     const { id, platforms } = publishDraftSchema.parse(input);
 
-    // Use the new platform publishing action
     const { publishToPlatforms } = await import('./integrations/publish');
 
     return await publishToPlatforms({

@@ -7,30 +7,89 @@ import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
 import { usePlan } from '@/hooks/use-plan';
 import { PLAN_FEATURES, PLAN_PRICING, PLAN_VALUES } from '@/lib/plans';
+import {
+  createCheckoutSession,
+  createBillingPortalSession,
+} from '@/app/actions/billing';
 
 export default function BillingPage() {
-  const { userPlan, updatePlan, getPricing, isFree, isPro, PlanId } = usePlan();
+  const { userPlan, getPricing, isFree, isPro } = usePlan();
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isDowngrading, setIsDowngrading] = useState(false);
 
   const handleUpgrade = async () => {
     setIsUpgrading(true);
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    updatePlan(PlanId.PRO);
-    setIsUpgrading(false);
+    try {
+      const result = await createCheckoutSession({
+        priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '',
+        returnPath: '/settings/billing',
+      });
+
+      if (
+        result.success &&
+        result.data &&
+        typeof result.data === 'object' &&
+        'url' in result.data
+      ) {
+        window.location.href = result.data.url as string;
+        return;
+      }
+
+      toast.error(result.error || 'Failed to create checkout session');
+    } catch {
+      toast.error('Failed to start checkout process');
+    } finally {
+      setIsUpgrading(false);
+    }
   };
 
   const handleDowngrade = async () => {
     setIsDowngrading(true);
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    updatePlan(PlanId.FREE);
-    setIsDowngrading(false);
+    try {
+      const result = await createBillingPortalSession({
+        returnPath: '/settings/billing',
+      });
+
+      if (
+        result.success &&
+        result.data &&
+        typeof result.data === 'object' &&
+        'url' in result.data
+      ) {
+        window.location.href = result.data.url as string;
+        return;
+      }
+
+      toast.error(result.error || 'Failed to open billing portal');
+    } catch {
+      toast.error('Failed to open billing portal');
+    } finally {
+      setIsDowngrading(false);
+    }
   };
 
-  const handleManageSubscription = () => {
-    toast('Subscription management portal would open here. This is a demo.');
+  const handleManageSubscription = async () => {
+    try {
+      const result = await createBillingPortalSession({
+        returnPath: '/settings/billing',
+      });
+
+      if (
+        result.success &&
+        result.data &&
+        typeof result.data === 'object' &&
+        'url' in result.data
+      ) {
+        window.location.href = result.data.url as string;
+        return;
+      }
+
+      toast.error(result.error || 'Failed to open billing portal');
+    } catch {
+      toast.error('Failed to open billing portal');
+    }
   };
 
   const features = [

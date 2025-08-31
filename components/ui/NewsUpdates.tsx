@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Bell, ExternalLink, Calendar, Star } from 'lucide-react';
 import { NewsItemSummary } from '@/lib/types/news';
 
-// Import the actual news data from the updates page
 const newsItems: NewsItemSummary[] = [
   {
     id: '1',
