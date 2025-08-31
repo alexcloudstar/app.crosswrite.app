@@ -10,7 +10,6 @@ export async function getDeploymentConfig() {
   try {
     const mode = isHosted() ? 'HOSTED' : 'SELF_HOST';
 
-    // Check if required keys are present
     let hasRequiredKey = false;
     try {
       if (isHosted()) {

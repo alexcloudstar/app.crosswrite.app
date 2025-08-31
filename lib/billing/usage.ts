@@ -18,7 +18,6 @@ export type UsageResult = {
 };
 
 export async function getUserPlanId(userId: string): Promise<string> {
-  // Check if user has an active subscription
   const subscription = await db
     .select({ planPriceId: billingSubscriptions.planPriceId })
     .from(billingSubscriptions)
@@ -31,12 +30,10 @@ export async function getUserPlanId(userId: string): Promise<string> {
     .limit(1);
 
   if (subscription[0]) {
-    // User has active subscription, determine plan from price ID
     const { getPlanFromPriceId } = await import('./plans');
     return getPlanFromPriceId(subscription[0].planPriceId) || PLAN_VALUES.FREE;
   }
 
-  // Default to free plan
   return PLAN_VALUES.FREE;
 }
 
@@ -54,7 +51,6 @@ export async function checkUsageLimit(
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
-  // Get current usage
   const usageRecord = await db
     .select({ [metric]: userUsage[metric] })
     .from(userUsage)
@@ -81,7 +77,6 @@ export async function incrementUsage(
 ): Promise<void> {
   const currentMonth = new Date().toISOString().slice(0, 7);
 
-  // Upsert usage record
   await db
     .insert(userUsage)
     .values({

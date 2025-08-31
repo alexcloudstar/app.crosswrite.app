@@ -160,7 +160,6 @@ async function processScheduledPost(scheduledPost: {
         })
         .where(eq(scheduledPosts.id, id));
 
-      // Update draft status based on publishing result
       if (finalStatus === 'published') {
         await db
           .update(drafts)
@@ -172,7 +171,6 @@ async function processScheduledPost(scheduledPost: {
           .where(eq(drafts.id, draftId));
         await resetRetryInfo(id);
       } else if (finalStatus === 'failed') {
-        // Revert draft status back to draft if publishing failed
         await db
           .update(drafts)
           .set({

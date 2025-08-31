@@ -1,31 +1,27 @@
 import { db } from '@/db/client';
 import { users } from '@/db/schema/auth';
 import { userUsage } from '@/db/schema/user-usage';
-import { billingSubscriptions } from '@/db/schema/billing';
-import { eq, and } from 'drizzle-orm';
+import { getUserPlanId } from '@/lib/billing/usage';
+import { and, eq } from 'drizzle-orm';
 import {
   type PlanId,
-  type DatabasePlanTier,
   type UserPlan,
   type UserUsage,
-  DatabasePlanTierEnum,
-  databasePlanToPlanId,
-  planIdToDatabasePlan,
-  canUseAI,
   canGenerateThumbnail,
   canPublishArticle,
+  canUseAI,
   canUseAIFeature,
-  getUsageStatus,
-  isProPlan,
-  isFreePlan,
-  getUpgradeablePlans,
+  DatabasePlanTierEnum,
   getDowngradeablePlans,
+  getUpgradeablePlans,
+  getUsageStatus,
+  isFreePlan,
+  isProPlan,
+  planIdToDatabasePlan,
 } from './plans';
-import { getUserPlanId } from '@/lib/billing/usage';
 
 export class PlanService {
   static async getUserPlan(userId: string): Promise<UserPlan> {
-    // Get plan from Stripe subscription (source of truth)
     const planId = await getUserPlanId(userId);
 
     const currentMonth = new Date().toISOString().slice(0, 7);

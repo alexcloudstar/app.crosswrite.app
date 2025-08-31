@@ -52,6 +52,7 @@ import {
   changePlanSchema,
 } from '@/lib/validators/billing';
 import { getUserPlanId } from '@/lib/billing/usage';
+import logger from '@/lib/logger';
 
 type BillingSummaryData = {
   planId: string;
@@ -124,8 +125,8 @@ export async function createCheckoutSession(input: {
           quantity: 1,
         },
       ],
-      success_url: await createSuccessUrl(validated.returnPath),
-      cancel_url: await createCancelUrl(validated.returnPath),
+      success_url: createSuccessUrl(validated.returnPath),
+      cancel_url: createCancelUrl(validated.returnPath),
       client_reference_id: session.id,
       allow_promotion_codes: true,
     });
@@ -134,7 +135,7 @@ export async function createCheckoutSession(input: {
 
     return successResult({ url: checkoutSession.url });
   } catch (error) {
-    console.error('Checkout session creation error:', error);
+    logger.error('Checkout session creation error:', { error });
     return errorResult('Failed to create checkout session');
   }
 }
@@ -158,12 +159,12 @@ export async function createBillingPortalSession(input: {
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customer[0].stripeCustomerId,
-      return_url: await createBillingPortalReturnUrl(validated.returnPath),
+      return_url: createBillingPortalReturnUrl(validated.returnPath),
     });
 
     return successResult({ url: portalSession.url });
   } catch (error) {
-    console.error('Billing portal session creation error:', error);
+    logger.error('Failed to create billing portal session', { error });
     return errorResult('Failed to create billing portal session');
   }
 }
@@ -204,7 +205,7 @@ export async function getBillingSummary() {
 
     return successResult(summary);
   } catch (error) {
-    console.error('Billing summary error:', error);
+    logger.error('Billing summary error:', { error });
     return errorResult('Failed to get billing summary');
   }
 }
@@ -248,7 +249,7 @@ export async function changePlan(input: { priceId: string }) {
 
     return successResult({ success: true });
   } catch (error) {
-    console.error('Plan change error:', error);
+    logger.error('Plan change error:', { error });
     return errorResult('Failed to change plan');
   }
 }

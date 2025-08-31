@@ -14,7 +14,6 @@ import { integrations } from './integrations';
 import { scheduledPosts } from './scheduled-posts';
 import { userUsage } from './user-usage';
 
-// Auth types
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
 export type Account = InferSelectModel<typeof accounts>;
@@ -26,7 +25,6 @@ export type NewVerificationToken = InferInsertModel<typeof verificationTokens>;
 export type Authenticator = InferSelectModel<typeof authenticators>;
 export type NewAuthenticator = InferInsertModel<typeof authenticators>;
 
-// Core types
 export type Draft = InferSelectModel<typeof drafts>;
 export type NewDraft = InferInsertModel<typeof drafts>;
 export type DraftVersion = InferSelectModel<typeof draftVersions>;

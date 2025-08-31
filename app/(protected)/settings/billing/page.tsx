@@ -33,9 +33,10 @@ export default function BillingPage() {
         'url' in result.data
       ) {
         window.location.href = result.data.url as string;
-      } else {
-        toast.error(result.error || 'Failed to create checkout session');
+        return;
       }
+
+      toast.error(result.error || 'Failed to create checkout session');
     } catch {
       toast.error('Failed to start checkout process');
     } finally {
@@ -58,9 +59,10 @@ export default function BillingPage() {
         'url' in result.data
       ) {
         window.location.href = result.data.url as string;
-      } else {
-        toast.error(result.error || 'Failed to open billing portal');
+        return;
       }
+
+      toast.error(result.error || 'Failed to open billing portal');
     } catch {
       toast.error('Failed to open billing portal');
     } finally {
@@ -81,9 +83,10 @@ export default function BillingPage() {
         'url' in result.data
       ) {
         window.location.href = result.data.url as string;
-      } else {
-        toast.error(result.error || 'Failed to open billing portal');
+        return;
       }
+
+      toast.error(result.error || 'Failed to open billing portal');
     } catch {
       toast.error('Failed to open billing portal');
     }

@@ -31,7 +31,7 @@ export const billingSubscriptions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     stripeSubscriptionId: text('stripe_subscription_id').notNull().unique(),
-    status: text('status').notNull(), // active|trialing|past_due|canceled|incomplete|paused
+    status: text('status').notNull(),
     planPriceId: text('plan_price_id').notNull(),
     currentPeriodStart: timestamp('current_period_start').notNull(),
     currentPeriodEnd: timestamp('current_period_end').notNull(),

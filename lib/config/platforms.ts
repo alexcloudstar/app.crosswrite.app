@@ -1,7 +1,6 @@
-// Centralized platform configuration
 export const supportedPlatforms = ['devto', 'hashnode'] as const;
 
-export type Platform = typeof supportedPlatforms[number];
+export type Platform = (typeof supportedPlatforms)[number];
 
 export const platformConfig = {
   devto: {

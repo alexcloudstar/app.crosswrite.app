@@ -1,28 +1,24 @@
 'use server';
 
-import { and, eq, sql } from 'drizzle-orm';
-import { requireAuth, successResult, errorResult } from './_utils';
-import { aiProvider } from '@/lib/ai/provider';
 import { PROMPT_TEMPLATES } from '@/lib/ai/prompt-templates';
-import {
-  improveTextSchema,
-  adjustToneSchema,
-  summarizeTextSchema,
-  generateSuggestionsSchema,
-  extractTagsSchema,
-  generateThumbnailSchema,
-  type ImproveTextInput,
-  type AdjustToneInput,
-  type SummarizeTextInput,
-  type GenerateSuggestionsInput,
-  type ExtractTagsInput,
-  type GenerateThumbnailInput,
-} from '@/lib/validators/ai';
-import { db } from '@/db/client';
-import { userUsage } from '@/db/schema/user-usage';
-import { planService } from '@/lib/plan-service';
+import { aiProvider } from '@/lib/ai/provider';
 import { assertWithinLimits } from '@/lib/billing/usage';
 import logger from '@/lib/logger';
+import {
+  adjustToneSchema,
+  extractTagsSchema,
+  generateSuggestionsSchema,
+  generateThumbnailSchema,
+  improveTextSchema,
+  summarizeTextSchema,
+  type AdjustToneInput,
+  type ExtractTagsInput,
+  type GenerateSuggestionsInput,
+  type GenerateThumbnailInput,
+  type ImproveTextInput,
+  type SummarizeTextInput,
+} from '@/lib/validators/ai';
+import { errorResult, requireAuth, successResult } from './_utils';
 
 async function checkAndTrackUsage(
   userId: string,

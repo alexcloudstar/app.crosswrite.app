@@ -15,7 +15,6 @@ export const createScheduledPostSchema = z
       const scheduledDate = new Date(data.scheduledAt);
       const now = new Date();
 
-      // Simple comparison - no timezone conversion for now
       return scheduledDate > now;
     },
     {

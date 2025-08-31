@@ -26,10 +26,8 @@ function safeStripeTimestamp(
   }
 
   try {
-    // Stripe timestamps are in seconds, convert to milliseconds
     const date = new Date(timestamp * 1000);
 
-    // Check if the date is valid
     if (isNaN(date.getTime())) {
       logger.warn('Invalid date after conversion:', {
         timestamp,
@@ -323,7 +321,6 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
     return;
   }
 
-  // Only update subscription if this invoice is for a subscription
   const subscriptionId = (invoice as Stripe.Invoice & { subscription?: string })
     .subscription;
   if (subscriptionId) {
@@ -347,7 +344,5 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 async function handlePaymentIntentSucceeded(
   paymentIntent: Stripe.PaymentIntent
 ) {
-  // Payment intent succeeded events don't require subscription updates
-  // They're handled by invoice events for subscription-related payments
   logger.info('Payment intent succeeded:', paymentIntent.id);
 }
