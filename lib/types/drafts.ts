@@ -4,7 +4,7 @@ export type Draft = {
   title: string;
   content: string;
   contentPreview?: string;
-  status: 'draft' | 'scheduled' | 'published';
+  status: 'draft' | 'published';
   platforms: string[];
   thumbnailUrl?: string;
   seoTitle?: string;
@@ -13,7 +13,6 @@ export type Draft = {
   createdAt: Date;
   updatedAt: Date;
   publishedAt?: Date;
-  scheduledAt?: Date;
 };
 
 export type DraftListItem = {
@@ -24,7 +23,6 @@ export type DraftListItem = {
   platforms: string[];
   updatedAt: Date;
   publishedAt?: Date;
-  scheduledAt?: Date;
 };
 
 export type CreateDraftRequest = {
@@ -45,7 +43,6 @@ export type UpdateDraftRequest = {
   seoTitle?: string;
   seoDescription?: string;
   tags?: string[];
-  scheduledAt?: Date;
 };
 
 export type DraftsResponse = {

@@ -6,7 +6,7 @@ import { NewsUpdates } from '@/components/ui/NewsUpdates';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
 import { StatCard } from '@/components/ui/StatCard';
-import { useAppStore } from '@/lib/store';
+import { usePlan } from '@/hooks/use-plan';
 import { DashboardStats, Draft } from '@/lib/types/dashboard';
 import { formatDate, getPlatformDisplayName } from '@/lib/utils';
 import {
@@ -23,10 +23,9 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
-  const { userPlan } = useAppStore();
+  const { userPlan } = usePlan();
   const [stats, setStats] = useState<DashboardStats>({
     drafts: 0,
-    scheduled: 0,
     published7Days: 0,
     published30Days: 0,
   });
@@ -45,8 +44,6 @@ export default function DashboardPage() {
 
           const draftStats = {
             drafts: drafts.filter((d: Draft) => d.status === 'draft').length,
-            scheduled: drafts.filter((d: Draft) => d.status === 'scheduled')
-              .length,
             published7Days: drafts.filter((d: Draft) => {
               if (d.status !== 'published' || !d.publishedAt) return false;
               const sevenDaysAgo = new Date();
@@ -181,18 +178,12 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
         <StatCard
           title='Drafts'
           value={stats.drafts}
           icon={<FileText size={20} />}
           description='In progress'
-        />
-        <StatCard
-          title='Scheduled'
-          value={stats.scheduled}
-          icon={<Clock size={20} />}
-          description='Ready to publish'
         />
         <StatCard
           title='Published (7d)'

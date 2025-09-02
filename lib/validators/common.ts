@@ -12,8 +12,33 @@ export const StringMax = (max: number) =>
 export function sanitizeContent(content: string): string {
   return content
     .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/[\x00-\x1F\x7F]/g, '');
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\n{4,}/g, '\n\n\n')
+    .replace(/[ ]{3,}/g, '  ');
+}
+
+export function generateContentPreview(
+  content: string,
+  maxLength: number = 200
+): string {
+  const plainText = content
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/`(.*?)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/^>\s+/gm, '')
+    .replace(/\n{2,}/g, ' ')
+    .replace(/\n/g, ' ')
+    .trim();
+
+  return plainText.length > maxLength
+    ? plainText.substring(0, maxLength) + '...'
+    : plainText;
 }
 
 export function sanitizeTitle(title: string): string {

@@ -3,6 +3,7 @@ import {
   sanitizeContent,
   sanitizeTags,
   sanitizeTitle,
+  generateContentPreview,
   UUID,
   validatePayloadSize,
 } from './common';
@@ -22,7 +23,7 @@ const draftBase = z.object({
     .string()
     .max(500, 'Preview too long')
     .optional()
-    .transform(val => (val ? sanitizeContent(val) : val)),
+    .transform(val => (val ? generateContentPreview(val, 500) : val)),
   platforms: z.array(z.string()).default([]),
   thumbnailUrl: z
     .string()
@@ -38,7 +39,7 @@ const draftBase = z.object({
     .string()
     .max(160, 'SEO description too long')
     .optional()
-    .transform(val => (val ? sanitizeContent(val) : val)),
+    .transform(val => (val ? generateContentPreview(val, 160) : val)),
   tags: z.array(z.string()).default([]).transform(sanitizeTags),
 });
 
