@@ -15,99 +15,97 @@ import { NewsItem } from '@/lib/types/news';
 const allNewsItems: NewsItem[] = [
   {
     id: '1',
-    title: 'AI-Powered Content Assistant',
+    title: 'Markdown Editor with AI Suggestions',
     description:
-      'Advanced AI integration with real-time writing suggestions, content improvement, and SEO optimization.',
+      'Full-featured markdown editor with AI-powered writing assistance and real-time preview.',
     detailedDescription:
-      'Our AI assistant is now fully integrated with OpenAI, providing real-time writing suggestions, grammar improvements, content optimization, and SEO recommendations. The system analyzes your content as you write and offers contextual suggestions to enhance readability and engagement.',
-    date: '2025-08-28',
+      'Our markdown editor provides a clean writing experience with AI-powered suggestions, real-time preview, and comprehensive markdown support. Write content with confidence using our intelligent writing assistant.',
+    date: '2025-01-15',
     type: 'feature',
     link: '/editor',
-    tags: ['AI', 'Writing', 'Productivity'],
+    tags: ['Editor', 'Markdown', 'AI', 'Writing'],
   },
   {
     id: '2',
-    title: 'Multi-Platform Publishing',
+    title: 'Dev.to Integration',
     description:
-      'Publish to Dev.to, Hashnode, and Beehiiv with automatic formatting and optimization.',
+      'Direct publishing to Dev.to with automatic formatting and metadata handling.',
     detailedDescription:
-      "We've launched comprehensive platform integrations for Dev.to, Hashnode, and Beehiiv. Write once and publish everywhere with automatic platform-specific formatting, metadata handling, and content optimization. Each platform gets perfectly formatted content tailored to their requirements.",
-    date: '2025-08-25',
+      'Connect your Dev.to account and publish content directly from Cross Write. Our integration handles proper frontmatter formatting and ensures your posts look great on Dev.to.',
+    date: '2025-01-10',
     type: 'feature',
     link: '/integrations',
-    tags: ['Publishing', 'Platforms', 'Automation'],
+    tags: ['Dev.to', 'Publishing', 'Integration'],
   },
   {
     id: '3',
-    title: 'Advanced Content Scheduling',
+    title: 'Hashnode Integration',
     description:
-      'Schedule posts across multiple platforms with intelligent timing and automatic publishing.',
+      'Direct publishing to Hashnode with optimized metadata and content formatting.',
     detailedDescription:
-      'Our scheduling system now supports cross-platform publishing with intelligent timing recommendations. Schedule posts days, weeks, or months in advance, and our system will automatically publish them at optimal times across all your connected platforms.',
-    date: '2025-08-22',
+      'Connect your Hashnode account and publish content seamlessly. Our integration ensures proper metadata handling and content formatting for optimal presentation on Hashnode.',
+    date: '2025-01-08',
     type: 'feature',
-    link: '/scheduler',
-    tags: ['Scheduling', 'Automation', 'Multi-platform'],
+    link: '/integrations',
+    tags: ['Hashnode', 'Publishing', 'Integration'],
   },
-
   {
-    id: '5',
-    title: 'Enhanced Draft Management',
+    id: '4',
+    title: 'Draft Management',
     description:
-      'Organize your content with version control, collaboration features, and advanced organization.',
+      'Create, edit, and organize your content drafts with a simple interface.',
     detailedDescription:
-      'Our draft management system now includes version control, collaboration tools, and advanced organization features. Track changes, collaborate with team members, and maintain a clean content workflow with folders, tags, and status management.',
-    date: '2025-08-18',
+      'Organize your writing workflow with our draft management system. Create new drafts, edit existing ones, and keep your content organized as you work on your next great piece.',
+    date: '2025-01-05',
     type: 'feature',
     link: '/drafts',
-    tags: ['Drafts', 'Organization', 'Collaboration'],
+    tags: ['Drafts', 'Organization', 'Writing'],
+  },
+  {
+    id: '5',
+    title: 'AI Content Generation',
+    description:
+      'Generate SEO titles, descriptions, and content summaries with AI assistance.',
+    detailedDescription:
+      'Leverage AI to enhance your content with automatically generated SEO titles, descriptions, and summaries. Our AI features help optimize your content for better discoverability and engagement.',
+    date: '2025-01-03',
+    type: 'feature',
+    link: '/editor',
+    tags: ['AI', 'SEO', 'Content Generation'],
   },
   {
     id: '6',
-    title: 'AI Content Generation',
+    title: 'User Authentication & Billing',
     description:
-      'Generate SEO metadata, content summaries, and thumbnail suggestions with AI.',
+      'Secure user accounts with NextAuth integration and Stripe billing for Pro plans.',
     detailedDescription:
-      'Our AI can now generate SEO titles and descriptions, create content summaries, suggest thumbnails, and even translate content to other languages. All AI features are rate-limited and usage-tracked for optimal performance.',
-    date: '2025-08-15',
+      'Secure authentication powered by NextAuth.js with support for multiple providers. Pro users can upgrade their plan through our Stripe integration to unlock advanced features.',
+    date: '2025-01-01',
     type: 'feature',
-    link: '/editor',
-    tags: ['AI', 'SEO', 'Generation'],
+    tags: ['Authentication', 'Billing', 'Security'],
   },
   {
     id: '7',
-    title: 'Platform-Specific Optimizations',
+    title: 'Content Scheduling (Coming Soon)',
     description:
-      'Automatic content formatting and optimization for each publishing platform.',
+      'Schedule posts across multiple platforms with intelligent timing recommendations.',
     detailedDescription:
-      'Each platform now receives perfectly formatted content with platform-specific optimizations. Dev.to gets proper frontmatter, Hashnode gets optimized metadata, and Beehiiv gets HTML-converted content with proper styling.',
-    date: '2025-08-12',
-    type: 'update',
-    link: '/integrations',
-    tags: ['Platforms', 'Optimization', 'Formatting'],
+      'Our scheduling system will allow you to schedule posts across all your connected platforms with AI-powered timing recommendations. Write once, schedule everywhere, and let our system handle the rest.',
+    date: '2025-02-01',
+    type: 'announcement',
+    link: '/scheduler',
+    tags: ['Scheduling', 'Automation', 'Coming Soon'],
   },
   {
     id: '8',
-    title: 'Background Job Processing',
+    title: 'Notifications (Coming Soon)',
     description:
-      'Reliable scheduled post processing with retry logic and error handling.',
+      'Comprehensive notification preferences for publishing success and platform updates.',
     detailedDescription:
-      'Our background job processing system ensures your scheduled posts are published reliably. The system includes retry logic for failed publishes, comprehensive error handling, and job monitoring for maximum reliability.',
-    date: '2025-08-10',
-    type: 'update',
-    link: '/scheduler',
-    tags: ['Scheduling', 'Reliability', 'Background Jobs'],
-  },
-  {
-    id: '9',
-    title: 'Enhanced Security & Performance',
-    description:
-      'Improved authentication, rate limiting, and overall platform performance.',
-    detailedDescription:
-      "We've enhanced our security measures with improved authentication, rate limiting, and data protection. Performance has been optimized with database indexing, caching layers, and efficient query patterns for faster response times.",
-    date: '2025-08-08',
-    type: 'update',
-    tags: ['Security', 'Performance', 'Optimization'],
+      'Stay informed about your content performance with customizable notifications. Get alerts for successful publishes, platform updates, and important account information.',
+    date: '2025-02-15',
+    type: 'announcement',
+    tags: ['Notifications', 'User Experience', 'Coming Soon'],
   },
 ];
 
@@ -284,23 +282,11 @@ export default function UpdatesPage() {
         <div className='card-body text-center'>
           <h3 className='text-xl font-bold mb-2'>Stay Updated</h3>
           <p className='text-base-content/70 mb-4'>
-            Get notified about new features and updates directly in your inbox
+            Follow our updates page for the latest features and improvements
           </p>
-          <form
-            className='flex max-w-md mx-auto space-x-2'
-            onSubmit={e => e.preventDefault()}
-          >
-            <input
-              type='email'
-              placeholder='Enter your email'
-              className='input input-bordered flex-1'
-              required
-              pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'
-            />
-            <button type='submit' className='btn btn-primary'>
-              Subscribe
-            </button>
-          </form>
+          <div className='text-sm text-base-content/60'>
+            <p>Email notifications coming soon!</p>
+          </div>
         </div>
       </div>
     </div>
