@@ -1,10 +1,11 @@
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
+import { checkRateLimit } from '@/lib/utils/rateLimit';
 import {
   getApiKeyForGeneration,
   getKeySource,
 } from '@/lib/config/serverConfig';
-import { checkRateLimit } from '@/lib/utils/rateLimit';
-import logger from '../logger';
+import { INPUT_LIMITS } from '@/lib/constants';
+import logger from '@/lib/logger';
 
 type AllowedModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-3.5-turbo';
 
@@ -23,15 +24,6 @@ type InvokeParams = {
 function getRateLimitKey(userId: string, purpose: string): string {
   return `${userId}:${purpose}`;
 }
-
-const INPUT_LIMITS: Record<string, number> = {
-  improveText: 8000,
-  adjustTone: 6000,
-  summarizeText: 10000,
-  generateSuggestions: 8000,
-  extractTags: 12000,
-  generateThumbnail: 500,
-};
 
 export class AIProvider {
   private client: OpenAI;

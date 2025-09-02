@@ -206,7 +206,10 @@ export async function generateThumbnail(input: GenerateThumbnailInput) {
 
     const warning = await checkAndTrackUsage(user.id, 'thumbnailsGenerated');
 
-    const prompt = PROMPT_TEMPLATES.generateThumbnail(validatedInput.prompt);
+    const prompt = PROMPT_TEMPLATES.generateThumbnail(
+      validatedInput.articleTitle,
+      validatedInput.articleContent
+    );
 
     const images = await aiProvider.generateImage(prompt, '1792x1024');
 

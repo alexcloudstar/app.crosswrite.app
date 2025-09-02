@@ -1,3 +1,5 @@
+import { cleanContentForAI } from '@/lib/validators/common';
+
 export const PROMPT_TEMPLATES = {
   improveText: (text: string, goals?: string[]) => {
     const goalsText = goals?.length ? `\n\nGoals: ${goals.join(', ')}` : '';
@@ -99,17 +101,61 @@ tag3
 Tags:`;
   },
 
-  generateThumbnail: (prompt: string) => {
-    return `Create a realistic, professional blog header image (1792x1024) based on this description: ${prompt}
+  generateThumbnail: (articleTitle: string, articleContent: string) => {
+    // Clean content and get a meaningful preview
+    const cleanContent = cleanContentForAI(articleContent);
+    const contentPreview = cleanContent.substring(0, 100);
 
-The image should be:
-- Photorealistic and natural-looking, not AI-generated
-- Professional and clean, suitable for a tech blog or professional website
-- High-quality with realistic lighting and shadows
-- Subtle and elegant, avoiding overly dramatic or artificial effects
-- Focus on real objects, textures, and environments
-- Use natural color palettes and realistic composition
-- Avoid cartoonish, overly saturated, or obviously AI-generated elements
-- Suitable for digital publishing and social media sharing`;
+    return `Create a blog header image (1792x1024) for the article titled: "${articleTitle}"
+
+  Article content preview: "${contentPreview}"
+
+  This image must look like a real photograph, not a conceptual illustration.
+
+  🔑 STEP-BY-STEP INSTRUCTIONS:
+  1. **Scene** → Always depict ONE clear, realistic environment:
+     - A modern desk with a laptop or monitor
+     - A plain whiteboard with markers
+     - Or a single browser window visible on a screen
+  2. **Main Subject** → The subject must directly match the article topic:
+     - Code editors (VSCode, JetBrains, etc.) if about coding
+     - Browser window if about CSS, frontend, or layouts
+     - Postman app if about API testing
+     - ER diagram, SQL editor, or dbdiagram.io if about databases
+     - Terminal window if about Docker or Git
+     - Design tools (Figma, Sketch) if about UX/UI
+  3. **Clarity** → The focus should be instantly recognizable from the thumbnail alone.
+     Use the content preview above to decide the most fitting subject.
+  4. **Fallback Rule** → If unsure, always show a laptop on a clean desk with the relevant app or code editor open.
+
+  🚫 DO NOT INCLUDE:
+  - Floating icons, cubes, gears, holograms, or abstract shapes
+  - Futuristic dashboards, multi-screen walls, or sci-fi control centers
+  - Random diagrams, filler charts, or background posters unrelated to the topic
+  - Decorative or symbolic overlays (planets, glowing lines, etc.)
+  - Generic "techy stock photo" vibes
+
+  ✅ EXAMPLES OF GOOD OUTPUT:
+  - "Building a React App" → Laptop on a wooden desk with VSCode open, React code visible, React logo sticker
+  - "CSS Grid Layout" → Monitor showing browser window with webpage + visible CSS gridlines
+  - "API Testing with Postman" → Postman app on desktop screen showing request/response
+  - "Database Design" → Whiteboard with ER diagram drawn in markers OR dbdiagram.io interface on screen
+  - "Debugging JavaScript" → Chrome DevTools open with console logs
+  - "Docker for Beginners" → Terminal window with Docker commands, Docker whale sticker on laptop
+  - "Version Control with Git" → Terminal with git commit / git push commands visible
+  - "UX Wireframing" → Figma UI open on screen, with wireframe sketches on nearby notepad
+
+  🎨 STYLE REQUIREMENTS:
+  - Photorealistic and natural-looking
+  - Natural daylight or warm desk lighting
+  - Clean, minimal, modern setup
+  - High contrast, sharp details, realistic shadows
+  - Professional blog header aesthetic
+  - Clear focal point, uncluttered composition
+
+  📌 FINAL RULE:
+  The thumbnail must look exactly like a real photo of a workspace or tool in use.
+  It must directly illustrate the article’s subject, with no abstract, symbolic, or decorative elements.
+  If in doubt, fall back to: a laptop on a desk with the relevant app or editor open.`;
   },
 };

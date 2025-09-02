@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import logger from '@/lib/logger';
 import { validatePayloadSize, sanitizeContent } from '@/lib/validators/common';
+import { INPUT_LIMITS } from '@/lib/constants';
 
 const updateProfileSchema = z
   .object({
@@ -28,7 +29,7 @@ const updateProfileSchema = z
       .optional()
       .or(z.literal('')),
   })
-  .refine(data => validatePayloadSize(data, 2000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.userSettings), {
     message: 'Profile data too large',
   });
 
@@ -42,7 +43,7 @@ const updateWritingDefaultsSchema = z
     autoGenerateUrls: z.boolean(),
     includeReadingTime: z.boolean(),
   })
-  .refine(data => validatePayloadSize(data, 2000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.userSettings), {
     message: 'Writing defaults data too large',
   });
 
@@ -51,7 +52,7 @@ const updatePublishingSchema = z
     defaultPublishTime: z.string().max(50, 'Publish time too long'),
     autoSchedule: z.boolean(),
   })
-  .refine(data => validatePayloadSize(data, 1000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.userProfile), {
     message: 'Publishing data too large',
   });
 
@@ -64,7 +65,7 @@ const updateNotificationsSchema = z
     dailyDigest: z.boolean(),
     weeklyReport: z.boolean(),
   })
-  .refine(data => validatePayloadSize(data, 1000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.userProfile), {
     message: 'Notification data too large',
   });
 

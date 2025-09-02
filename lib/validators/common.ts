@@ -23,22 +23,42 @@ export function generateContentPreview(
   content: string,
   maxLength: number = 200
 ): string {
+  // Remove markdown formatting for preview while preserving structure
   const plainText = content
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    .replace(/`(.*?)`/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/^[-*+]\s+/gm, '')
-    .replace(/^\d+\.\s+/gm, '')
-    .replace(/^>\s+/gm, '')
-    .replace(/\n{2,}/g, ' ')
-    .replace(/\n/g, ' ')
+    .replace(/^#{1,6}\s+/gm, '') // Remove headers
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+    .replace(/\*(.*?)\*/g, '$1') // Remove italic
+    .replace(/`(.*?)`/g, '$1') // Remove inline code
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+    .replace(/^[-*+]\s+/gm, '') // Remove list markers
+    .replace(/^\d+\.\s+/gm, '') // Remove numbered list markers
+    .replace(/^>\s+/gm, '') // Remove blockquotes
+    .replace(/\n{2,}/g, ' ') // Replace multiple newlines with space
+    .replace(/\n/g, ' ') // Replace single newlines with space
     .trim();
 
   return plainText.length > maxLength
     ? plainText.substring(0, maxLength) + '...'
     : plainText;
+}
+
+export function cleanContentForAI(content: string): string {
+  // Clean content by removing markdown and special characters for AI processing
+  return content
+    .replace(/^#{1,6}\s+/gm, '') // Remove headers
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+    .replace(/\*(.*?)\*/g, '$1') // Remove italic
+    .replace(/`(.*?)`/g, '$1') // Remove inline code
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+    .replace(/^[-*+]\s+/gm, '') // Remove list markers
+    .replace(/^\d+\.\s+/gm, '') // Remove numbered list markers
+    .replace(/^>\s+/gm, '') // Remove blockquotes
+    .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+    .replace(/\n{2,}/g, ' ') // Replace multiple newlines with space
+    .replace(/\n/g, ' ') // Replace single newlines with space
+    .replace(/[^\w\s.,!?-]/g, '') // Remove special characters except basic punctuation
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
 }
 
 export function sanitizeTitle(title: string): string {

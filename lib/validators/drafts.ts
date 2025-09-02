@@ -7,6 +7,7 @@ import {
   UUID,
   validatePayloadSize,
 } from './common';
+import { INPUT_LIMITS } from '@/lib/constants';
 
 const draftBase = z.object({
   title: z
@@ -44,7 +45,7 @@ const draftBase = z.object({
 });
 
 export const createDraftSchema = draftBase.refine(
-  data => validatePayloadSize(data, 20000),
+  data => validatePayloadSize(data, INPUT_LIMITS.DRAFT_DATA_SIZE),
   { message: 'Draft data too large' }
 );
 
@@ -53,7 +54,7 @@ export const updateDraftSchema = draftBase
   .extend({
     id: UUID,
   })
-  .refine(data => validatePayloadSize(data, 20000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.DRAFT_DATA_SIZE), {
     message: 'Update data too large',
   });
 
@@ -69,7 +70,7 @@ export const listDraftsSchema = z
     status: z.enum(['draft', 'scheduled', 'published']).optional(),
     search: z.string().max(100, 'Search term too long').optional(),
   })
-  .refine(data => validatePayloadSize(data, 1000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.SEARCH_PARAMETERS_SIZE), {
     message: 'Search parameters too large',
   });
 
@@ -84,7 +85,7 @@ export const publishDraftSchema = z
       })
       .optional(),
   })
-  .refine(data => validatePayloadSize(data, 5000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.PUBLISH_DATA_SIZE), {
     message: 'Publish data too large',
   });
 
@@ -95,7 +96,7 @@ export const scheduleDraftSchema = z
     scheduledAt: z.string().datetime('Invalid scheduled date'),
     userTz: z.string().optional(),
   })
-  .refine(data => validatePayloadSize(data, 5000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.SCHEDULE_DATA_SIZE), {
     message: 'Schedule data too large',
   });
 

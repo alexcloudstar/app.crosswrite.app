@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { generateThumbnail } from '@/app/actions/ai';
+import { useAppStore } from '@/lib/store';
 import {
-  X,
-  Image as ImageIcon,
-  Download,
-  RefreshCw,
   Check,
+  Download,
+  Image as ImageIcon,
+  RefreshCw,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useAppStore } from '@/lib/store';
-import { generateThumbnail } from '@/app/actions/ai';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 type ThumbnailGeneratorModalProps = {
@@ -18,46 +18,22 @@ type ThumbnailGeneratorModalProps = {
   onClose: () => void;
   onSelect: (imageUrl: string) => void;
   onGeneratingChange?: (isGenerating: boolean) => void;
+  articleTitle: string;
+  articleContent: string;
 };
-
-const THUMBNAIL_PRESETS = [
-  {
-    name: 'Tech Blog',
-    prompt:
-      'Modern tech blog header with clean typography, gradient background, tech icons',
-  },
-  {
-    name: 'Tutorial',
-    prompt:
-      'Educational tutorial header with step-by-step visual elements, blue theme',
-  },
-  {
-    name: 'Newsletter',
-    prompt:
-      'Professional newsletter header with elegant typography, subtle patterns',
-  },
-  {
-    name: 'Social Media',
-    prompt:
-      'Eye-catching social media post with bold colors, modern design elements',
-  },
-];
 
 export function ThumbnailGeneratorModal({
   isOpen,
   onClose,
   onSelect,
   onGeneratingChange,
+  articleTitle,
+  articleContent,
 }: ThumbnailGeneratorModalProps) {
   const { canGenerateThumbnail, incrementThumbnailUsage } = useAppStore();
-  const [selectedPreset, setSelectedPreset] = useState(0);
-  const [customPrompt, setCustomPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  const currentPrompt =
-    customPrompt || THUMBNAIL_PRESETS[selectedPreset].prompt;
 
   const handleGenerate = async () => {
     if (!canGenerateThumbnail()) return;
@@ -67,26 +43,23 @@ export function ThumbnailGeneratorModal({
 
     try {
       const result = await generateThumbnail({
-        prompt: currentPrompt,
-        style: 'realistic',
+        articleTitle,
+        articleContent,
       });
 
       if (!result.success) {
-        throw new Error(result.error || 'Failed to generate thumbnails');
+        throw new Error(result.error || 'Failed to generate thumbnail');
       }
 
       setGeneratedImages((result.data as { images: string[] }).images);
       incrementThumbnailUsage();
     } catch {
-      toast.error('Failed to generate thumbnails');
+      toast.error('Failed to generate thumbnail');
     } finally {
       setIsGenerating(false);
       onGeneratingChange?.(false);
     }
   };
-
-  const onChangeCustomPrompt = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    setCustomPrompt(e.target.value);
 
   const handleSelectImage = (imageUrl: string) => setSelectedImage(imageUrl);
 
@@ -106,7 +79,7 @@ export function ThumbnailGeneratorModal({
           <div className='absolute inset-0 bg-base-300/20 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center'>
             <div className='flex flex-col items-center space-y-2'>
               <div className='loading loading-spinner loading-md text-primary'></div>
-              <p className='text-sm font-medium'>Generating thumbnails...</p>
+              <p className='text-sm font-medium'>Generating thumbnail...</p>
             </div>
           </div>
         )}
@@ -126,70 +99,45 @@ export function ThumbnailGeneratorModal({
 
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
           <div className='space-y-6'>
-            <div>
-              <label className='label'>
-                <span className='label-text font-medium'>Presets</span>
-              </label>
-              <div className='grid grid-cols-2 gap-2'>
-                {THUMBNAIL_PRESETS.map((preset, index) => (
-                  <button
-                    key={preset.name}
-                    onClick={setSelectedPreset.bind(null, index)}
-                    className={`btn btn-outline btn-sm ${
-                      selectedPreset === index ? 'btn-primary' : ''
-                    }`}
-                    disabled={isGenerating}
-                  >
-                    {preset.name}
-                  </button>
-                ))}
-              </div>
+            <div className='bg-base-200 rounded-lg p-4'>
+              <h4 className='font-medium mb-2'>Article Context</h4>
+              <p className='text-sm text-base-content/70 mb-2'>
+                <strong>Title:</strong> {articleTitle}
+              </p>
             </div>
 
-            <div>
-              <label className='label'>
-                <span className='label-text font-medium'>Custom Prompt</span>
-              </label>
-              <textarea
-                value={customPrompt}
-                onChange={onChangeCustomPrompt}
-                placeholder='Describe the thumbnail you want to generate...'
-                className='textarea textarea-bordered w-full'
-                rows={3}
-                disabled={isGenerating}
-              />
-            </div>
+            <div className='space-y-4'>
+              <button
+                onClick={handleGenerate}
+                disabled={!canGenerateThumbnail() || isGenerating}
+                className='btn btn-primary w-full'
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw size={16} className='animate-spin mr-2' />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon size={16} className='mr-2' />
+                    Generate Thumbnail
+                  </>
+                )}
+              </button>
 
-            <button
-              onClick={handleGenerate}
-              disabled={!canGenerateThumbnail() || isGenerating}
-              className='btn btn-primary w-full'
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw size={16} className='animate-spin mr-2' />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <ImageIcon size={16} className='mr-2' />
-                  Generate Thumbnails
-                </>
+              {!canGenerateThumbnail() && (
+                <div className='alert alert-warning'>
+                  <span>
+                    You&apos;ve reached your thumbnail generation limit for this
+                    month.
+                  </span>
+                </div>
               )}
-            </button>
-
-            {!canGenerateThumbnail() && (
-              <div className='alert alert-warning'>
-                <span>
-                  You&apos;ve reached your thumbnail generation limit for this
-                  month.
-                </span>
-              </div>
-            )}
+            </div>
           </div>
 
           <div className='space-y-4'>
-            <h4 className='font-medium'>Generated Thumbnails</h4>
+            <h4 className='font-medium'>Generated Thumbnail</h4>
 
             {generatedImages.length === 0 ? (
               <div className='border-2 border-dashed border-base-300 rounded-lg p-8 text-center'>
@@ -199,12 +147,12 @@ export function ThumbnailGeneratorModal({
                   className='mx-auto mb-4 text-base-content/30'
                 />
                 <p className='text-base-content/50'>
-                  Click &quot;Generate Thumbnails&quot; to create AI-powered
-                  thumbnails
+                  Click &quot;Generate Thumbnail&quot; to create an AI-powered
+                  thumbnail based on your article
                 </p>
               </div>
             ) : (
-              <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-4'>
                 {generatedImages.map((imageUrl, index) => (
                   <div
                     key={`thumbnail-${index}`}
@@ -226,9 +174,9 @@ export function ThumbnailGeneratorModal({
                     <Image
                       src={imageUrl}
                       alt={`Generated thumbnail ${index + 1}`}
-                      width={400}
-                      height={200}
-                      className='w-full h-32 object-cover'
+                      width={600}
+                      height={300}
+                      className='w-full h-48 object-cover'
                     />
                     {selectedImage === imageUrl && (
                       <div className='absolute top-2 right-2 bg-primary text-primary-content rounded-full p-1'>
@@ -237,28 +185,17 @@ export function ThumbnailGeneratorModal({
                     )}
                   </div>
                 ))}
-              </div>
-            )}
 
-            {selectedImage && (
-              <div className='space-y-4'>
-                <div className='border rounded-lg p-4'>
-                  <Image
-                    src={selectedImage}
-                    alt='Selected thumbnail'
-                    width={600}
-                    height={300}
-                    className='w-full h-48 object-cover rounded'
-                  />
-                </div>
-                <button
-                  onClick={handleUseImage}
-                  className='btn btn-success w-full'
-                  disabled={isGenerating}
-                >
-                  <Download size={16} className='mr-2' />
-                  Use as Cover
-                </button>
+                {selectedImage && (
+                  <button
+                    onClick={handleUseImage}
+                    className='btn btn-success w-full'
+                    disabled={isGenerating}
+                  >
+                    <Download size={16} className='mr-2' />
+                    Use as Cover
+                  </button>
+                )}
               </div>
             )}
           </div>
