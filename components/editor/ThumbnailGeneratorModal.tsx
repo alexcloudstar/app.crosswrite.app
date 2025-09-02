@@ -68,6 +68,7 @@ export function ThumbnailGeneratorModal({
     try {
       const result = await generateThumbnail({
         prompt: currentPrompt,
+        style: 'realistic',
       });
 
       if (!result.success) {

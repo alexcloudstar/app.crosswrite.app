@@ -52,8 +52,7 @@ async function findDueJobs(): Promise<
       scheduledAt: scheduledPosts.scheduledAt,
       retryCount: scheduledPosts.retryCount,
       status: scheduledPosts.status,
-    })
-    .limit(SCHEDULER_CONFIG.MAX_CONCURRENCY);
+    });
 
   return results.map(result => ({
     ...result,
@@ -229,7 +228,7 @@ async function processScheduledPost(scheduledPost: {
       await updateWithRetryInfo(
         id,
         retryCount + 1,
-        null,
+        undefined,
         retryResult.errorMessage
       );
     }

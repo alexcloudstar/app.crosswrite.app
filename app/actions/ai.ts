@@ -72,7 +72,7 @@ export async function adjustTone(input: AdjustToneInput) {
 
     const prompt = PROMPT_TEMPLATES.adjustTone(
       validatedInput.text,
-      validatedInput.tone
+      validatedInput.targetTone
     );
 
     const adjustedText = await aiProvider.invoke({
@@ -102,8 +102,8 @@ export async function summarizeText(input: SummarizeTextInput) {
 
     const prompt = PROMPT_TEMPLATES.summarizeText(
       validatedInput.text,
-      validatedInput.style,
-      validatedInput.targetWords
+      'paragraph',
+      validatedInput.maxLength
     );
 
     const summary = await aiProvider.invoke({
@@ -132,7 +132,7 @@ export async function generateSuggestions(input: GenerateSuggestionsInput) {
     const warning = await checkAndTrackUsage(user.id, 'aiSuggestionsUsed');
 
     const prompt = PROMPT_TEMPLATES.generateSuggestions(
-      validatedInput.content,
+      validatedInput.text,
       validatedInput.maxSuggestions
     );
 

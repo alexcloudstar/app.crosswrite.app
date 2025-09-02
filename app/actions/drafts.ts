@@ -161,12 +161,12 @@ export async function deleteDraft(input: unknown) {
 
 export async function publishDraft(input: unknown) {
   try {
-    const { id, platforms } = publishDraftSchema.parse(input);
+    const { draftId, platforms } = publishDraftSchema.parse(input);
 
     const { publishToPlatforms } = await import('./integrations/publish');
 
     return await publishToPlatforms({
-      draftId: id,
+      draftId,
       platforms,
     });
   } catch (error) {
@@ -177,12 +177,12 @@ export async function publishDraft(input: unknown) {
 export async function scheduleDraft(input: unknown) {
   try {
     const session = await requireAuth();
-    const { id, scheduledAt } = scheduleDraftSchema.parse(input);
+    const { draftId, scheduledAt } = scheduleDraftSchema.parse(input);
 
     const [draft] = await db
       .select()
       .from(drafts)
-      .where(and(eq(drafts.id, id), eq(drafts.userId, session.id)))
+      .where(and(eq(drafts.id, draftId), eq(drafts.userId, session.id)))
       .limit(1);
 
     if (!draft) {
@@ -196,7 +196,7 @@ export async function scheduleDraft(input: unknown) {
         scheduledAt: new Date(scheduledAt),
         updatedAt: new Date(),
       })
-      .where(eq(drafts.id, id))
+      .where(eq(drafts.id, draftId))
       .returning();
 
     revalidateDashboard();

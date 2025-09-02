@@ -21,10 +21,10 @@ export async function errorResult(message: string): Promise<ActionResult> {
 
 export async function requireAuth() {
   const session = await getSession();
-  if (!session?.user?.id) {
+  if (!session?.id) {
     throw new Error('Unauthorized');
   }
-  return session.user;
+  return session;
 }
 
 export async function revalidateDashboard() {
@@ -44,10 +44,10 @@ export async function handleDatabaseError(error: unknown): Promise<string> {
   // Capture error in Sentry with user context
   try {
     const session = await getSession();
-    if (session?.user?.id) {
-      Sentry.setUser({ id: session.user.id });
+    if (session?.id) {
+      Sentry.setUser({ id: session.id });
     }
-    
+
     Sentry.captureException(error, {
       tags: {
         type: 'database_error',
@@ -80,15 +80,15 @@ export async function withPerformanceMonitoring<T>(
   fn: () => Promise<T>
 ): Promise<T> {
   const startTime = Date.now();
-  
+
   try {
     const result = await fn();
     const duration = Date.now() - startTime;
-    
+
     // Log slow operations
     if (duration > 500) {
       logger.warn(`Slow operation detected: ${actionName} took ${duration}ms`);
-      
+
       // Send to Sentry as performance issue
       try {
         Sentry.addBreadcrumb({
@@ -106,11 +106,11 @@ export async function withPerformanceMonitoring<T>(
         logger.error('Sentry breadcrumb error:', { sentryError });
       }
     }
-    
+
     return result;
   } catch (error) {
     const duration = Date.now() - startTime;
-    
+
     // Capture error with performance context
     try {
       Sentry.captureException(error, {
@@ -124,7 +124,7 @@ export async function withPerformanceMonitoring<T>(
       // Don't fail if Sentry fails
       logger.error('Sentry error:', { sentryError });
     }
-    
+
     throw error;
   }
 }

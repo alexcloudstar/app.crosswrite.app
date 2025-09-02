@@ -68,7 +68,7 @@ export async function checkUsageLimit(
     })
     .returning({ [metric]: userUsage[metric] });
 
-  const current = result[metric];
+  const current = result[metric] || 0;
   const allowed = current <= limit;
 
   let warning: string | undefined;
@@ -122,10 +122,14 @@ export async function assertWithinLimits(
 export async function checkAndIncrementBulkUsage(
   userId: string,
   metrics: Array<{ metric: UsageMetric; increment: number }>
-): Promise<{ allowed: boolean; warnings: string[]; exceededMetrics: UsageMetric[] }> {
+): Promise<{
+  allowed: boolean;
+  warnings: string[];
+  exceededMetrics: UsageMetric[];
+}> {
   const planId = await getUserPlanId(userId);
   const currentMonth = new Date().toISOString().slice(0, 7);
-  
+
   const warnings: string[] = [];
   const exceededMetrics: UsageMetric[] = [];
   let allAllowed = true;
