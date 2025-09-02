@@ -242,6 +242,7 @@ export async function updatePublishingSettings(
 
 // TODO: Implement notification settings when notifications are ready
 export async function updateNotificationSettings(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   input: z.infer<typeof updateNotificationsSchema>
 ) {
   return errorResult('Notifications are not yet implemented');
