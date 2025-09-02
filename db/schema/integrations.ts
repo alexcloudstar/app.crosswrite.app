@@ -35,7 +35,10 @@ export const integrations = pgTable(
     index('integrations_user_id_idx').on(table.userId),
     index('integrations_platform_idx').on(table.platform),
     index('integrations_status_idx').on(table.status),
-    // Hot path index for connection queries
-    index('integrations_user_platform_status_idx').on(table.userId, table.platform, table.status),
+    index('integrations_user_platform_status_idx').on(
+      table.userId,
+      table.platform,
+      table.status
+    ),
   ]
 );

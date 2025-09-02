@@ -25,7 +25,6 @@ export const userUsage = pgTable(
   },
   table => [
     uniqueIndex('user_month_year_idx').on(table.userId, table.monthYear),
-    // Additional index for faster lookups
     index('user_usage_user_month_idx').on(table.userId, table.monthYear),
   ]
 );

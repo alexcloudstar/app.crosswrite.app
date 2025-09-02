@@ -41,7 +41,6 @@ export async function revalidatePathHelper(path: string) {
 export async function handleDatabaseError(error: unknown): Promise<string> {
   logger.error('Database error:', { error });
 
-  // Capture error in Sentry with user context
   try {
     const session = await getSession();
     if (session?.id) {
@@ -55,7 +54,6 @@ export async function handleDatabaseError(error: unknown): Promise<string> {
       },
     });
   } catch (sentryError) {
-    // Don't fail if Sentry fails
     logger.error('Sentry error:', { sentryError });
   }
 
@@ -74,7 +72,6 @@ export async function handleDatabaseError(error: unknown): Promise<string> {
   return 'An unexpected error occurred';
 }
 
-// Performance monitoring wrapper for server actions
 export async function withPerformanceMonitoring<T>(
   actionName: string,
   fn: () => Promise<T>
@@ -85,11 +82,9 @@ export async function withPerformanceMonitoring<T>(
     const result = await fn();
     const duration = Date.now() - startTime;
 
-    // Log slow operations
     if (duration > 500) {
       logger.warn(`Slow operation detected: ${actionName} took ${duration}ms`);
 
-      // Send to Sentry as performance issue
       try {
         Sentry.addBreadcrumb({
           category: 'performance',
@@ -102,7 +97,6 @@ export async function withPerformanceMonitoring<T>(
           },
         });
       } catch (sentryError) {
-        // Don't fail if Sentry fails
         logger.error('Sentry breadcrumb error:', { sentryError });
       }
     }
@@ -111,7 +105,6 @@ export async function withPerformanceMonitoring<T>(
   } catch (error) {
     const duration = Date.now() - startTime;
 
-    // Capture error with performance context
     try {
       Sentry.captureException(error, {
         tags: {
@@ -121,7 +114,6 @@ export async function withPerformanceMonitoring<T>(
         },
       });
     } catch (sentryError) {
-      // Don't fail if Sentry fails
       logger.error('Sentry error:', { sentryError });
     }
 

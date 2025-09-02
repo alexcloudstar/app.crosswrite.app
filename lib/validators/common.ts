@@ -1,43 +1,49 @@
 import { z } from 'zod';
 
-// Reusable primitive validators
 export const UUID = z.string().uuid('Invalid UUID format');
 export const ISODate = z.string().datetime('Invalid ISO date format');
-export const PositiveInt = z.number().int().positive('Must be a positive integer');
-export const StringMax = (max: number) => z.string().max(max, `Maximum ${max} characters allowed`);
+export const PositiveInt = z
+  .number()
+  .int()
+  .positive('Must be a positive integer');
+export const StringMax = (max: number) =>
+  z.string().max(max, `Maximum ${max} characters allowed`);
 
-// Content sanitization helper
 export function sanitizeContent(content: string): string {
   return content
     .trim()
-    .replace(/\s+/g, ' ') // Collapse multiple whitespace
-    .replace(/[\x00-\x1F\x7F]/g, ''); // Strip control characters
+    .replace(/\s+/g, ' ')
+    .replace(/[\x00-\x1F\x7F]/g, '');
 }
 
-// Sanitize title and SEO fields
 export function sanitizeTitle(title: string): string {
   return title
     .trim()
     .replace(/\s+/g, ' ')
     .replace(/[\x00-\x1F\x7F]/g, '')
-    .substring(0, 200); // Enforce max length
+    .substring(0, 200);
 }
 
-// Sanitize tags array
 export function sanitizeTags(tags: string[]): string[] {
   return tags
-    .map(tag => tag.trim().replace(/\s+/g, '-').replace(/[^\w-]/g, ''))
+    .map(tag =>
+      tag
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '')
+    )
     .filter(tag => tag.length > 0 && tag.length <= 50)
-    .slice(0, 10); // Max 10 tags
+    .slice(0, 10);
 }
 
-// Payload size validation
-export const validatePayloadSize = (input: unknown, maxSize: number = 10000): boolean => {
+export const validatePayloadSize = (
+  input: unknown,
+  maxSize: number = 10000
+): boolean => {
   const inputStr = JSON.stringify(input);
   return inputStr.length <= maxSize;
 };
 
-// Enhanced error messages for common validation failures
 export const validationErrors = {
   required: 'This field is required',
   invalidFormat: 'Invalid format',

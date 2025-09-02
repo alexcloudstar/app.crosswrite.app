@@ -33,9 +33,17 @@ export const drafts = pgTable(
     index('drafts_user_id_idx').on(table.userId),
     index('drafts_status_idx').on(table.status),
     index('drafts_created_at_idx').on(table.createdAt),
-    // Hot path indexes for list queries
-    index('drafts_user_status_updated_idx').on(table.userId, table.status, table.updatedAt),
-    // Search index for title/content preview
-    index('drafts_user_search_idx').on(table.userId, table.title, table.contentPreview),
+
+    index('drafts_user_status_updated_idx').on(
+      table.userId,
+      table.status,
+      table.updatedAt
+    ),
+
+    index('drafts_user_search_idx').on(
+      table.userId,
+      table.title,
+      table.contentPreview
+    ),
   ]
 );

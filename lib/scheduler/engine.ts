@@ -31,7 +31,6 @@ async function findDueJobs(): Promise<
     now.getTime() - SCHEDULER_CONFIG.GRACE_WINDOW_MS
   );
 
-  // Use atomic job claiming with claim_token to prevent race conditions
   const results = await db
     .update(scheduledPosts)
     .set({
@@ -79,7 +78,6 @@ async function processScheduledPost(scheduledPost: {
     try {
       const alreadyPublished = await isAlreadyPublished(id, draftId, platforms);
       if (alreadyPublished) {
-        // Use atomic update with RETURNING
         await db
           .update(scheduledPosts)
           .set({
@@ -93,7 +91,6 @@ async function processScheduledPost(scheduledPost: {
         return { success: true };
       }
 
-      // Optimize draft fetch with specific columns
       const [draft] = await db
         .select({
           id: drafts.id,
@@ -113,7 +110,6 @@ async function processScheduledPost(scheduledPost: {
         throw new Error('Draft not found');
       }
 
-      // Optimize integrations query with specific columns
       const userIntegrations = await db
         .select({
           platform: integrations.platform,
@@ -174,7 +170,6 @@ async function processScheduledPost(scheduledPost: {
         finalStatus = 'failed';
       }
 
-      // Use atomic update with RETURNING
       await db
         .update(scheduledPosts)
         .set({
@@ -186,7 +181,6 @@ async function processScheduledPost(scheduledPost: {
         .returning();
 
       if (finalStatus === 'published') {
-        // Use atomic update with RETURNING
         await db
           .update(drafts)
           .set({
@@ -198,7 +192,6 @@ async function processScheduledPost(scheduledPost: {
           .returning();
         await resetRetryInfo(id);
       } else if (finalStatus === 'failed') {
-        // Use atomic update with RETURNING
         await db
           .update(drafts)
           .set({

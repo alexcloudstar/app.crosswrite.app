@@ -51,7 +51,6 @@ export async function checkUsageLimit(
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
-  // Use atomic UPSERT to get current usage and increment atomically
   const [result] = await db
     .insert(userUsage)
     .values({
@@ -86,7 +85,6 @@ export async function incrementUsage(
 ): Promise<void> {
   const currentMonth = new Date().toISOString().slice(0, 7);
 
-  // Atomic UPSERT pattern for usage increment
   await db
     .insert(userUsage)
     .values({
@@ -111,14 +109,12 @@ export async function assertWithinLimits(
   const result = await checkUsageLimit(userId, metric, increment);
 
   if (result.allowed) {
-    // Usage already incremented in checkUsageLimit
     return { allowed: true, warning: result.warning };
   }
 
   return { allowed: false, warning: result.warning };
 }
 
-// Optimized bulk usage check and increment
 export async function checkAndIncrementBulkUsage(
   userId: string,
   metrics: Array<{ metric: UsageMetric; increment: number }>
@@ -134,7 +130,6 @@ export async function checkAndIncrementBulkUsage(
   const exceededMetrics: UsageMetric[] = [];
   let allAllowed = true;
 
-  // Check all metrics first
   for (const { metric, increment } of metrics) {
     const limit = getPlanCap(planId, metric);
     if (limit === Infinity) continue;
@@ -157,7 +152,6 @@ export async function checkAndIncrementBulkUsage(
   }
 
   if (allAllowed) {
-    // Increment all metrics atomically
     for (const { metric, increment } of metrics) {
       await incrementUsage(userId, metric, increment);
     }

@@ -26,7 +26,7 @@ export const updateIntegrationSchema = z.object({
   webhookUrl: z.string().url('Invalid webhook URL').max(500, 'Webhook URL too long').optional().or(z.literal('')),
   publicationId: z.string().max(100, 'Publication ID too long').optional(),
   autoPublish: z.boolean().optional(),
-  syncInterval: z.number().int().min(30).max(1440).optional(), // 30 minutes to 24 hours
+  syncInterval: z.number().int().min(30).max(1440).optional(),to 24 hours
 }).refine(
   (data) => validatePayloadSize(data, 5000),
   { message: 'Update data too large' }
