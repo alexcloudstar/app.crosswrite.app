@@ -8,17 +8,17 @@ import logger from '../logger';
 
 type AllowedModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-3.5-turbo';
 
-interface ModelConfig {
+type ModelConfig = {
   model?: AllowedModel;
   temperature?: number;
   maxTokens?: number;
-}
+};
 
-interface InvokeParams {
+type InvokeParams = {
   purpose: string;
   input: string;
   modelConfig?: ModelConfig;
-}
+};
 
 function getRateLimitKey(userId: string, purpose: string): string {
   return `${userId}:${purpose}`;

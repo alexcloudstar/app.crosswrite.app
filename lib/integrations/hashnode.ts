@@ -6,18 +6,18 @@ import {
 } from './_core';
 import logger from '../logger';
 
-export interface HashnodeIntegration {
+export type HashnodeIntegration = {
   apiKey: string;
   publicationId?: string;
-}
+};
 
-export interface HashnodePublication {
+export type HashnodePublication = {
   _id: string;
   title: string;
   domain: string;
   description: string;
   isTeam: boolean;
-}
+};
 
 export class HashnodeClient implements IntegrationClient {
   private integration: HashnodeIntegration;

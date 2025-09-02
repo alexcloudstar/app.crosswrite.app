@@ -1,4 +1,4 @@
-export interface NewsItem {
+export type NewsItem = {
   id: string;
   title: string;
   description: string;
@@ -7,16 +7,16 @@ export interface NewsItem {
   type: 'feature' | 'update' | 'announcement';
   link?: string;
   tags?: string[];
-}
+};
 
-export interface NewsItemSummary {
+export type NewsItemSummary = {
   id: string;
   title: string;
   description: string;
   date: string;
   type: 'feature' | 'update' | 'announcement';
   link?: string;
-}
+};
 
 export const CENTRALIZED_UPDATES: NewsItem[] = [
   {

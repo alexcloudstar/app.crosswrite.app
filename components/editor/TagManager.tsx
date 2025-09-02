@@ -5,13 +5,13 @@ import { Sparkles, Tag, X } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-interface TagManagerProps {
+type TagManagerProps = {
   tags: string[];
   onTagsChange: (tags: string[]) => void;
   content: string;
   title: string;
   disabled?: boolean;
-}
+};
 
 export function TagManager({
   tags,

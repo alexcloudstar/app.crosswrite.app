@@ -1,10 +1,10 @@
 import { useAppStore } from '@/lib/store';
 import { TrendingUp, Image as ImageIcon } from 'lucide-react';
 
-interface QuotaHintProps {
+type QuotaHintProps = {
   type: 'articles' | 'thumbnails';
   className?: string;
-}
+};
 
 export function QuotaHint({ type, className = '' }: QuotaHintProps) {
   const { getUsageStatus } = useAppStore();

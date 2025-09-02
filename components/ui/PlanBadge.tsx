@@ -1,9 +1,9 @@
 import { PlanId, getPlanDisplayName, getPlanColor } from '@/lib/plans';
 
-interface PlanBadgeProps {
+type PlanBadgeProps = {
   planId: PlanId;
   className?: string;
-}
+};
 
 export function PlanBadge({ planId, className = '' }: PlanBadgeProps) {
   const displayName = getPlanDisplayName(planId);

@@ -6,9 +6,9 @@ import {
 } from './_core';
 import logger from '../logger';
 
-export interface DevtoIntegration {
+export type DevtoIntegration = {
   apiKey: string;
-}
+};
 
 function normalizeDevtoMarkdown(
   markdown: string,

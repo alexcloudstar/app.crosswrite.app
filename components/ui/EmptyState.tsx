@@ -1,13 +1,13 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-interface EmptyStateProps {
+type EmptyStateProps = {
   icon?: ReactNode;
   title: string;
   description: string;
   action?: ReactNode;
   className?: string;
-}
+};
 
 export function EmptyState({
   icon,

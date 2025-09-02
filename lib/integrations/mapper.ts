@@ -1,7 +1,7 @@
 import { PLATFORM_CONFIGS, truncateText, sanitizeTags } from './_core';
 import { Draft } from '@/lib/types/drafts';
 
-export interface MappedContent {
+export type MappedContent = {
   title: string;
   body: string;
   tags?: string[];
@@ -9,14 +9,14 @@ export interface MappedContent {
   canonicalUrl?: string;
   publicationId?: string;
   publishAsDraft?: boolean;
-}
+};
 
-export interface MappingOptions {
+export type MappingOptions = {
   publishAsDraft?: boolean;
   publicationId?: string;
   canonicalUrl?: string;
   setAsCanonical?: boolean;
-}
+};
 
 export function mapContentForPlatform(
   draft: Draft,

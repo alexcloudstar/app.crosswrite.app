@@ -7,13 +7,13 @@ import { acquireLock, isAlreadyPublished, releaseLock } from './locks';
 import { resetRetryInfo, shouldRetry, updateWithRetryInfo } from './retry';
 import { SCHEDULER_CONFIG } from './time';
 
-export interface ProcessingResult {
+export type ProcessingResult = {
   processed: number;
   successful: number;
   failed: number;
   skipped: number;
   errors: string[];
-}
+};
 
 async function findDueJobs(): Promise<
   Array<{

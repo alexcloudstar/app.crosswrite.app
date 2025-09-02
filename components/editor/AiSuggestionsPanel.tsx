@@ -3,13 +3,13 @@
 import { Sparkles, Check, MessageSquare, FileText, Zap } from 'lucide-react';
 import { Suggestion } from '@/lib/types/ai';
 
-interface AiSuggestionsPanelProps {
+type AiSuggestionsPanelProps = {
   content: string;
   suggestions?: Suggestion[];
   onGenerateSuggestions?: () => void;
   isGenerating?: boolean;
   onApplySuggestion?: (suggestionId: string) => void;
-}
+};
 
 function EmptyState() {
   return (

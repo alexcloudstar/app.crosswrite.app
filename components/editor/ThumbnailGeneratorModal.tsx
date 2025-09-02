@@ -13,12 +13,12 @@ import { useAppStore } from '@/lib/store';
 import { generateThumbnail } from '@/app/actions/ai';
 import toast from 'react-hot-toast';
 
-interface ThumbnailGeneratorModalProps {
+type ThumbnailGeneratorModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (imageUrl: string) => void;
   onGeneratingChange?: (isGenerating: boolean) => void;
-}
+};
 
 const THUMBNAIL_PRESETS = [
   {

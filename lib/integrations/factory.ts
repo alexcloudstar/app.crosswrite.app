@@ -3,13 +3,13 @@ import { createDevtoClient } from './devto';
 import { createHashnodeClient } from './hashnode';
 import { supportedPlatforms, Platform } from '@/lib/config/platforms';
 
-export interface IntegrationData {
+export type IntegrationData = {
   platform: string;
   apiKey?: string;
   accessToken?: string;
   refreshToken?: string;
   publicationId?: string;
-}
+};
 
 export function createPlatformClient(
   integration: IntegrationData

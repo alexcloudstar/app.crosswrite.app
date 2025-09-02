@@ -5,9 +5,9 @@ import { AppSidebar } from './AppSidebar';
 import { Topbar } from './Topbar';
 import { ShortcutsProvider } from './ShortcutsProvider';
 
-interface RootLayoutWrapperProps {
+type RootLayoutWrapperProps = {
   children: React.ReactNode;
-}
+};
 
 export function RootLayoutWrapper({ children }: RootLayoutWrapperProps) {
   const pathname = usePathname();

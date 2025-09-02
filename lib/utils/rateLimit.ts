@@ -1,7 +1,7 @@
-interface RateLimitEntry {
+type RateLimitEntry = {
   count: number;
   resetTime: number;
-}
+};
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
 

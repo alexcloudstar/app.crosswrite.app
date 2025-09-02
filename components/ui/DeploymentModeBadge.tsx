@@ -1,9 +1,9 @@
 'use client';
 
-interface DeploymentModeBadgeProps {
+type DeploymentModeBadgeProps = {
   mode: 'HOSTED' | 'SELF_HOST';
   hasRequiredKey: boolean;
-}
+};
 
 export function DeploymentModeBadge({
   mode,

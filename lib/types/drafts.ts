@@ -1,4 +1,4 @@
-export interface Draft {
+export type Draft = {
   id: string;
   userId?: string;
   title: string;
@@ -14,9 +14,9 @@ export interface Draft {
   updatedAt: Date;
   publishedAt?: Date;
   scheduledAt?: Date;
-}
+};
 
-export interface DraftListItem {
+export type DraftListItem = {
   id: string;
   title: string;
   contentPreview?: string;
@@ -25,17 +25,17 @@ export interface DraftListItem {
   updatedAt: Date;
   publishedAt?: Date;
   scheduledAt?: Date;
-}
+};
 
-export interface CreateDraftRequest {
+export type CreateDraftRequest = {
   title: string;
   content: string;
   contentPreview?: string;
   thumbnailUrl?: string;
   tags?: string[];
-}
+};
 
-export interface UpdateDraftRequest {
+export type UpdateDraftRequest = {
   title?: string;
   content?: string;
   contentPreview?: string;
@@ -46,9 +46,9 @@ export interface UpdateDraftRequest {
   seoDescription?: string;
   tags?: string[];
   scheduledAt?: Date;
-}
+};
 
-export interface DraftsResponse {
+export type DraftsResponse = {
   drafts: Draft[];
   pagination: {
     page: number;
@@ -56,4 +56,4 @@ export interface DraftsResponse {
     total: number;
     pages: number;
   };
-}
+};
