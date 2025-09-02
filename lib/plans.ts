@@ -1,4 +1,3 @@
-
 export const PLAN_VALUES = {
   FREE: 'free',
   PRO: 'pro',
@@ -14,7 +13,6 @@ export type PlanId = (typeof PLAN_VALUES)[keyof typeof PLAN_VALUES];
 export type DatabasePlanTier =
   (typeof DATABASE_PLAN_VALUES)[keyof typeof DATABASE_PLAN_VALUES];
 
-
 export enum PlanIdEnum {
   SELF_HOSTED = 'self_hosted',
   FREE = 'free',
@@ -26,10 +24,8 @@ export enum DatabasePlanTierEnum {
   PRO = 'pro',
 }
 
-
 export type UppercaseString<T extends string> = Uppercase<T>;
 export type LowercaseString<T extends string> = Lowercase<T>;
-
 
 export type PlanIdToDatabase = UppercaseString<PlanId>;
 export type DatabaseToPlanId = PlanId;
@@ -96,7 +92,6 @@ export const PLAN_FEATURES = {
   ],
 } as const;
 
-
 export function databasePlanToPlanId(planTier: DatabasePlanTier): PlanId {
   const planMap: Record<DatabasePlanTier, PlanId> = {
     [DATABASE_PLAN_VALUES.FREE]: PLAN_VALUES.FREE,
@@ -109,11 +104,10 @@ export function planIdToDatabasePlan(planId: PlanId): DatabasePlanTier {
   const planMap: Record<PlanId, DatabasePlanTier> = {
     [PLAN_VALUES.FREE]: DATABASE_PLAN_VALUES.FREE,
     [PLAN_VALUES.PRO]: DATABASE_PLAN_VALUES.PRO,
-    [PLAN_VALUES.SELF_HOSTED]: DATABASE_PLAN_VALUES.FREE
+    [PLAN_VALUES.SELF_HOSTED]: DATABASE_PLAN_VALUES.FREE,
   };
   return planMap[planId];
 }
-
 
 export function getPlanDisplayName(planId: PlanId): string {
   const names: Record<PlanId, string> = {
@@ -132,7 +126,6 @@ export function getPlanColor(planId: PlanId): string {
   };
   return colors[planId];
 }
-
 
 export function canUseAI(planId: PlanId): boolean {
   const limits = PLAN_LIMITS[planId];
@@ -178,7 +171,6 @@ export function canUseAIFeature(
   return true;
 }
 
-
 export function getUsageStatus(planId: PlanId, usage: UserUsage) {
   const limits = PLAN_LIMITS[planId];
 
@@ -194,7 +186,6 @@ export function getUsageStatus(planId: PlanId, usage: UserUsage) {
   };
 }
 
-
 export function isProPlan(planId: PlanId): boolean {
   return planId === PLAN_VALUES.PRO;
 }
@@ -206,7 +197,6 @@ export function isFreePlan(planId: PlanId): boolean {
 export function isSelfHostedPlan(planId: PlanId): boolean {
   return planId === PLAN_VALUES.SELF_HOSTED;
 }
-
 
 export function getUpgradeablePlans(currentPlanId: PlanId): PlanId[] {
   switch (currentPlanId) {

@@ -41,8 +41,8 @@ export function QuotaHint({ type, className = '' }: QuotaHintProps) {
           isAtLimit
             ? 'text-error'
             : isNearLimit
-            ? 'text-warning'
-            : 'text-base-content/50'
+              ? 'text-warning'
+              : 'text-base-content/50'
         }
       >
         {label}: {data.used}/{data.limit}

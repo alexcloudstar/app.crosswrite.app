@@ -72,7 +72,11 @@ export async function updateWithRetryInfo(
       .set(updateData)
       .where(eq(scheduledPosts.id, scheduledPostId));
   } catch (error) {
-    logger.error('Failed to update retry info:', { error, scheduledPostId, retryCount });
+    logger.error('Failed to update retry info:', {
+      error,
+      scheduledPostId,
+      retryCount,
+    });
   }
 }
 

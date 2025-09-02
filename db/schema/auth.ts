@@ -34,17 +34,19 @@ export const userSettings = pgTable('user_settings', {
   includeReadingTime: boolean('include_reading_time').default(false),
   defaultPublishTime: text('default_publish_time').default('09:00'),
   autoSchedule: boolean('auto_schedule').default(true),
-  notifications: json('notifications').$type<{
-    publishSuccess: boolean;
-    publishErrors: boolean;
-    dailyDigest: boolean;
-    weeklyReport: boolean;
-  }>().default({
-    publishSuccess: true,
-    publishErrors: true,
-    dailyDigest: false,
-    weeklyReport: true,
-  }),
+  notifications: json('notifications')
+    .$type<{
+      publishSuccess: boolean;
+      publishErrors: boolean;
+      dailyDigest: boolean;
+      weeklyReport: boolean;
+    }>()
+    .default({
+      publishSuccess: true,
+      publishErrors: true,
+      dailyDigest: false,
+      weeklyReport: true,
+    }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });

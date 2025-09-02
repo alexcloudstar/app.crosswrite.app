@@ -124,8 +124,8 @@ export default function OnboardingPage() {
                       isCompleted
                         ? 'bg-success border-success text-success-content'
                         : isActive
-                        ? 'bg-primary border-primary text-primary-content'
-                        : 'border-base-300 text-base-content/50'
+                          ? 'bg-primary border-primary text-primary-content'
+                          : 'border-base-300 text-base-content/50'
                     }`}
                   >
                     {isCompleted ? (

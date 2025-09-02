@@ -78,7 +78,11 @@ export class AIProvider {
 
       return result;
     } catch (error) {
-      logger.error(`AI invocation failed for ${purpose}:`, { error, purpose, input: input.substring(0, 100) });
+      logger.error(`AI invocation failed for ${purpose}:`, {
+        error,
+        purpose,
+        input: input.substring(0, 100),
+      });
       throw new Error('AI service temporarily unavailable');
     }
   }
@@ -97,7 +101,10 @@ export class AIProvider {
 
       return response.data?.map(img => img.url!).filter(Boolean) || [];
     } catch (error) {
-      logger.error('Image generation failed:', { error, prompt: prompt.substring(0, 100) });
+      logger.error('Image generation failed:', {
+        error,
+        prompt: prompt.substring(0, 100),
+      });
       throw new Error('Image generation failed');
     }
   }

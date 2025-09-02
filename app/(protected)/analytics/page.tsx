@@ -61,8 +61,8 @@ export default function AnalyticsPage() {
 
       <div className='text-center'>
         <p className='text-base-content/70 mb-6'>
-          We&apos;re working hard to bring you powerful analytics. Be the
-          first to know when it&apos;s ready!
+          We&apos;re working hard to bring you powerful analytics. Be the first
+          to know when it&apos;s ready!
         </p>
         <Link href='/updates' className='btn btn-primary'>
           Stay Updated

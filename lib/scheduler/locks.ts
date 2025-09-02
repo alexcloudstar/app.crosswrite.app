@@ -23,7 +23,10 @@ export async function acquireLock(scheduledPostId: string): Promise<boolean> {
     const rows = result as unknown as Array<{ pg_try_advisory_lock: boolean }>;
     return rows[0]?.pg_try_advisory_lock === true;
   } catch (error) {
-    logger.error('Failed to acquire advisory lock:', { error, scheduledPostId });
+    logger.error('Failed to acquire advisory lock:', {
+      error,
+      scheduledPostId,
+    });
     return false;
   }
 }
@@ -34,7 +37,10 @@ export async function releaseLock(scheduledPostId: string): Promise<void> {
   try {
     await db.execute(sql`SELECT pg_advisory_unlock(${lockKey})`);
   } catch (error) {
-    logger.error('Failed to release advisory lock:', { error, scheduledPostId });
+    logger.error('Failed to release advisory lock:', {
+      error,
+      scheduledPostId,
+    });
   }
 }
 
@@ -92,7 +98,12 @@ export async function isAlreadyPublished(
     const successfulPlatforms = new Set(results.map(r => r.platform));
     return platforms.every(platform => successfulPlatforms.has(platform));
   } catch (error) {
-    logger.error('Failed to check if already published:', { error, scheduledPostId, draftId, platforms });
+    logger.error('Failed to check if already published:', {
+      error,
+      scheduledPostId,
+      draftId,
+      platforms,
+    });
     return false;
   }
 }

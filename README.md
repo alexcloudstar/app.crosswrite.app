@@ -7,26 +7,32 @@ Cross Write is a modern, AI-assisted writing and publishing application that hel
 Cross Write supports two deployment modes with environment-only API key management:
 
 ### HOSTED Mode
+
 For hosted deployments (free & paid plans):
+
 ```bash
 CROSSWRITE_DEPLOYMENT_MODE=HOSTED
 OPENAI_API_KEY_APP=sk-hosted-...  # Cross Write's server app key
 ```
 
 ### SELF_HOST Mode
+
 For self-hosted deployments:
+
 ```bash
 CROSSWRITE_DEPLOYMENT_MODE=SELF_HOST
 OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
 ```
 
 **Key Features:**
+
 - **No client-side secrets**: All API keys stay server-side
 - **No in-app BYOK forms**: Keys are managed via environment variables only
 - **Automatic key selection**: Server picks the appropriate key based on deployment mode
 - **Client key rejection**: Any client-supplied keys are rejected with 400 error
 
 **Why ENV-ONLY?**
+
 - Enhanced security through server-side key management
 - Simplified deployment and configuration
 - No risk of key exposure in browser
@@ -58,18 +64,21 @@ OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
 ## 📦 Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd cross-write
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
-Create a `.env.local` file with the following variables:
+   Create a `.env.local` file with the following variables:
+
 ```bash
 DATABASE_URL=your_neon_postgres_url
 AUTH_SECRET=your_auth_secret
@@ -87,12 +96,14 @@ OPENAI_API_KEY_APP=sk-hosted-...  # For HOSTED mode
 ```
 
 4. Set up the database:
+
 ```bash
 npm run db:generate
 npm run db:push
 ```
 
 5. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -129,6 +140,7 @@ The app uses Auth.js (NextAuth.js v5) with the following features:
 ### Protected Layout
 
 The app includes a protected layout (`app/(protected)/layout.tsx`) that:
+
 - Checks for valid session on every request
 - Redirects to `/auth/sign-in` if not authenticated
 - Displays user information and sign-out button
@@ -137,37 +149,41 @@ The app includes a protected layout (`app/(protected)/layout.tsx`) that:
 ## 📱 Pages & Features
 
 ### Dashboard (`/dashboard`)
+
 - Quick stats cards (Drafts, Scheduled, Published)
 - Recent activity feed
 - Continue drafting section
 
 ### Editor (`/editor`)
+
 - Split-pane layout with AI suggestions
 - Rich text toolbar with formatting options
 - Real-time word count and reading time
 - Preview modal with device frame toggles
 
 ### Drafts (`/drafts`)
+
 - Data table with search and filtering
 - Bulk actions (delete, schedule)
 - Status badges and platform indicators
 - Empty states for new users
 
 ### Scheduler (`/scheduler`)
+
 - Interactive calendar view
 - Drag-to-reschedule functionality
 - Best time recommendations
 - Scheduling form with platform selection
 
 ### Integrations (`/integrations`)
+
 - Platform connection cards
 - API key management
 - Publishing defaults configuration
 - Connection status indicators
 
-
-
 ### Settings (`/settings`)
+
 - Profile configuration
 - Writing defaults
 - Publishing preferences
@@ -175,6 +191,7 @@ The app includes a protected layout (`app/(protected)/layout.tsx`) that:
 - Keyboard shortcuts reference
 
 ### Onboarding (`/onboarding`)
+
 - 3-step wizard for new users
 - Platform selection
 - Writing preferences setup
@@ -273,25 +290,23 @@ db/
 └── drizzle.config.ts     # Drizzle configuration
 ```
 
-
-
 ## 🎯 Key Features
 
 ### AI-Assisted Writing
+
 - Real-time writing suggestions
 - Tone adjustment recommendations
 - Content improvement tips
 - Grammar and style suggestions
 
 ### Multi-Platform Publishing
+
 - Support for Dev.to and Hashnode
 - Automatic formatting for each platform
 - Scheduled publishing with timezone support
 
-
-
-
 ### User Experience
+
 - Responsive design for all devices
 - Keyboard shortcuts for power users
 - Command palette for quick navigation
@@ -300,6 +315,7 @@ db/
 ## 🚀 Getting Started
 
 1. **Start the development server**:
+
    ```bash
    npm run dev
    ```

@@ -1,6 +1,10 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { getPlatformDisplayName as getPlatformDisplayNameFromConfig, getPlatformColor as getPlatformColorFromConfig, Platform } from '@/lib/config/platforms';
+import {
+  getPlatformDisplayName as getPlatformDisplayNameFromConfig,
+  getPlatformColor as getPlatformColorFromConfig,
+  Platform,
+} from '@/lib/config/platforms';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

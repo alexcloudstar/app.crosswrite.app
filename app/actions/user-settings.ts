@@ -9,42 +9,62 @@ import { revalidatePath } from 'next/cache';
 import logger from '@/lib/logger';
 import { validatePayloadSize, sanitizeContent } from '@/lib/validators/common';
 
-const updateProfileSchema = z.object({
-  name: z.string().max(100, 'Name too long').optional().transform(val => val ? val.trim() : val),
-  bio: z.string().max(500, 'Bio too long').optional().transform(val => val ? sanitizeContent(val) : val),
-  website: z.string().url('Invalid website URL').max(200, 'Website URL too long').optional().or(z.literal('')),
-}).refine(
-  (data) => validatePayloadSize(data, 2000),
-  { message: 'Profile data too large' }
-);
+const updateProfileSchema = z
+  .object({
+    name: z
+      .string()
+      .max(100, 'Name too long')
+      .optional()
+      .transform(val => (val ? val.trim() : val)),
+    bio: z
+      .string()
+      .max(500, 'Bio too long')
+      .optional()
+      .transform(val => (val ? sanitizeContent(val) : val)),
+    website: z
+      .string()
+      .url('Invalid website URL')
+      .max(200, 'Website URL too long')
+      .optional()
+      .or(z.literal('')),
+  })
+  .refine(data => validatePayloadSize(data, 2000), {
+    message: 'Profile data too large',
+  });
 
-const updateWritingDefaultsSchema = z.object({
-  preferredTone: z.enum(['professional', 'casual', 'friendly', 'academic']),
-  defaultTags: z.array(z.string()).max(10, 'Maximum 10 default tags').transform(tags => tags.slice(0, 10)),
-  autoGenerateUrls: z.boolean(),
-  includeReadingTime: z.boolean(),
-}).refine(
-  (data) => validatePayloadSize(data, 2000),
-  { message: 'Writing defaults data too large' }
-);
+const updateWritingDefaultsSchema = z
+  .object({
+    preferredTone: z.enum(['professional', 'casual', 'friendly', 'academic']),
+    defaultTags: z
+      .array(z.string())
+      .max(10, 'Maximum 10 default tags')
+      .transform(tags => tags.slice(0, 10)),
+    autoGenerateUrls: z.boolean(),
+    includeReadingTime: z.boolean(),
+  })
+  .refine(data => validatePayloadSize(data, 2000), {
+    message: 'Writing defaults data too large',
+  });
 
-const updatePublishingSchema = z.object({
-  defaultPublishTime: z.string().max(50, 'Publish time too long'),
-  autoSchedule: z.boolean(),
-}).refine(
-  (data) => validatePayloadSize(data, 1000),
-  { message: 'Publishing data too large' }
-);
+const updatePublishingSchema = z
+  .object({
+    defaultPublishTime: z.string().max(50, 'Publish time too long'),
+    autoSchedule: z.boolean(),
+  })
+  .refine(data => validatePayloadSize(data, 1000), {
+    message: 'Publishing data too large',
+  });
 
-const updateNotificationsSchema = z.object({
-  publishSuccess: z.boolean(),
-  publishErrors: z.boolean(),
-  dailyDigest: z.boolean(),
-  weeklyReport: z.boolean(),
-}).refine(
-  (data) => validatePayloadSize(data, 1000),
-  { message: 'Notification data too large' }
-);
+const updateNotificationsSchema = z
+  .object({
+    publishSuccess: z.boolean(),
+    publishErrors: z.boolean(),
+    dailyDigest: z.boolean(),
+    weeklyReport: z.boolean(),
+  })
+  .refine(data => validatePayloadSize(data, 1000), {
+    message: 'Notification data too large',
+  });
 
 export async function getUserSettings() {
   try {

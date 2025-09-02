@@ -1,11 +1,4 @@
-import {
-  Mic,
-  Music,
-  Clock,
-  Scissors,
-  FileText,
-  Download,
-} from 'lucide-react';
+import { Mic, Music, Clock, Scissors, FileText, Download } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CastModePage() {

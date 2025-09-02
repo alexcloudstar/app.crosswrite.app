@@ -1,4 +1,11 @@
-import { pgTable, uuid, text, timestamp, integer, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  integer,
+  index,
+} from 'drizzle-orm/pg-core';
 import { users } from './auth';
 import { drafts } from './drafts';
 
@@ -27,7 +34,11 @@ export const scheduledPosts = pgTable(
     index('scheduled_posts_scheduled_at_idx').on(table.scheduledAt),
     index('scheduled_posts_status_idx').on(table.status),
     // Hot path indexes for scheduler queries
-    index('scheduled_posts_user_scheduled_status_idx').on(table.userId, table.scheduledAt, table.status),
+    index('scheduled_posts_user_scheduled_status_idx').on(
+      table.userId,
+      table.scheduledAt,
+      table.status
+    ),
     // Index for job claiming (pending + scheduled_at)
     index('scheduled_posts_claim_idx').on(table.status, table.scheduledAt),
   ]

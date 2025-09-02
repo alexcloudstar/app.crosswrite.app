@@ -102,12 +102,14 @@ npm run db:push
 ## Plan Tiers
 
 ### Free Plan
+
 - 5 articles/month
 - 3 AI thumbnails/month
 - 500 AI suggestions/month
 - 1 platform integration
 
 ### Pro Plan ($14/month)
+
 - 200 articles/month
 - 50 AI thumbnails/month
 - 5000 AI suggestions/month
