@@ -142,3 +142,168 @@ export const PLATFORMS = {
   maxRetries: 2,
   baseDelay: 1000,
 } as const;
+
+// AI model configuration constants
+export const AI_MODEL = {
+  // Temperature settings for different tasks
+  temperature: {
+    default: 0.7,
+    creative: 0.8,
+    focused: 0.5,
+    precise: 0.3,
+  },
+
+  // Model types
+  models: {
+    default: 'gpt-4o-mini',
+    advanced: 'gpt-4o',
+    legacy: 'gpt-3.5-turbo',
+  } as const,
+
+  // Image generation sizes
+  imageSizes: {
+    square: '1024x1024',
+    landscape: '1792x1024',
+    portrait: '1024x1792',
+  } as const,
+
+  // Content analysis thresholds
+  contentThresholds: {
+    maxContentForAnalysis: 11000,
+    maxContentForSuggestions: 8000,
+    maxContentForExtraction: 6000,
+  },
+} as const;
+
+// Time constants for date calculations and intervals
+export const TIME = {
+  // Seconds
+  seconds: {
+    minute: 60,
+    hour: 3600,
+    day: 86400,
+    month: 2592000, // 30 days
+  },
+
+  // Minutes
+  minutes: {
+    hour: 60,
+    day: 1440,
+    week: 10080,
+    month: 43200, // 30 days
+  },
+
+  // Milliseconds
+  milliseconds: {
+    second: 1000,
+    minute: 60000,
+    hour: 3600000,
+    day: 86400000,
+  },
+} as const;
+
+// Plan and usage limits
+export const PLAN_LIMITS = {
+  // Free plan
+  free: {
+    articlesPublished: 5,
+    aiSuggestionsUsed: 500,
+    thumbnailsGenerated: 10,
+  },
+
+  // Pro plan
+  pro: {
+    articlesPublished: 200,
+    aiSuggestionsUsed: 5000,
+    thumbnailsGenerated: 50,
+  },
+
+  // Usage warning thresholds (percentage)
+  warningThresholds: {
+    low: 0.5, // 50%
+    medium: 0.8, // 80%
+    high: 0.9, // 90%
+  },
+} as const;
+
+// Rate limiting configuration
+export const RATE_LIMITS = {
+  // Default rate limits
+  default: {
+    requests: 10,
+    windowMs: 60000, // 1 minute
+  },
+
+  // AI-specific rate limits
+  ai: {
+    requests: 5,
+    windowMs: 60000,
+  },
+
+  // Integration rate limits
+  integration: {
+    requests: 10,
+    windowMs: 60000,
+  },
+
+  // Scheduler rate limits
+  scheduler: {
+    requests: 20,
+    windowMs: 60000,
+  },
+} as const;
+
+// Scheduler configuration
+export const SCHEDULER_CONFIG = {
+  // Grace window for scheduled posts (milliseconds)
+  graceWindowMs: 60000, // 1 minute
+
+  // Maximum retry attempts
+  maxRetries: 3,
+
+  // Retry backoff configuration
+  retryBackoff: {
+    baseDelay: 30000, // 30 seconds
+    maxDelay: 120000, // 2 minutes
+    multiplier: 2,
+    jitterFactor: 0.1,
+  },
+
+  // Bulk operation limits
+  bulkLimits: {
+    maxSchedules: 10,
+    maxJobs: 100,
+  },
+} as const;
+
+// UI and component configuration
+export const COMPONENT_CONFIG = {
+  // Pagination defaults
+  pagination: {
+    defaultLimit: 100,
+    maxLimit: 1000,
+    defaultPage: 1,
+  },
+
+  // Search and filtering
+  search: {
+    maxSearchTermLength: 100,
+    maxFilterOptions: 20,
+    debounceDelay: 300,
+  },
+
+  // Form validation
+  validation: {
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    minUsernameLength: 3,
+    maxUsernameLength: 30,
+  },
+
+  // Toast notifications
+  toast: {
+    defaultDuration: 4000,
+    successDuration: 3000,
+    errorDuration: 6000,
+  },
+} as const;
