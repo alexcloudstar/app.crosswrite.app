@@ -34,7 +34,7 @@ export function mapContentForPlatform(
 
   switch (platform) {
     case 'devto':
-      body = transformForDevto(draft.content, draft.tags || []);
+      body = transformForDevto(draft.content);
       break;
     case 'hashnode':
       body = transformForHashnode(draft.content);
