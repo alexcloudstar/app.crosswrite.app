@@ -10,16 +10,10 @@ export type DevtoIntegration = {
   apiKey: string;
 };
 
-function normalizeDevtoMarkdown(
-  markdown: string,
-  publishAsDraft: boolean
-): string {
-  // Remove any existing frontmatter completely
+function normalizeDevtoMarkdown(markdown: string): string {
   const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
   const content = markdown.replace(frontMatterRegex, '').trim();
 
-  // For dev.to, we don't need to add frontmatter since the title and tags
-  // are passed separately in the API call
   return content;
 }
 
@@ -29,11 +23,11 @@ function sanitizeDevtoTags(tags: string[]): string[] {
       tag
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '') // Remove all non-alphanumeric except spaces
-        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, ' ')
         .trim()
     )
-    .filter(tag => tag.length > 0 && tag.length <= 20); // Dev.to tag length limit
+    .filter(tag => tag.length > 0 && tag.length <= 20);
 }
 
 export class DevtoClient implements IntegrationClient {
@@ -87,10 +81,7 @@ export class DevtoClient implements IntegrationClient {
       tags: content.tags,
     });
 
-    const normalizedMarkdown = normalizeDevtoMarkdown(
-      content.body,
-      content.publishAsDraft || false
-    );
+    const normalizedMarkdown = normalizeDevtoMarkdown(content.body);
 
     const response = await fetch(`${this.baseUrl}/articles`, {
       method: 'POST',

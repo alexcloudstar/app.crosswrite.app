@@ -65,9 +65,7 @@ export function mapContentForPlatform(
   };
 }
 
-function transformForDevto(content: string, tags: string[]): string {
-  // For dev.to, we don't need to add frontmatter since the title and tags
-  // are passed separately in the API call. Just clean the content.
+function transformForDevto(content: string): string {
   content = content.replace(/^---[\s\S]*?---\n/, '');
   return content.trim();
 }
