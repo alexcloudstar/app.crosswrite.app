@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { UUID, validatePayloadSize, sanitizeContent } from './common';
 import { supportedPlatforms } from '@/lib/config/platforms';
+import { z } from 'zod';
+import { UUID, validatePayloadSize } from './common';
 
 export const connectIntegrationSchema = z
   .object({

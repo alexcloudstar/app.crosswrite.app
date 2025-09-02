@@ -1,11 +1,11 @@
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { db } from '@/db/client';
 import { drafts, integrations, scheduledPosts } from '@/db/schema';
-import { and, eq, inArray, lte, sql } from 'drizzle-orm';
+import { and, eq, inArray, lte } from 'drizzle-orm';
+import logger from '../logger';
 import { acquireLock, isAlreadyPublished, releaseLock } from './locks';
 import { resetRetryInfo, shouldRetry, updateWithRetryInfo } from './retry';
 import { SCHEDULER_CONFIG } from './time';
-import logger from '../logger';
 
 export interface ProcessingResult {
   processed: number;
