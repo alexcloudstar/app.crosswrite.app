@@ -115,7 +115,9 @@ export function sanitizeTags(tags: string[], maxTags: number): string[] {
       tag
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9-]/g, '')
+        .replace(/[^a-z0-9\s]/g, '') // Remove all non-alphanumeric except spaces
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim()
     )
     .filter(tag => tag.length > 0)
     .slice(0, maxTags);

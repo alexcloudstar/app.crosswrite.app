@@ -14,50 +14,26 @@ function normalizeDevtoMarkdown(
   markdown: string,
   publishAsDraft: boolean
 ): string {
+  // Remove any existing frontmatter completely
   const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
-  const match = markdown.match(frontMatterRegex);
+  const content = markdown.replace(frontMatterRegex, '').trim();
 
-  const frontMatter: Record<string, string | boolean> = {};
-  let content = markdown;
+  // For dev.to, we don't need to add frontmatter since the title and tags
+  // are passed separately in the API call
+  return content;
+}
 
-  if (match) {
-    try {
-      const yamlContent = match[1];
-
-      const lines = yamlContent.split('\n');
-      for (const line of lines) {
-        const colonIndex = line.indexOf(':');
-        if (colonIndex > 0) {
-          const key = line.substring(0, colonIndex).trim();
-          const value = line.substring(colonIndex + 1).trim();
-          if (key && value) {
-            frontMatter[key] = value;
-          }
-        }
-      }
-    } catch (error) {
-      logger.warn('Failed to parse existing front matter:', { error });
-    }
-
-    content = markdown.replace(frontMatterRegex, '');
-  }
-
-  frontMatter.published = !publishAsDraft;
-
-  delete frontMatter.title;
-  delete frontMatter.tags;
-  delete frontMatter.canonical_url;
-  delete frontMatter.cover_image;
-
-  const frontMatterLines = Object.entries(frontMatter).map(
-    ([key, value]) => `${key}: ${value}`
-  );
-  const newFrontMatter =
-    frontMatterLines.length > 0
-      ? `---\n${frontMatterLines.join('\n')}\n---\n\n`
-      : '';
-
-  return newFrontMatter + content.trim();
+function sanitizeDevtoTags(tags: string[]): string[] {
+  return tags
+    .map(tag =>
+      tag
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // Remove all non-alphanumeric except spaces
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim()
+    )
+    .filter(tag => tag.length > 0 && tag.length <= 20); // Dev.to tag length limit
 }
 
 export class DevtoClient implements IntegrationClient {
@@ -105,6 +81,12 @@ export class DevtoClient implements IntegrationClient {
       throw new Error(titleValidation.error);
     }
 
+    logger.info('Publishing to Dev.to:', {
+      title: content.title,
+      contentLength: content.body?.length || 0,
+      tags: content.tags,
+    });
+
     const normalizedMarkdown = normalizeDevtoMarkdown(
       content.body,
       content.publishAsDraft || false
@@ -120,7 +102,7 @@ export class DevtoClient implements IntegrationClient {
         article: {
           title: content.title,
           body_markdown: normalizedMarkdown,
-          tags: content.tags || [],
+          tags: sanitizeDevtoTags(content.tags || []),
           canonical_url: content.canonicalUrl,
           main_image: content.coverUrl,
           published: !content.publishAsDraft,
@@ -130,14 +112,25 @@ export class DevtoClient implements IntegrationClient {
 
     if (!response.ok) {
       const errorText = await response.text();
+      logger.error('Dev.to API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorText,
+      });
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
 
     if (!data.id) {
+      logger.error('Dev.to API response missing ID:', data);
       throw new Error('Failed to publish to Dev.to');
     }
+
+    logger.info('Successfully published to Dev.to:', {
+      articleId: data.id,
+      url: data.url,
+    });
 
     return {
       platformPostId: data.id.toString(),

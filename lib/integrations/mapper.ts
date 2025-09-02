@@ -66,21 +66,10 @@ export function mapContentForPlatform(
 }
 
 function transformForDevto(content: string, tags: string[]): string {
-  const frontmatter = [
-    '---',
-    `title: ${content.split('\n')[0]?.replace(/^#+\s*/, '') || 'Untitled'}`,
-    `published: false`,
-  ];
-
-  if (tags.length > 0) {
-    frontmatter.push(`tags: ${tags.join(', ')}`);
-  }
-
-  frontmatter.push('---\n');
-
+  // For dev.to, we don't need to add frontmatter since the title and tags
+  // are passed separately in the API call. Just clean the content.
   content = content.replace(/^---[\s\S]*?---\n/, '');
-
-  return frontmatter.join('\n') + content.trim();
+  return content.trim();
 }
 
 function transformForHashnode(content: string): string {
