@@ -70,9 +70,12 @@ export const listDraftsSchema = z
     status: z.enum(['draft', 'scheduled', 'published']).optional(),
     search: z.string().max(100, 'Search term too long').optional(),
   })
-  .refine(data => validatePayloadSize(data, INPUT_LIMITS.SEARCH_PARAMETERS_SIZE), {
-    message: 'Search parameters too large',
-  });
+  .refine(
+    data => validatePayloadSize(data, INPUT_LIMITS.SEARCH_PARAMETERS_SIZE),
+    {
+      message: 'Search parameters too large',
+    }
+  );
 
 export const publishDraftSchema = z
   .object({
