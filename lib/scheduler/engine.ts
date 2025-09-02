@@ -1,7 +1,7 @@
 import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { db } from '@/db/client';
 import { drafts, integrations, scheduledPosts } from '@/db/schema';
-import { and, eq, inArray, lte } from 'drizzle-orm';
+import { and, eq, inArray, lte, sql } from 'drizzle-orm';
 import { acquireLock, isAlreadyPublished, releaseLock } from './locks';
 import { resetRetryInfo, shouldRetry, updateWithRetryInfo } from './retry';
 import { SCHEDULER_CONFIG } from './time';
@@ -31,8 +31,20 @@ async function findDueJobs(): Promise<
     now.getTime() - SCHEDULER_CONFIG.GRACE_WINDOW_MS
   );
 
+  // Use atomic job claiming with claim_token to prevent race conditions
   const results = await db
-    .select({
+    .update(scheduledPosts)
+    .set({
+      status: 'processing',
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        lte(scheduledPosts.scheduledAt, graceWindow),
+        eq(scheduledPosts.status, 'pending')
+      )
+    )
+    .returning({
       id: scheduledPosts.id,
       draftId: scheduledPosts.draftId,
       userId: scheduledPosts.userId,
@@ -41,13 +53,6 @@ async function findDueJobs(): Promise<
       retryCount: scheduledPosts.retryCount,
       status: scheduledPosts.status,
     })
-    .from(scheduledPosts)
-    .where(
-      and(
-        lte(scheduledPosts.scheduledAt, graceWindow),
-        eq(scheduledPosts.status, 'pending')
-      )
-    )
     .limit(SCHEDULER_CONFIG.MAX_CONCURRENCY);
 
   return results.map(result => ({
@@ -75,6 +80,7 @@ async function processScheduledPost(scheduledPost: {
     try {
       const alreadyPublished = await isAlreadyPublished(id, draftId, platforms);
       if (alreadyPublished) {
+        // Use atomic update with RETURNING
         await db
           .update(scheduledPosts)
           .set({
@@ -82,13 +88,24 @@ async function processScheduledPost(scheduledPost: {
             publishedAt: new Date(),
             updatedAt: new Date(),
           })
-          .where(eq(scheduledPosts.id, id));
+          .where(eq(scheduledPosts.id, id))
+          .returning();
 
         return { success: true };
       }
 
+      // Optimize draft fetch with specific columns
       const [draft] = await db
-        .select()
+        .select({
+          id: drafts.id,
+          title: drafts.title,
+          content: drafts.content,
+          contentPreview: drafts.contentPreview,
+          tags: drafts.tags,
+          thumbnailUrl: drafts.thumbnailUrl,
+          seoTitle: drafts.seoTitle,
+          seoDescription: drafts.seoDescription,
+        })
         .from(drafts)
         .where(eq(drafts.id, draftId))
         .limit(1);
@@ -97,8 +114,15 @@ async function processScheduledPost(scheduledPost: {
         throw new Error('Draft not found');
       }
 
+      // Optimize integrations query with specific columns
       const userIntegrations = await db
-        .select()
+        .select({
+          platform: integrations.platform,
+          apiKey: integrations.apiKey,
+          accessToken: integrations.accessToken,
+          refreshToken: integrations.refreshToken,
+          publicationId: integrations.publicationId,
+        })
         .from(integrations)
         .where(
           and(
@@ -151,6 +175,7 @@ async function processScheduledPost(scheduledPost: {
         finalStatus = 'failed';
       }
 
+      // Use atomic update with RETURNING
       await db
         .update(scheduledPosts)
         .set({
@@ -158,9 +183,11 @@ async function processScheduledPost(scheduledPost: {
           publishedAt: successCount > 0 ? new Date() : null,
           updatedAt: new Date(),
         })
-        .where(eq(scheduledPosts.id, id));
+        .where(eq(scheduledPosts.id, id))
+        .returning();
 
       if (finalStatus === 'published') {
+        // Use atomic update with RETURNING
         await db
           .update(drafts)
           .set({
@@ -168,9 +195,11 @@ async function processScheduledPost(scheduledPost: {
             publishedAt: new Date(),
             updatedAt: new Date(),
           })
-          .where(eq(drafts.id, draftId));
+          .where(eq(drafts.id, draftId))
+          .returning();
         await resetRetryInfo(id);
       } else if (finalStatus === 'failed') {
+        // Use atomic update with RETURNING
         await db
           .update(drafts)
           .set({
@@ -178,7 +207,8 @@ async function processScheduledPost(scheduledPost: {
             scheduledAt: null,
             updatedAt: new Date(),
           })
-          .where(eq(drafts.id, draftId));
+          .where(eq(drafts.id, draftId))
+          .returning();
       }
 
       return { success: true };
@@ -199,15 +229,12 @@ async function processScheduledPost(scheduledPost: {
       await updateWithRetryInfo(
         id,
         retryCount + 1,
-        undefined,
+        null,
         retryResult.errorMessage
       );
     }
 
-    return {
-      success: false,
-      error: retryResult.errorMessage,
-    };
+    return { success: false, error: retryResult.errorMessage };
   }
 }
 

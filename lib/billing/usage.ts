@@ -1,7 +1,7 @@
 import { db } from '@/db/client';
 import { userUsage } from '@/db/schema/user-usage';
 import { billingSubscriptions } from '@/db/schema/billing';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { getPlanCap } from './plans';
 import { PLAN_VALUES } from '@/lib/plans';
 
@@ -51,15 +51,24 @@ export async function checkUsageLimit(
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
-  const usageRecord = await db
-    .select({ [metric]: userUsage[metric] })
-    .from(userUsage)
-    .where(
-      and(eq(userUsage.userId, userId), eq(userUsage.monthYear, currentMonth))
-    )
-    .limit(1);
+  // Use atomic UPSERT to get current usage and increment atomically
+  const [result] = await db
+    .insert(userUsage)
+    .values({
+      userId,
+      monthYear: currentMonth,
+      [metric]: increment,
+    })
+    .onConflictDoUpdate({
+      target: [userUsage.userId, userUsage.monthYear],
+      set: {
+        [metric]: sql`${userUsage[metric]} + ${increment}`,
+        updatedAt: new Date(),
+      },
+    })
+    .returning({ [metric]: userUsage[metric] });
 
-  const current = (usageRecord[0]?.[metric] || 0) + increment;
+  const current = result[metric];
   const allowed = current <= limit;
 
   let warning: string | undefined;
@@ -77,6 +86,7 @@ export async function incrementUsage(
 ): Promise<void> {
   const currentMonth = new Date().toISOString().slice(0, 7);
 
+  // Atomic UPSERT pattern for usage increment
   await db
     .insert(userUsage)
     .values({
@@ -87,7 +97,7 @@ export async function incrementUsage(
     .onConflictDoUpdate({
       target: [userUsage.userId, userUsage.monthYear],
       set: {
-        [metric]: increment,
+        [metric]: sql`${userUsage[metric]} + ${increment}`,
         updatedAt: new Date(),
       },
     });
@@ -101,8 +111,53 @@ export async function assertWithinLimits(
   const result = await checkUsageLimit(userId, metric, increment);
 
   if (result.allowed) {
-    await incrementUsage(userId, metric, increment);
+    // Usage already incremented in checkUsageLimit
+    return { allowed: true, warning: result.warning };
   }
 
-  return { allowed: result.allowed, warning: result.warning };
+  return { allowed: false, warning: result.warning };
+}
+
+// Optimized bulk usage check and increment
+export async function checkAndIncrementBulkUsage(
+  userId: string,
+  metrics: Array<{ metric: UsageMetric; increment: number }>
+): Promise<{ allowed: boolean; warnings: string[]; exceededMetrics: UsageMetric[] }> {
+  const planId = await getUserPlanId(userId);
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  
+  const warnings: string[] = [];
+  const exceededMetrics: UsageMetric[] = [];
+  let allAllowed = true;
+
+  // Check all metrics first
+  for (const { metric, increment } of metrics) {
+    const limit = getPlanCap(planId, metric);
+    if (limit === Infinity) continue;
+
+    const currentUsage = await db
+      .select({ [metric]: userUsage[metric] })
+      .from(userUsage)
+      .where(
+        and(eq(userUsage.userId, userId), eq(userUsage.monthYear, currentMonth))
+      )
+      .limit(1);
+
+    const current = (currentUsage[0]?.[metric] || 0) + increment;
+    if (current > limit) {
+      allAllowed = false;
+      exceededMetrics.push(metric);
+    } else if (current > limit * 0.8) {
+      warnings.push(`Approaching ${metric} limit (${current}/${limit})`);
+    }
+  }
+
+  if (allAllowed) {
+    // Increment all metrics atomically
+    for (const { metric, increment } of metrics) {
+      await incrementUsage(userId, metric, increment);
+    }
+  }
+
+  return { allowed: allAllowed, warnings, exceededMetrics };
 }

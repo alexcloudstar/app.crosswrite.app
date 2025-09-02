@@ -4,6 +4,7 @@ import './globals.css';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import { RootLayoutWrapper } from '@/components/layout/RootLayoutWrapper';
 import { ToastProvider } from '@/components/providers/ToastProvider';
+import { SentryProvider } from '@sentry/nextjs';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,10 +22,12 @@ export default function RootLayout({
   return (
     <html lang='en' data-theme='peachsorbet'>
       <body className={inter.className}>
-        <SessionProvider>
-          <RootLayoutWrapper>{children}</RootLayoutWrapper>
-          <ToastProvider />
-        </SessionProvider>
+        <SentryProvider>
+          <SessionProvider>
+            <RootLayoutWrapper>{children}</RootLayoutWrapper>
+            <ToastProvider />
+          </SessionProvider>
+        </SentryProvider>
       </body>
     </html>
   );

@@ -1,13 +1,20 @@
 import { z } from 'zod';
+import { validatePayloadSize } from './common';
 
 export const createCheckoutSessionSchema = z.object({
-  priceId: z.string().min(1, 'Price ID is required'),
-  returnPath: z.string().optional().default('/settings/billing'),
-});
+  priceId: z.string().min(1, 'Price ID is required').max(100, 'Price ID too long'),
+  returnPath: z.string().max(200, 'Return path too long').optional().default('/settings/billing'),
+}).refine(
+  (data) => validatePayloadSize(data, 1000),
+  { message: 'Checkout data too large' }
+);
 
 export const createBillingPortalSessionSchema = z.object({
-  returnPath: z.string().optional().default('/settings/billing'),
-});
+  returnPath: z.string().max(200, 'Return path too long').optional().default('/settings/billing'),
+}).refine(
+  (data) => validatePayloadSize(data, 1000),
+  { message: 'Portal data too large' }
+);
 
 export const changePlanSchema = z.object({
   priceId: z.string().min(1, 'Price ID is required'),
