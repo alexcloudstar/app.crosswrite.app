@@ -18,7 +18,6 @@ export interface NewsItemSummary {
   link?: string;
 }
 
-// Centralized updates data - used across updates page and dashboard
 export const CENTRALIZED_UPDATES: NewsItem[] = [
   {
     id: '1',
