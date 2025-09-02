@@ -279,8 +279,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         .set({ planTier })
         .where(eq(users.id, customer[0].userId));
     }
-  } else {
-    plan;
+  }
+
+  if (subscription.status !== 'active' && !subscription.cancel_at_period_end) {
     logger.info('Setting user to free plan due to subscription status:', {
       status: subscription.status,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,

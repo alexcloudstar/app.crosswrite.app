@@ -55,6 +55,8 @@ const updatePublishingSchema = z
     message: 'Publishing data too large',
   });
 
+// TODO: Implement notification settings when notifications are ready
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const updateNotificationsSchema = z
   .object({
     publishSuccess: z.boolean(),

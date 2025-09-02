@@ -150,7 +150,6 @@ export function TagManager({
         </div>
       </div>
 
-      {/* Current Tags */}
       {tags.length > 0 && (
         <div className='flex flex-wrap gap-2'>
           {tags.map(tag => (
@@ -173,7 +172,6 @@ export function TagManager({
         </div>
       )}
 
-      {/* Add New Tag */}
       <div className='flex gap-2'>
         <input
           type='text'
@@ -195,7 +193,6 @@ export function TagManager({
         </button>
       </div>
 
-      {/* Suggested Tags */}
       {showSuggestions && suggestedTags.length > 0 && (
         <div className='border border-base-300 rounded-lg p-4 bg-base-200'>
           <div className='flex items-center justify-between mb-3'>

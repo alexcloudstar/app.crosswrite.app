@@ -1,32 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import {
-  Search,
-  Filter,
-  MoreHorizontal,
-  Edit3,
-  Trash2,
-  Plus,
-  FileText,
-  X,
-  Send,
-} from 'lucide-react';
-import Link from 'next/link';
-import toast from 'react-hot-toast';
-import { EmptyState } from '@/components/ui/EmptyState';
-import {
-  formatDate,
-  getPlatformDisplayName,
-  getPlatformColor,
-} from '@/lib/utils';
-import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
-import { publishToPlatforms } from '@/app/actions/integrations/publish';
-import { listDrafts, deleteDraft } from '@/app/actions/drafts';
+import { deleteDraft, listDrafts } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
+import { publishToPlatforms } from '@/app/actions/integrations/publish';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { usePlan } from '@/hooks/use-plan';
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft, DraftsResponse } from '@/lib/types/drafts';
-import { usePlan } from '@/hooks/use-plan';
+import {
+  formatDate,
+  getPlatformColor,
+  getPlatformDisplayName,
+} from '@/lib/utils';
+import {
+  Edit3,
+  FileText,
+  Filter,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Send,
+  Trash2,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function DraftsPage() {
   const { refreshPlanData } = usePlan();

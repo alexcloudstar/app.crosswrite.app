@@ -11,12 +11,11 @@ import { DashboardStats, Draft } from '@/lib/types/dashboard';
 import { formatDate, getPlatformDisplayName } from '@/lib/utils';
 import {
   Calendar,
+  CheckCircle,
   Edit3,
   FileText,
   Plus,
   TrendingUp,
-  Clock,
-  CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -124,7 +123,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className='mb-8'>
         <div className='flex items-center justify-between mb-4'>
           <h2 className='text-xl font-semibold'>Quick Actions</h2>
@@ -177,7 +175,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
         <StatCard
           title='Drafts'
@@ -200,7 +197,6 @@ export default function DashboardPage() {
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-        {/* Continue Drafting - Made larger and more prominent */}
         <div className='lg:col-span-2'>
           <div className='card bg-base-100 border border-base-300 shadow-sm'>
             <div className='card-body'>
@@ -280,7 +276,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* News Updates - Made smaller but still prominent */}
         <div className='lg:col-span-1'>
           <NewsUpdates />
         </div>
