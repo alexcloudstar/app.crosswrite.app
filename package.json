@@ -13,6 +13,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
     "@neondatabase/serverless": "^1.0.1",
+    "@sentry/nextjs": "^10.8.0",
     "clsx": "^2.1.1",
     "daisyui": "^5.0.50",
     "drizzle-orm": "^0.44.4",

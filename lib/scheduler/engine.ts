@@ -2,10 +2,10 @@ import { publishToPlatforms } from '@/app/actions/integrations/publish';
 import { db } from '@/db/client';
 import { drafts, integrations, scheduledPosts } from '@/db/schema';
 import { and, eq, inArray, lte } from 'drizzle-orm';
+import logger from '../logger';
 import { acquireLock, isAlreadyPublished, releaseLock } from './locks';
 import { resetRetryInfo, shouldRetry, updateWithRetryInfo } from './retry';
 import { SCHEDULER_CONFIG } from './time';
-import logger from '../logger';
 
 export interface ProcessingResult {
   processed: number;
@@ -32,7 +32,18 @@ async function findDueJobs(): Promise<
   );
 
   const results = await db
-    .select({
+    .update(scheduledPosts)
+    .set({
+      status: 'processing',
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        lte(scheduledPosts.scheduledAt, graceWindow),
+        eq(scheduledPosts.status, 'pending')
+      )
+    )
+    .returning({
       id: scheduledPosts.id,
       draftId: scheduledPosts.draftId,
       userId: scheduledPosts.userId,
@@ -40,15 +51,7 @@ async function findDueJobs(): Promise<
       scheduledAt: scheduledPosts.scheduledAt,
       retryCount: scheduledPosts.retryCount,
       status: scheduledPosts.status,
-    })
-    .from(scheduledPosts)
-    .where(
-      and(
-        lte(scheduledPosts.scheduledAt, graceWindow),
-        eq(scheduledPosts.status, 'pending')
-      )
-    )
-    .limit(SCHEDULER_CONFIG.MAX_CONCURRENCY);
+    });
 
   return results.map(result => ({
     ...result,
@@ -82,13 +85,23 @@ async function processScheduledPost(scheduledPost: {
             publishedAt: new Date(),
             updatedAt: new Date(),
           })
-          .where(eq(scheduledPosts.id, id));
+          .where(eq(scheduledPosts.id, id))
+          .returning();
 
         return { success: true };
       }
 
       const [draft] = await db
-        .select()
+        .select({
+          id: drafts.id,
+          title: drafts.title,
+          content: drafts.content,
+          contentPreview: drafts.contentPreview,
+          tags: drafts.tags,
+          thumbnailUrl: drafts.thumbnailUrl,
+          seoTitle: drafts.seoTitle,
+          seoDescription: drafts.seoDescription,
+        })
         .from(drafts)
         .where(eq(drafts.id, draftId))
         .limit(1);
@@ -98,7 +111,13 @@ async function processScheduledPost(scheduledPost: {
       }
 
       const userIntegrations = await db
-        .select()
+        .select({
+          platform: integrations.platform,
+          apiKey: integrations.apiKey,
+          accessToken: integrations.accessToken,
+          refreshToken: integrations.refreshToken,
+          publicationId: integrations.publicationId,
+        })
         .from(integrations)
         .where(
           and(
@@ -158,7 +177,8 @@ async function processScheduledPost(scheduledPost: {
           publishedAt: successCount > 0 ? new Date() : null,
           updatedAt: new Date(),
         })
-        .where(eq(scheduledPosts.id, id));
+        .where(eq(scheduledPosts.id, id))
+        .returning();
 
       if (finalStatus === 'published') {
         await db
@@ -168,7 +188,8 @@ async function processScheduledPost(scheduledPost: {
             publishedAt: new Date(),
             updatedAt: new Date(),
           })
-          .where(eq(drafts.id, draftId));
+          .where(eq(drafts.id, draftId))
+          .returning();
         await resetRetryInfo(id);
       } else if (finalStatus === 'failed') {
         await db
@@ -178,7 +199,8 @@ async function processScheduledPost(scheduledPost: {
             scheduledAt: null,
             updatedAt: new Date(),
           })
-          .where(eq(drafts.id, draftId));
+          .where(eq(drafts.id, draftId))
+          .returning();
       }
 
       return { success: true };
@@ -204,10 +226,7 @@ async function processScheduledPost(scheduledPost: {
       );
     }
 
-    return {
-      success: false,
-      error: retryResult.errorMessage,
-    };
+    return { success: false, error: retryResult.errorMessage };
   }
 }
 

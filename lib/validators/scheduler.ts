@@ -1,14 +1,15 @@
 import { z } from 'zod';
+import { UUID, ISODate, validatePayloadSize } from './common';
 import { supportedPlatforms } from '@/lib/config/platforms';
 
 export const createScheduledPostSchema = z
   .object({
-    draftId: z.string().uuid('Invalid draft ID'),
+    draftId: UUID,
     platforms: z
       .array(z.enum(supportedPlatforms))
       .min(1, 'At least one platform required'),
-    scheduledAt: z.string().datetime('Invalid scheduled date'),
-    userTz: z.string().optional(),
+    scheduledAt: ISODate,
+    userTz: z.string().max(50, 'Timezone too long').optional(),
   })
   .refine(
     data => {
@@ -21,15 +22,19 @@ export const createScheduledPostSchema = z
       message: 'Scheduled date must be in the future',
       path: ['scheduledAt'],
     }
+  )
+  .refine(
+    (data) => validatePayloadSize(data, 5000),
+    { message: 'Schedule data too large' }
   );
 
 export const updateScheduledPostSchema = z
   .object({
-    id: z.string().uuid('Invalid scheduled post ID'),
+    id: UUID,
     platforms: z.array(z.enum(supportedPlatforms)).optional(),
-    scheduledAt: z.string().datetime('Invalid scheduled date').optional(),
+    scheduledAt: ISODate.optional(),
     status: z.enum(['pending', 'published', 'cancelled', 'failed']).optional(),
-    userTz: z.string().optional(),
+    userTz: z.string().max(50, 'Timezone too long').optional(),
   })
   .refine(
     data => {
@@ -45,10 +50,14 @@ export const updateScheduledPostSchema = z
       message: 'Scheduled date must be in the future',
       path: ['scheduledAt'],
     }
+  )
+  .refine(
+    (data) => validatePayloadSize(data, 5000),
+    { message: 'Update data too large' }
   );
 
 export const scheduledPostIdSchema = z.object({
-  id: z.string().uuid('Invalid scheduled post ID'),
+  id: UUID,
 });
 
 export const bulkScheduleSchema = z.object({
@@ -56,9 +65,15 @@ export const bulkScheduleSchema = z.object({
     .array(createScheduledPostSchema)
     .min(1, 'At least one schedule required')
     .max(10, 'Maximum 10 schedules allowed per bulk operation'),
-});
+}).refine(
+  (data) => validatePayloadSize(data, 50000),
+  { message: 'Bulk schedule data too large' }
+);
 
 export const processDueJobsSchema = z.object({
-  maxJobs: z.number().min(1).max(50).optional(),
-  force: z.boolean().optional(),
-});
+  maxJobs: z.number().int().min(1).max(100).optional().default(10),
+  force: z.boolean().optional().default(false),
+}).refine(
+  (data) => validatePayloadSize(data, 1000),
+  { message: 'Process data too large' }
+);

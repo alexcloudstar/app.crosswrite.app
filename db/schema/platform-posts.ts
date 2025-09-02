@@ -29,5 +29,11 @@ export const platformPosts = pgTable(
     index('platform_posts_draft_id_idx').on(table.draftId),
     index('platform_posts_platform_idx').on(table.platform),
     index('platform_posts_status_idx').on(table.status),
+
+    index('platform_posts_draft_platform_status_idx').on(
+      table.draftId,
+      table.platform,
+      table.status
+    ),
   ]
 );

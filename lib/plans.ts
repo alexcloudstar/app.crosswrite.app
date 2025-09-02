@@ -109,7 +109,7 @@ export function planIdToDatabasePlan(planId: PlanId): DatabasePlanTier {
   const planMap: Record<PlanId, DatabasePlanTier> = {
     [PLAN_VALUES.FREE]: DATABASE_PLAN_VALUES.FREE,
     [PLAN_VALUES.PRO]: DATABASE_PLAN_VALUES.PRO,
-    [PLAN_VALUES.SELF_HOSTED]: DATABASE_PLAN_VALUES.FREE, free for self-hosted
+    [PLAN_VALUES.SELF_HOSTED]: DATABASE_PLAN_VALUES.FREE
   };
   return planMap[planId];
 }

@@ -315,7 +315,10 @@ export default function EditorPage() {
 
     setLoadingType('ai');
     try {
-      const result = await adjustTone({ text: content, tone: selectedTone });
+      const result = await adjustTone({
+        text: content,
+        targetTone: selectedTone,
+      });
       if (result.success && result.data) {
         const adjustedText = (result.data as { adjustedText: string })
           .adjustedText;
@@ -347,7 +350,7 @@ export default function EditorPage() {
       let result;
 
       if (selectedTone !== 'professional') {
-        result = await adjustTone({ text: content, tone: selectedTone });
+        result = await adjustTone({ text: content, targetTone: selectedTone });
         if (result.success && result.data) {
           const adjustedText = (result.data as { adjustedText: string })
             .adjustedText;
@@ -391,7 +394,7 @@ export default function EditorPage() {
 
     setLoadingType('ai');
     try {
-      const result = await summarizeText({ text: content, style: 'paragraph' });
+      const result = await summarizeText({ text: content, maxLength: 200 });
       if (result.success && result.data) {
         const summary = (result.data as { summary: string }).summary;
         setContent(summary);
@@ -411,7 +414,10 @@ export default function EditorPage() {
 
     setLoadingType('suggestions');
     try {
-      const result = await generateSuggestions({ content, maxSuggestions: 4 });
+      const result = await generateSuggestions({
+        text: content,
+        maxSuggestions: 4,
+      });
       if (result.success && result.data) {
         const suggestionsData = (
           result.data as {
