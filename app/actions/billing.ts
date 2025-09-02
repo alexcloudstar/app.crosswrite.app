@@ -44,7 +44,7 @@ function createBillingPortalReturnUrl(
 import { db } from '@/db/client';
 import { billingCustomers, billingSubscriptions } from '@/db/schema/billing';
 import { users } from '@/db/schema/auth';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { requireAuth, successResult, errorResult } from './_utils';
 import {
   createCheckoutSessionSchema,
@@ -52,6 +52,8 @@ import {
   changePlanSchema,
 } from '@/lib/validators/billing';
 import { getUserPlanId } from '@/lib/billing/usage';
+import { getPlanFromPriceId } from '@/lib/billing/plans';
+import { planIdToDatabasePlan, type PlanId } from '@/lib/plans';
 import logger from '@/lib/logger';
 
 type BillingSummaryData = {

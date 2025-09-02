@@ -240,40 +240,9 @@ export async function updatePublishingSettings(
   }
 }
 
+// TODO: Implement notification settings when notifications are ready
 export async function updateNotificationSettings(
   input: z.infer<typeof updateNotificationsSchema>
 ) {
-  try {
-    const session = await requireAuth();
-    const validatedInput = updateNotificationsSchema.parse(input);
-
-    const existingSettings = await db
-      .select()
-      .from(userSettings)
-      .where(eq(userSettings.userId, session.id))
-      .limit(1);
-
-    if (!existingSettings.length) {
-      await db.insert(userSettings).values({
-        userId: session.id,
-        notifications: validatedInput,
-        updatedAt: new Date(),
-      });
-    }
-
-    if (existingSettings.length) {
-      await db
-        .update(userSettings)
-        .set({
-          notifications: validatedInput,
-          updatedAt: new Date(),
-        })
-        .where(eq(userSettings.userId, session.id));
-    }
-
-    return successResult('Notification settings updated successfully');
-  } catch (error) {
-    logger.error('Failed to update notification settings:', { error });
-    return errorResult('Failed to update notification settings');
-  }
+  return errorResult('Notifications are not yet implemented');
 }

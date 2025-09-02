@@ -10,9 +10,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-08-27.basil',
 });
 import { billingCustomers, billingSubscriptions } from '@/db/schema/billing';
+import { users } from '@/db/schema/auth';
 import { eq, and } from 'drizzle-orm';
 import { invalidateBillingCache } from '@/app/actions/billing';
 import logger from '@/lib/logger';
+import { getPlanFromPriceId } from '@/lib/billing/plans';
+import { planIdToDatabasePlan, type PlanId } from '@/lib/plans';
 
 function safeStripeTimestamp(
   timestamp: number | null | undefined
@@ -79,6 +82,11 @@ export async function POST(request: NextRequest) {
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
+        logger.info('Processing subscription update:', {
+          subscriptionId: event.data.object.id,
+          status: event.data.object.status,
+          cancelAtPeriodEnd: event.data.object.cancel_at_period_end,
+        });
         await handleSubscriptionUpdated(event.data.object);
         break;
 
@@ -184,6 +192,15 @@ async function handleCheckoutSessionCompleted(
       },
     });
 
+  // Update user's plan tier based on subscription status
+  if (subscription.status === 'active') {
+    const planId = getPlanFromPriceId(subscription.items.data[0].price.id);
+    if (planId) {
+      const planTier = planIdToDatabasePlan(planId as PlanId);
+      await db.update(users).set({ planTier }).where(eq(users.id, userId));
+    }
+  }
+
   invalidateBillingCache(userId);
 }
 
@@ -247,6 +264,35 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       },
     });
 
+  // Update user's plan tier based on subscription status
+  logger.info('Updating user plan tier:', {
+    userId: customer[0].userId,
+    subscriptionStatus: subscription.status,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+  });
+
+  if (subscription.status === 'active' && !subscription.cancel_at_period_end) {
+    const planId = getPlanFromPriceId(subscription.items.data[0].price.id);
+    if (planId) {
+      const planTier = planIdToDatabasePlan(planId as PlanId);
+      logger.info('Setting user to plan tier:', { planTier, planId });
+      await db
+        .update(users)
+        .set({ planTier })
+        .where(eq(users.id, customer[0].userId));
+    }
+  } else {
+    // If subscription is not active or is canceled, set user to free plan
+    logger.info('Setting user to free plan due to subscription status:', {
+      status: subscription.status,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    });
+    await db
+      .update(users)
+      .set({ planTier: 'free' })
+      .where(eq(users.id, customer[0].userId));
+  }
+
   invalidateBillingCache(customer[0].userId);
 }
 
@@ -274,6 +320,12 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       updatedAt: new Date(),
     })
     .where(eq(billingSubscriptions.stripeSubscriptionId, subscription.id));
+
+  // Set user back to free plan when subscription is deleted
+  await db
+    .update(users)
+    .set({ planTier: 'free' })
+    .where(eq(users.id, customer[0].userId));
 
   invalidateBillingCache(customer[0].userId);
 }

@@ -69,56 +69,6 @@ export function Topbar() {
     };
   }, [showUserMenu, showNotifications]);
 
-  const notifications = [
-    {
-      id: '1',
-      title: 'Post published successfully',
-      message:
-        'Your article "Getting Started with Next.js 15" was published to Dev.to',
-      time: '2 minutes ago',
-      type: 'success',
-    },
-    {
-      id: '2',
-      title: 'Scheduled post reminder',
-      message: 'You have 3 posts scheduled for this week',
-      time: '1 hour ago',
-      type: 'info',
-    },
-    {
-      id: '3',
-      title: 'Integration connected',
-      message: 'Dev.to account connected successfully',
-      time: '2 hours ago',
-      type: 'success',
-    },
-  ];
-
-  const allNotifications = [
-    ...notifications,
-    {
-      id: '4',
-      title: 'Weekly report ready',
-      message: 'Your weekly content performance report is now available',
-      time: '1 day ago',
-      type: 'info',
-    },
-    {
-      id: '5',
-      title: 'New feature available',
-      message: 'AI thumbnail generation is now available for Pro users',
-      time: '2 days ago',
-      type: 'success',
-    },
-    {
-      id: '6',
-      title: 'Account updated',
-      message: 'Your profile information has been successfully updated',
-      time: '3 days ago',
-      type: 'success',
-    },
-  ];
-
   const onToggleAllNotifications = () => setShowAllNotifications(false);
 
   const onToggleNotifications = () => setShowNotifications(prev => !prev);
@@ -147,60 +97,22 @@ export function Topbar() {
               className='btn btn-ghost btn-sm btn-circle relative'
             >
               <Bell size={16} />
-              {notifications.length > 0 && (
-                <span className='absolute -top-1 -right-1 w-4 h-4 bg-error text-error-content text-xs rounded-full flex items-center justify-center'>
-                  {notifications.length}
-                </span>
-              )}
             </button>
 
             {showNotifications && (
-              <div className='absolute right-0 mt-2 w-80 bg-base-200 rounded-lg shadow-lg border border-base-300 py-1 z-50 max-h-96 overflow-y-auto'>
+              <div className='absolute right-0 mt-2 w-80 bg-base-200 rounded-lg shadow-lg border border-base-300 py-1 z-50'>
                 <div className='px-4 py-2 border-b border-base-300'>
                   <p className='text-sm font-medium'>Notifications</p>
                 </div>
-                {notifications.length === 0 ? (
-                  <div className='px-4 py-6 text-center text-sm text-base-content/50'>
-                    No notifications
+                <div className='px-4 py-6 text-center'>
+                  <div className='inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-3'>
+                    <Bell className='w-6 h-6 text-primary' />
                   </div>
-                ) : (
-                  <div className='space-y-1'>
-                    {notifications.map(notification => (
-                      <div
-                        key={notification.id}
-                        className='px-4 py-3 hover:bg-base-300 cursor-pointer'
-                      >
-                        <div className='flex items-start space-x-3'>
-                          <div
-                            className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                              notification.type === 'success'
-                                ? 'bg-success'
-                                : 'bg-info'
-                            }`}
-                          ></div>
-                          <div className='flex-1 min-w-0'>
-                            <p className='text-sm font-medium'>
-                              {notification.title}
-                            </p>
-                            <p className='text-xs text-base-content/70 mt-1'>
-                              {notification.message}
-                            </p>
-                            <p className='text-xs text-base-content/50 mt-1'>
-                              {notification.time}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className='border-t border-base-300 mt-1'>
-                  <button
-                    onClick={handleViewAllNotifications}
-                    className='w-full text-left px-4 py-2 text-sm hover:bg-base-300 text-primary'
-                  >
-                    View all notifications
-                  </button>
+                  <p className='text-sm font-medium mb-2'>Coming Soon!</p>
+                  <p className='text-xs text-base-content/70'>
+                    We&apos;re working on bringing you comprehensive
+                    notification preferences.
+                  </p>
                 </div>
               </div>
             )}
@@ -281,32 +193,18 @@ export function Topbar() {
                 <X size={16} />
               </button>
             </div>
-            <div className='space-y-3 max-h-96 overflow-y-auto'>
-              {allNotifications.map(notification => (
-                <div
-                  key={notification.id}
-                  className='p-4 border border-base-300 rounded-lg hover:bg-base-100 transition-colors'
-                >
-                  <div className='flex items-start space-x-3'>
-                    <div
-                      className={`w-3 h-3 rounded-full mt-1 flex-shrink-0 ${
-                        notification.type === 'success'
-                          ? 'bg-success'
-                          : 'bg-info'
-                      }`}
-                    ></div>
-                    <div className='flex-1'>
-                      <p className='font-medium'>{notification.title}</p>
-                      <p className='text-sm text-base-content/70 mt-1'>
-                        {notification.message}
-                      </p>
-                      <p className='text-xs text-base-content/50 mt-2'>
-                        {notification.time}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className='text-center py-12'>
+              <div className='inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6'>
+                <Bell className='w-8 h-8 text-primary' />
+              </div>
+              <h3 className='text-xl font-bold mb-4'>
+                Notifications Coming Soon!
+              </h3>
+              <p className='text-base-content/70 max-w-md mx-auto'>
+                We&apos;re working on bringing you comprehensive notification
+                preferences for publishing success, errors, daily digests, and
+                weekly reports.
+              </p>
             </div>
             <div className='modal-action'>
               <button

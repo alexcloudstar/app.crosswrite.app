@@ -1,11 +1,10 @@
 'use client';
 
 import { PlanBadge } from '@/components/ui/PlanBadge';
-import { useAppStore } from '@/lib/store';
-import { PlanIdEnum } from '@/lib/plans';
+import { usePlan } from '@/hooks/use-plan';
 
 export function BillingSettings() {
-  const { userPlan } = useAppStore();
+  const { userPlan } = usePlan();
 
   return (
     <div className='space-y-6'>
@@ -18,9 +17,6 @@ export function BillingSettings() {
             </label>
             <div className='flex items-center space-x-2'>
               <PlanBadge planId={userPlan.planId} />
-              <span className='text-sm text-base-content/50'>
-                {userPlan.planId === PlanIdEnum.FREE ? 'Free Plan' : 'Pro Plan'}
-              </span>
             </div>
           </div>
 

@@ -15,7 +15,6 @@ import {
   ProfileSettings,
   WritingSettings,
   PublishingSettings,
-  NotificationSettings,
   BillingSettings,
   ShortcutSettings,
   UserSettings,
@@ -144,12 +143,19 @@ export default function SettingsPage() {
                 />
               )}
               {activeTab === 'notifications' && (
-                <NotificationSettings
-                  settings={settings}
-                  onSave={loadUserSettings}
-                  isSaving={isSaving}
-                  setIsSaving={setIsSaving}
-                />
+                <div className='text-center py-12'>
+                  <div className='inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6'>
+                    <Bell className='w-8 h-8 text-primary' />
+                  </div>
+                  <h2 className='text-2xl font-bold mb-4'>
+                    Notifications Coming Soon!
+                  </h2>
+                  <p className='text-lg text-base-content/70 max-w-md mx-auto'>
+                    We&apos;re working on bringing you comprehensive
+                    notification preferences for publishing success, errors,
+                    daily digests, and weekly reports.
+                  </p>
+                </div>
               )}
               {activeTab === 'billing' && <BillingSettings />}
               {activeTab === 'shortcuts' && <ShortcutSettings />}
