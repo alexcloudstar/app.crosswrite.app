@@ -39,6 +39,10 @@ export function DraftRow({
     );
   };
 
+  const onSelectHandler = () => onSelect(draft.id);
+  const onPublishHandler = () => onPublish(draft.id);
+  const onDeleteHandler = () => onDelete(draft.id);
+
   return (
     <tr className='hover:bg-base-200'>
       <td>
@@ -46,7 +50,7 @@ export function DraftRow({
           type='checkbox'
           className='checkbox checkbox-sm'
           checked={isSelected}
-          onChange={() => onSelect(draft.id)}
+          onChange={onSelectHandler}
         />
       </td>
       <td>
@@ -95,7 +99,7 @@ export function DraftRow({
                 </li>
                 <li>
                   <button
-                    onClick={() => onPublish(draft.id)}
+                    onClick={onPublishHandler}
                     disabled={isPublishing}
                     className={isPublishing ? 'opacity-50' : ''}
                   >
@@ -104,10 +108,7 @@ export function DraftRow({
                   </button>
                 </li>
                 <li>
-                  <button
-                    onClick={() => onDelete(draft.id)}
-                    className='text-error'
-                  >
+                  <button onClick={onDeleteHandler} className='text-error'>
                     <Trash2 size={16} />
                     Delete
                   </button>

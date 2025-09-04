@@ -67,6 +67,8 @@ function SuggestionCard({
     }
   };
 
+  const onApplyHandler = () => onApply(suggestion.id);
+
   return (
     <div
       className={`card border transition-all ${
@@ -98,7 +100,7 @@ function SuggestionCard({
 
         <div className='flex items-center space-x-2'>
           <button
-            onClick={() => onApply(suggestion.id)}
+            onClick={onApplyHandler}
             className={`btn btn-xs ${
               suggestion.applied ? 'btn-success' : 'btn-primary'
             }`}

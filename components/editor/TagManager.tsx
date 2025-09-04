@@ -107,6 +107,16 @@ export function TagManager({
     setShowSuggestions(false);
   };
 
+  const handleRemoveTagHandler = (tagToRemove: string) =>
+    handleRemoveTag(tagToRemove);
+  const handleExtractTagsHandler = () => handleExtractTags();
+  const handleAddSuggestedTagHandler = (tag: string) =>
+    handleAddSuggestedTag(tag);
+  const handleAddAllSuggestedTagsHandler = () => handleAddAllSuggestedTags();
+  const handleAddTagHandler = () => handleAddTag();
+
+  const handleSetShowSuggestionsHandler = () => setShowSuggestions(false);
+
   return (
     <div className='space-y-4'>
       <div className='flex items-center justify-between'>
@@ -118,7 +128,7 @@ export function TagManager({
           {showSuggestions && (
             <button
               type='button'
-              onClick={handleExtractTags}
+              onClick={handleExtractTagsHandler}
               disabled={disabled || isExtracting || !content.trim()}
               className='btn btn-xs btn-ghost'
               title='Refresh suggestions'
@@ -161,7 +171,7 @@ export function TagManager({
               {tag}
               <button
                 type='button'
-                onClick={() => handleRemoveTag(tag)}
+                onClick={handleRemoveTagHandler.bind(null, tag)}
                 disabled={disabled}
                 className='hover:text-primary-focus'
               >
@@ -185,7 +195,7 @@ export function TagManager({
         />
         <button
           type='button'
-          onClick={handleAddTag}
+          onClick={handleAddTagHandler}
           disabled={disabled || !newTag.trim() || tags.length >= 5}
           className='btn btn-sm btn-primary'
         >
@@ -199,8 +209,8 @@ export function TagManager({
             <h4 className='text-sm font-medium'>Suggested Tags</h4>
             <button
               type='button'
-              onClick={() => setShowSuggestions(false)}
               className='btn btn-xs btn-ghost'
+              onClick={handleSetShowSuggestionsHandler}
             >
               <X className='w-3 h-3' />
             </button>
@@ -211,7 +221,7 @@ export function TagManager({
               <button
                 key={tag}
                 type='button'
-                onClick={() => handleAddSuggestedTag(tag)}
+                onClick={handleAddSuggestedTagHandler.bind(null, tag)}
                 disabled={disabled || tags.includes(tag)}
                 className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
                   tags.includes(tag)
@@ -227,7 +237,7 @@ export function TagManager({
 
           <button
             type='button'
-            onClick={handleAddAllSuggestedTags}
+            onClick={handleAddAllSuggestedTagsHandler}
             disabled={disabled}
             className='btn btn-xs btn-primary'
           >

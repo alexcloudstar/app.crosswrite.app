@@ -26,6 +26,11 @@ export function PublicationSelector({
     return null;
   }
 
+  const onSelectPublicationHandler = (publication: Publication) => {
+    onSelectPublication(publication);
+    onClose();
+  };
+
   return (
     <div className='modal modal-open'>
       <div className='modal-box max-w-2xl'>
@@ -39,10 +44,7 @@ export function PublicationSelector({
                   ? 'bg-primary/10 border-primary'
                   : 'bg-base-200 border-transparent hover:border-primary hover:bg-base-300'
               }`}
-              onClick={() => {
-                onSelectPublication(publication);
-                onClose();
-              }}
+              onClick={onSelectPublicationHandler.bind(null, publication)}
             >
               {selectedPublicationId === publication.id && (
                 <div className='absolute top-2 right-2'>
