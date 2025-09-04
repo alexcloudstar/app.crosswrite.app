@@ -19,7 +19,6 @@ export type UsageResult = {
 };
 
 export async function getUserPlanId(userId: string): Promise<string> {
-  // In SELF_HOST mode, always return SELF_HOSTED plan
   if (isSelfHost()) {
     return PLAN_VALUES.SELF_HOSTED;
   }

@@ -6,14 +6,14 @@ import {
   getSelfHostKey,
 } from '@/lib/config/serverConfig';
 
-type DeploymentConfig = {
+export type DeploymentConfig = {
   mode: 'HOSTED' | 'SELF_HOST';
   hasRequiredKey: boolean;
 };
 
 export async function getDeploymentConfig(): Promise<DeploymentConfig> {
   try {
-    const mode: 'HOSTED' | 'SELF_HOST' = isHosted() ? 'HOSTED' : 'SELF_HOST';
+    const mode: DeploymentConfig['mode'] = isHosted() ? 'HOSTED' : 'SELF_HOST';
 
     let hasRequiredKey = false;
     try {
@@ -34,7 +34,7 @@ export async function getDeploymentConfig(): Promise<DeploymentConfig> {
     };
   } catch {
     return {
-      mode: 'HOSTED' as const,
+      mode: 'HOSTED',
       hasRequiredKey: false,
     };
   }

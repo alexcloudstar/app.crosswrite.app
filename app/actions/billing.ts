@@ -14,6 +14,20 @@ import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { errorResult, requireAuth, successResult } from './_utils';
 
+type Subscription = {
+  status: string;
+  planPriceId: string;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+  cancelAtPeriodEnd: boolean | null;
+};
+
+type BillingSummaryData = {
+  planId: string;
+  subscription: Subscription | null;
+  hasActiveSubscription: boolean;
+};
+
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY environment variable is not set');
 }
@@ -53,18 +67,6 @@ function createBillingPortalReturnUrl(
 ): string {
   return `${getAppUrl()}${returnPath}`;
 }
-
-type BillingSummaryData = {
-  planId: string;
-  subscription: {
-    status: string;
-    planPriceId: string;
-    currentPeriodStart: Date;
-    currentPeriodEnd: Date;
-    cancelAtPeriodEnd: boolean | null;
-  } | null;
-  hasActiveSubscription: boolean;
-};
 
 const billingSummaryCache = new Map<
   string,

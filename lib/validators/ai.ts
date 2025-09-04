@@ -6,7 +6,10 @@ const textInputSchema = z.object({
   text: z
     .string()
     .min(1, 'Text cannot be empty')
-    .max(FIELD_LIMITS.content, 'Text is too long (max 15,000 characters)')
+    .max(
+      FIELD_LIMITS.content,
+      `Text is too long (max ${FIELD_LIMITS.content} characters)`
+    )
     .transform(sanitizeContent),
 });
 
@@ -14,7 +17,10 @@ export const improveTextSchema = textInputSchema
   .extend({
     goals: z
       .array(z.string())
-      .max(FIELD_LIMITS.maxTags, 'Maximum 5 goals allowed')
+      .max(
+        FIELD_LIMITS.maxTags,
+        `Maximum ${FIELD_LIMITS.maxTags} goals allowed`
+      )
       .optional(),
   })
   .refine(data => validatePayloadSize(data, INPUT_LIMITS.improveText), {
@@ -38,7 +44,13 @@ export const adjustToneSchema = textInputSchema
 
 export const summarizeTextSchema = textInputSchema
   .extend({
-    maxLength: z.number().int().min(50).max(1000).optional().default(200),
+    maxLength: z
+      .number()
+      .int()
+      .min(50)
+      .max(FIELD_LIMITS.maxSummaryLength)
+      .optional()
+      .default(FIELD_LIMITS.defaultSummaryLength),
   })
   .refine(data => validatePayloadSize(data, INPUT_LIMITS.summarizeText), {
     message: 'Input data too large',
@@ -63,7 +75,10 @@ export const extractTagsSchema = z
     content: z
       .string()
       .min(1, 'Content cannot be empty')
-      .max(FIELD_LIMITS.content, 'Content too long (max 15,000 characters)')
+      .max(
+        FIELD_LIMITS.content,
+        `Content too long (max ${FIELD_LIMITS.content} characters)`
+      )
       .transform(sanitizeContent),
     maxTags: z
       .number()
@@ -83,14 +98,17 @@ export const generateThumbnailSchema = z
     articleTitle: z
       .string()
       .min(1, 'Article title cannot be empty')
-      .max(FIELD_LIMITS.title, 'Article title too long (max 200 characters)')
+      .max(
+        FIELD_LIMITS.title,
+        `Article title too long (max ${FIELD_LIMITS.title} characters)`
+      )
       .transform(sanitizeContent),
     articleContent: z
       .string()
       .min(1, 'Article content cannot be empty')
       .max(
         FIELD_LIMITS.content,
-        'Article content too long (max 15,000 characters)'
+        `Article content too long (max ${FIELD_LIMITS.content} characters)`
       )
       .transform(sanitizeContent),
   })

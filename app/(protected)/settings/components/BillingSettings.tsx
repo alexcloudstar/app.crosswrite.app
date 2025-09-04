@@ -3,14 +3,12 @@
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { DeploymentModeBadge } from '@/components/ui/DeploymentModeBadge';
 import { usePlan } from '@/hooks/use-plan';
-import { getDeploymentConfig } from '@/lib/actions/deploymentConfig';
+import {
+  DeploymentConfig,
+  getDeploymentConfig,
+} from '@/lib/actions/deploymentConfig';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-type DeploymentConfig = {
-  mode: 'HOSTED' | 'SELF_HOST';
-  hasRequiredKey: boolean;
-};
 
 export function BillingSettings() {
   const { userPlan } = usePlan();
