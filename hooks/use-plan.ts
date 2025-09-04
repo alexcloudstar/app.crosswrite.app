@@ -21,8 +21,8 @@ import {
   PLAN_PRICING,
   PLAN_FEATURES,
 } from '@/lib/plans';
-import App from 'next/app';
-import { logger } from '@sentry/nextjs';
+// Removed unused import: import App from 'next/app';
+import { logger } from '@/lib/logger';
 
 export function usePlan() {
   const { data: session } = useSession();
