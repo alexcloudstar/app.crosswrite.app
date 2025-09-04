@@ -103,7 +103,6 @@ Tags:`;
   },
 
   generateThumbnail: (articleTitle: string, articleContent: string) => {
-    // Clean content and get a meaningful preview
     const cleanContent = cleanContentForAI(articleContent);
     const contentPreview = cleanContent.substring(
       0,

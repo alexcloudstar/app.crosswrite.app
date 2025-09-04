@@ -4,6 +4,7 @@ import {
   normalizeError,
   validateTitle,
 } from './_core';
+import { FIELD_LIMITS } from '../constants';
 import logger from '../logger';
 
 export type DevtoIntegration = {
@@ -27,7 +28,7 @@ function sanitizeDevtoTags(tags: string[]): string[] {
         .replace(/\s+/g, ' ')
         .trim()
     )
-    .filter(tag => tag.length > 0 && tag.length <= 20);
+    .filter(tag => tag.length > 0 && tag.length <= FIELD_LIMITS.devtoTagLength);
 }
 
 export class DevtoClient implements IntegrationClient {

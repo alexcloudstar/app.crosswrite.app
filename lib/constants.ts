@@ -83,6 +83,9 @@ export const FIELD_LIMITS = {
   // Content preview lengths
   contentPreviewLength: 100,
   aiLogPreviewLength: 100,
+  devtoTagLength: 20,
+  maxSummaryLength: 1000,
+  defaultSummaryLength: 200,
 } as const;
 
 // Time and delay constants

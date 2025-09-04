@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Bell, ExternalLink, Calendar, Star } from 'lucide-react';
 import { CENTRALIZED_UPDATES, type NewsItemSummary } from '@/lib/types/news';
 
-// Use the first 3 items from centralized updates for the dashboard
 const newsItems = CENTRALIZED_UPDATES.slice(0, 3).map(item => ({
   id: item.id,
   title: item.title,
