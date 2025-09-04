@@ -1,18 +1,21 @@
 import { z } from 'zod';
 import { sanitizeContent, validatePayloadSize } from './common';
-import { INPUT_LIMITS } from '@/lib/constants';
+import { INPUT_LIMITS, FIELD_LIMITS } from '@/lib/constants';
 
 const textInputSchema = z.object({
   text: z
     .string()
     .min(1, 'Text cannot be empty')
-    .max(10000, 'Text is too long (max 10,000 characters)')
+    .max(FIELD_LIMITS.content, 'Text is too long (max 15,000 characters)')
     .transform(sanitizeContent),
 });
 
 export const improveTextSchema = textInputSchema
   .extend({
-    goals: z.array(z.string()).max(5, 'Maximum 5 goals allowed').optional(),
+    goals: z
+      .array(z.string())
+      .max(FIELD_LIMITS.maxTags, 'Maximum 5 goals allowed')
+      .optional(),
   })
   .refine(data => validatePayloadSize(data, INPUT_LIMITS.improveText), {
     message: 'Input data too large',
@@ -43,7 +46,13 @@ export const summarizeTextSchema = textInputSchema
 
 export const generateSuggestionsSchema = textInputSchema
   .extend({
-    maxSuggestions: z.number().int().min(1).max(10).optional().default(4),
+    maxSuggestions: z
+      .number()
+      .int()
+      .min(1)
+      .max(FIELD_LIMITS.maxSuggestions)
+      .optional()
+      .default(4),
   })
   .refine(data => validatePayloadSize(data, INPUT_LIMITS.generateSuggestions), {
     message: 'Input data too large',
@@ -54,9 +63,15 @@ export const extractTagsSchema = z
     content: z
       .string()
       .min(1, 'Content cannot be empty')
-      .max(15000, 'Content too long (max 15,000 characters)')
+      .max(FIELD_LIMITS.content, 'Content too long (max 15,000 characters)')
       .transform(sanitizeContent),
-    maxTags: z.number().int().min(1).max(5).optional().default(5),
+    maxTags: z
+      .number()
+      .int()
+      .min(1)
+      .max(FIELD_LIMITS.maxTags)
+      .optional()
+      .default(FIELD_LIMITS.maxTags),
     includeTitle: z.boolean().optional().default(true),
   })
   .refine(data => validatePayloadSize(data, INPUT_LIMITS.extractTags), {
@@ -68,12 +83,15 @@ export const generateThumbnailSchema = z
     articleTitle: z
       .string()
       .min(1, 'Article title cannot be empty')
-      .max(200, 'Article title too long (max 200 characters)')
+      .max(FIELD_LIMITS.title, 'Article title too long (max 200 characters)')
       .transform(sanitizeContent),
     articleContent: z
       .string()
       .min(1, 'Article content cannot be empty')
-      .max(15000, 'Article content too long (max 15,000 characters)')
+      .max(
+        FIELD_LIMITS.content,
+        'Article content too long (max 15,000 characters)'
+      )
       .transform(sanitizeContent),
   })
   .refine(data => validatePayloadSize(data, INPUT_LIMITS.generateThumbnail), {

@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+const MAX_CONSECUTIVE_NEWLINES = 3;
+const MAX_CONSECUTIVE_SPACES = 2;
+
 export const UUID = z.string().uuid('Invalid UUID format');
 export const ISODate = z.string().datetime('Invalid ISO date format');
 export const PositiveInt = z
@@ -15,8 +18,8 @@ export function sanitizeContent(content: string): string {
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
-    .replace(/\n{4,}/g, '\n\n\n')
-    .replace(/[ ]{3,}/g, '  ');
+    .replace(/\n{4,}/g, '\n'.repeat(MAX_CONSECUTIVE_NEWLINES))
+    .replace(/[ ]{3,}/g, ' '.repeat(MAX_CONSECUTIVE_SPACES));
 }
 
 export function generateContentPreview(

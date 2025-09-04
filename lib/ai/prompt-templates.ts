@@ -1,4 +1,5 @@
 import { cleanContentForAI } from '@/lib/validators/common';
+import { FIELD_LIMITS } from '@/lib/constants';
 
 export const PROMPT_TEMPLATES = {
   improveText: (text: string, goals?: string[]) => {
@@ -104,7 +105,10 @@ Tags:`;
   generateThumbnail: (articleTitle: string, articleContent: string) => {
     // Clean content and get a meaningful preview
     const cleanContent = cleanContentForAI(articleContent);
-    const contentPreview = cleanContent.substring(0, 100);
+    const contentPreview = cleanContent.substring(
+      0,
+      FIELD_LIMITS.contentPreviewLength
+    );
 
     return `Create a blog header image (1792x1024) for the article titled: "${articleTitle}"
 
