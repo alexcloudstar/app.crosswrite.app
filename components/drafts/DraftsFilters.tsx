@@ -1,6 +1,6 @@
 import { Filter, Search, Send, Trash2 } from 'lucide-react';
 
-interface DraftsFiltersProps {
+type DraftsFiltersProps = {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   statusFilter: string;
@@ -9,7 +9,7 @@ interface DraftsFiltersProps {
   onPublishSelected: () => void;
   onBulkDelete: () => void;
   isPublishing: boolean;
-}
+};
 
 export function DraftsFilters({
   searchQuery,

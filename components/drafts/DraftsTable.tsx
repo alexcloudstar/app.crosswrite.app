@@ -1,7 +1,7 @@
 import { Draft } from '@/lib/types/drafts';
 import { DraftRow } from './DraftRow';
 
-interface DraftsTableProps {
+type DraftsTableProps = {
   drafts: Draft[];
   selectedDrafts: string[];
   onSelectAll: () => void;
@@ -11,7 +11,7 @@ interface DraftsTableProps {
   publishingDraft: string | null;
   openDropdown: string | null;
   onToggleDropdown: (id: string) => void;
-}
+};
 
 export function DraftsTable({
   drafts,

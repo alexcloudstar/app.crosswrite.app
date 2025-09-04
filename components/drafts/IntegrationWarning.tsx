@@ -1,15 +1,15 @@
 import Link from 'next/link';
 
-interface Integration {
+type Integration = {
   id: string;
   platform: string;
   status: string;
   publicationId?: string;
-}
+};
 
-interface IntegrationWarningProps {
+type IntegrationWarningProps = {
   integrations: Integration[];
-}
+};
 
 export function IntegrationWarning({ integrations }: IntegrationWarningProps) {
   const integrationsNeedingPublicationIds = integrations.filter(

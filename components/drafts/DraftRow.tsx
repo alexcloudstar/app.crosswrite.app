@@ -7,7 +7,7 @@ import {
   getPlatformDisplayName,
 } from '@/lib/utils';
 
-interface DraftRowProps {
+type DraftRowProps = {
   draft: Draft;
   isSelected: boolean;
   onSelect: (id: string) => void;
@@ -16,7 +16,7 @@ interface DraftRowProps {
   isPublishing: boolean;
   isDropdownOpen: boolean;
   onToggleDropdown: (id: string) => void;
-}
+};
 
 export function DraftRow({
   draft,

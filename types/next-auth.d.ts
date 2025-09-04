@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import { UserPlan } from '@/lib/plans';
 
 declare module 'next-auth' {
-  interface Session {
+  type Session = {
     user: {
       id: string;
       name?: string | null;
@@ -11,13 +11,13 @@ declare module 'next-auth' {
       planTier: string;
     };
     userPlan: UserPlan;
-  }
+  };
 
-  interface User {
+  type User = {
     id: string;
     name?: string | null;
     email?: string | null;
     image?: string | null;
     planTier: string;
-  }
+  };
 }

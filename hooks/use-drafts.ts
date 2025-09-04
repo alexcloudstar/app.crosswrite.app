@@ -7,12 +7,12 @@ import { Draft, DraftsResponse } from '@/lib/types/drafts';
 import { usePlan } from './use-plan';
 import toast from 'react-hot-toast';
 
-interface Integration {
+type Integration = {
   id: string;
   platform: string;
   status: string;
   publicationId?: string;
-}
+};
 
 export function useDrafts() {
   const { refreshPlanData } = usePlan();

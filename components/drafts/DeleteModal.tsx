@@ -1,15 +1,15 @@
-interface DeleteTarget {
+type DeleteTarget = {
   type: 'single' | 'bulk';
   draftId?: string;
   count?: number;
-}
+};
 
-interface DeleteModalProps {
+type DeleteModalProps = {
   isOpen: boolean;
   deleteTarget: DeleteTarget | null;
   onClose: () => void;
   onConfirm: () => void;
-}
+};
 
 export function DeleteModal({
   isOpen,
