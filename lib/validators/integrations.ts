@@ -1,6 +1,7 @@
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { z } from 'zod';
 import { UUID, validatePayloadSize } from './common';
+import { INPUT_LIMITS } from '@/lib/constants';
 
 export const connectIntegrationSchema = z
   .object({
@@ -22,7 +23,7 @@ export const connectIntegrationSchema = z
       .or(z.literal('')),
     publicationId: z.string().max(100, 'Publication ID too long').optional(),
   })
-  .refine(data => validatePayloadSize(data, 5000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.integrationCreate), {
     message: 'Integration data too large',
   });
 
@@ -47,7 +48,7 @@ export const updateIntegrationSchema = z
     autoPublish: z.boolean().optional(),
     syncInterval: z.number().int().min(30).max(1440).optional(),
   })
-  .refine(data => validatePayloadSize(data, 5000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.integrationUpdate), {
     message: 'Update data too large',
   });
 
@@ -72,7 +73,7 @@ export const publishToPlatformsSchema = z
       })
       .optional(),
   })
-  .refine(data => validatePayloadSize(data, 5000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.integrationPublish), {
     message: 'Publish data too large',
   });
 
@@ -82,7 +83,7 @@ export const syncPlatformSchema = z
     since: z.string().datetime('Invalid date format').optional(),
     limit: z.number().int().min(1).max(100).optional(),
   })
-  .refine(data => validatePayloadSize(data, 2000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.integrationSync), {
     message: 'Sync data too large',
   });
 
@@ -90,7 +91,7 @@ export const testPlatformConnectionSchema = z
   .object({
     id: UUID,
   })
-  .refine(data => validatePayloadSize(data, 1000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.integrationDelete), {
     message: 'Test data too large',
   });
 

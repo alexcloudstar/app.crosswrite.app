@@ -1,7 +1,7 @@
 import { PLATFORM_CONFIGS, truncateText, sanitizeTags } from './_core';
 import { Draft } from '@/lib/types/drafts';
 
-export interface MappedContent {
+export type MappedContent = {
   title: string;
   body: string;
   tags?: string[];
@@ -9,14 +9,14 @@ export interface MappedContent {
   canonicalUrl?: string;
   publicationId?: string;
   publishAsDraft?: boolean;
-}
+};
 
-export interface MappingOptions {
+export type MappingOptions = {
   publishAsDraft?: boolean;
   publicationId?: string;
   canonicalUrl?: string;
   setAsCanonical?: boolean;
-}
+};
 
 export function mapContentForPlatform(
   draft: Draft,
@@ -34,7 +34,7 @@ export function mapContentForPlatform(
 
   switch (platform) {
     case 'devto':
-      body = transformForDevto(draft.content, draft.tags || []);
+      body = transformForDevto(draft.content);
       break;
     case 'hashnode':
       body = transformForHashnode(draft.content);
@@ -65,22 +65,9 @@ export function mapContentForPlatform(
   };
 }
 
-function transformForDevto(content: string, tags: string[]): string {
-  const frontmatter = [
-    '---',
-    `title: ${content.split('\n')[0]?.replace(/^#+\s*/, '') || 'Untitled'}`,
-    `published: false`,
-  ];
-
-  if (tags.length > 0) {
-    frontmatter.push(`tags: ${tags.join(', ')}`);
-  }
-
-  frontmatter.push('---\n');
-
+function transformForDevto(content: string): string {
   content = content.replace(/^---[\s\S]*?---\n/, '');
-
-  return frontmatter.join('\n') + content.trim();
+  return content.trim();
 }
 
 function transformForHashnode(content: string): string {

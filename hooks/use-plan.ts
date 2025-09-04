@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { getUserPlanData } from '@/app/actions/user-plan';
+import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import {
   type PlanId,
@@ -20,8 +21,11 @@ import {
   PLAN_PRICING,
   PLAN_FEATURES,
 } from '@/lib/plans';
+// Removed unused import: import App from 'next/app';
+import { logger } from '@/lib/logger';
 
 export function usePlan() {
+  const { data: session } = useSession();
   const {
     userPlan,
     setUserPlan,
@@ -30,19 +34,27 @@ export function usePlan() {
   } = useAppStore();
 
   useEffect(() => {
+    if (session?.userPlan) {
+      setUserPlan(session.userPlan);
+      return;
+    }
+
     async function fetchUserPlan() {
       try {
         const result = await getUserPlanData();
         if (result.success && result.data) {
           setUserPlan(result.data);
         }
-      } catch (error) {
+      } catch {
         toast.error('Failed to fetch user plan');
+        logger.error('Failed to fetch user plan');
       }
     }
 
-    fetchUserPlan();
-  }, [setUserPlan]);
+    if (session?.user?.id) {
+      fetchUserPlan();
+    }
+  }, [session, setUserPlan]);
 
   const refreshPlanData = async () => {
     try {
@@ -50,8 +62,9 @@ export function usePlan() {
       if (result.success && result.data) {
         setUserPlan(result.data);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch user plan');
+      logger.error('Failed to fetch user plan');
     }
   };
 

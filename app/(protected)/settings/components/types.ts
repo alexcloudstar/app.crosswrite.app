@@ -1,4 +1,4 @@
-export interface UserSettings {
+export type UserSettings = {
   userId: string;
   bio?: string;
   website?: string;
@@ -14,22 +14,22 @@ export interface UserSettings {
     dailyDigest: boolean;
     weeklyReport: boolean;
   };
-}
+};
 
-export interface User {
+export type User = {
   id: string;
   name?: string;
   email: string;
   image?: string;
-}
+};
 
-export interface SettingsComponentProps {
+export type SettingsComponentProps = {
   settings: UserSettings | null;
   onSave: () => void;
   isSaving: boolean;
   setIsSaving: (saving: boolean) => void;
-}
+};
 
-export interface ProfileSettingsProps extends SettingsComponentProps {
+export type ProfileSettingsProps = SettingsComponentProps & {
   user: User | null;
-}
+};

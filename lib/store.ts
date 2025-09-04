@@ -8,7 +8,7 @@ import {
   getUsageStatus,
 } from './plans';
 
-interface AppState {
+type AppState = {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   sidebarCollapsed: boolean;
@@ -31,7 +31,7 @@ interface AppState {
     articles: { used: number; limit: number | 'UNLIMITED' };
     thumbnails: { used: number; limit: number };
   };
-}
+};
 
 export const useAppStore = create<AppState>((set, get) => ({
   sidebarOpen: true,

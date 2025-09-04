@@ -1,19 +1,23 @@
 import { z } from 'zod';
 import { sanitizeContent, validatePayloadSize } from './common';
+import { INPUT_LIMITS, FIELD_LIMITS } from '@/lib/constants';
 
 const textInputSchema = z.object({
   text: z
     .string()
     .min(1, 'Text cannot be empty')
-    .max(10000, 'Text is too long (max 10,000 characters)')
+    .max(FIELD_LIMITS.content, 'Text is too long (max 15,000 characters)')
     .transform(sanitizeContent),
 });
 
 export const improveTextSchema = textInputSchema
   .extend({
-    goals: z.array(z.string()).max(5, 'Maximum 5 goals allowed').optional(),
+    goals: z
+      .array(z.string())
+      .max(FIELD_LIMITS.maxTags, 'Maximum 5 goals allowed')
+      .optional(),
   })
-  .refine(data => validatePayloadSize(data, 15000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.improveText), {
     message: 'Input data too large',
   });
 
@@ -28,7 +32,7 @@ export const adjustToneSchema = textInputSchema
       'conversational',
     ]),
   })
-  .refine(data => validatePayloadSize(data, 12000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.adjustTone), {
     message: 'Input data too large',
   });
 
@@ -36,15 +40,21 @@ export const summarizeTextSchema = textInputSchema
   .extend({
     maxLength: z.number().int().min(50).max(1000).optional().default(200),
   })
-  .refine(data => validatePayloadSize(data, 12000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.summarizeText), {
     message: 'Input data too large',
   });
 
 export const generateSuggestionsSchema = textInputSchema
   .extend({
-    maxSuggestions: z.number().int().min(1).max(10).optional().default(4),
+    maxSuggestions: z
+      .number()
+      .int()
+      .min(1)
+      .max(FIELD_LIMITS.maxSuggestions)
+      .optional()
+      .default(4),
   })
-  .refine(data => validatePayloadSize(data, 12000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.generateSuggestions), {
     message: 'Input data too large',
   });
 
@@ -53,28 +63,38 @@ export const extractTagsSchema = z
     content: z
       .string()
       .min(1, 'Content cannot be empty')
-      .max(15000, 'Content is too long (max 15,000 characters)')
+      .max(FIELD_LIMITS.content, 'Content too long (max 15,000 characters)')
       .transform(sanitizeContent),
-    maxTags: z.number().int().min(1).max(5).optional().default(5),
+    maxTags: z
+      .number()
+      .int()
+      .min(1)
+      .max(FIELD_LIMITS.maxTags)
+      .optional()
+      .default(FIELD_LIMITS.maxTags),
     includeTitle: z.boolean().optional().default(true),
   })
-  .refine(data => validatePayloadSize(data, 20000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.extractTags), {
     message: 'Input data too large',
   });
 
 export const generateThumbnailSchema = z
   .object({
-    prompt: z
+    articleTitle: z
       .string()
-      .min(1, 'Prompt cannot be empty')
-      .max(500, 'Prompt is too long (max 500 characters)')
+      .min(1, 'Article title cannot be empty')
+      .max(FIELD_LIMITS.title, 'Article title too long (max 200 characters)')
       .transform(sanitizeContent),
-    style: z
-      .enum(['realistic', 'artistic', 'minimal', 'vintage'])
-      .optional()
-      .default('realistic'),
+    articleContent: z
+      .string()
+      .min(1, 'Article content cannot be empty')
+      .max(
+        FIELD_LIMITS.content,
+        'Article content too long (max 15,000 characters)'
+      )
+      .transform(sanitizeContent),
   })
-  .refine(data => validatePayloadSize(data, 1000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.generateThumbnail), {
     message: 'Input data too large',
   });
 

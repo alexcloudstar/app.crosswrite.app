@@ -61,9 +61,9 @@ export default function SchedulerPage() {
           </div>
           <h2 className='text-2xl font-bold mb-4'>Coming Soon!</h2>
           <p className='text-lg text-base-content/70 mb-6 max-w-xl mx-auto'>
-            We're working hard to bring you the most powerful content scheduling
-            tool. Get ready to revolutionize how you publish content across the
-            web.
+            We&apos;re working hard to bring you the most powerful content
+            scheduling tool. Get ready to revolutionize how you publish content
+            across the web.
           </p>
           <div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
             <div className='badge badge-primary badge-lg px-4 py-3'>

@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { X, Smartphone, Tablet, Monitor } from 'lucide-react';
 
-interface PreviewModalProps {
+type PreviewModalProps = {
   title: string;
   content: string;
   onClose: () => void;
-}
+};
 
 type DeviceType = 'mobile' | 'tablet' | 'desktop';
 

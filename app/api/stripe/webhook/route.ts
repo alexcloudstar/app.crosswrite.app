@@ -192,7 +192,6 @@ async function handleCheckoutSessionCompleted(
       },
     });
 
-  // Update user's plan tier based on subscription status
   if (subscription.status === 'active') {
     const planId = getPlanFromPriceId(subscription.items.data[0].price.id);
     if (planId) {
@@ -264,7 +263,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       },
     });
 
-  // Update user's plan tier based on subscription status
   logger.info('Updating user plan tier:', {
     userId: customer[0].userId,
     subscriptionStatus: subscription.status,
@@ -281,8 +279,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         .set({ planTier })
         .where(eq(users.id, customer[0].userId));
     }
-  } else {
-    // If subscription is not active or is canceled, set user to free plan
+  }
+
+  if (subscription.status !== 'active' && !subscription.cancel_at_period_end) {
     logger.info('Setting user to free plan due to subscription status:', {
       status: subscription.status,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
@@ -321,7 +320,6 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     })
     .where(eq(billingSubscriptions.stripeSubscriptionId, subscription.id));
 
-  // Set user back to free plan when subscription is deleted
   await db
     .update(users)
     .set({ planTier: 'free' })

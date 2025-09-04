@@ -15,7 +15,8 @@ import { TagManager } from '@/components/editor/TagManager';
 import { PlanBadge } from '@/components/ui/PlanBadge';
 import { QuotaHint } from '@/components/ui/QuotaHint';
 import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
-import { useAppStore } from '@/lib/store';
+import { usePlan } from '@/hooks/use-plan';
+import { generateContentPreview } from '@/lib/validators/common';
 import {
   improveText,
   adjustTone,
@@ -36,7 +37,7 @@ type LoadingType = 'ai' | 'suggestions' | 'thumbnail' | 'saving' | null;
 
 export default function EditorPage() {
   const router = useRouter();
-  const { userPlan } = useAppStore();
+  const { userPlan } = usePlan();
   const [draftId, setDraftId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled Draft');
   const [content, setContent] = useState('');
@@ -461,18 +462,14 @@ export default function EditorPage() {
         result = await updateDraft({
           id: draftId,
           title: title.trim(),
-          content: content.trim(),
-          contentPreview:
-            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          content: content,
           thumbnailUrl: thumbnailUrl || undefined,
           tags: tags,
         });
       } else {
         result = await createDraft({
           title: title.trim(),
-          content: content.trim(),
-          contentPreview:
-            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          content: content,
           thumbnailUrl: thumbnailUrl || undefined,
           tags: tags,
         });
@@ -512,8 +509,7 @@ export default function EditorPage() {
         const draftResult = await createDraft({
           title: title.trim(),
           content: content.trim(),
-          contentPreview:
-            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          contentPreview: generateContentPreview(content, 200),
           thumbnailUrl: thumbnailUrl || undefined,
           tags: tags,
         });
@@ -529,8 +525,7 @@ export default function EditorPage() {
           id: currentDraftId,
           title: title.trim(),
           content: content.trim(),
-          contentPreview:
-            content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+          contentPreview: generateContentPreview(content, 200),
           thumbnailUrl: thumbnailUrl || undefined,
           tags: tags,
         });
@@ -827,6 +822,8 @@ export default function EditorPage() {
           onGeneratingChange={isGenerating =>
             setLoadingType(isGenerating ? 'thumbnail' : null)
           }
+          articleTitle={title}
+          articleContent={content}
         />
       )}
 

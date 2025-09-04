@@ -4,6 +4,7 @@ import { billingSubscriptions } from '@/db/schema/billing';
 import { eq, and, sql } from 'drizzle-orm';
 import { getPlanCap } from './plans';
 import { PLAN_VALUES } from '@/lib/plans';
+import { isSelfHost } from '@/lib/config/serverConfig';
 
 export type UsageMetric =
   | 'articlesPublished'
@@ -18,6 +19,11 @@ export type UsageResult = {
 };
 
 export async function getUserPlanId(userId: string): Promise<string> {
+  // In SELF_HOST mode, always return SELF_HOSTED plan
+  if (isSelfHost()) {
+    return PLAN_VALUES.SELF_HOSTED;
+  }
+
   const subscription = await db
     .select({ planPriceId: billingSubscriptions.planPriceId })
     .from(billingSubscriptions)

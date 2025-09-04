@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
-interface EditorToolbarProps {
+type EditorToolbarProps = {
   onGenerateThumbnail?: () => void;
   onRewrite?: () => void;
   onTone?: () => void;
@@ -22,7 +22,7 @@ interface EditorToolbarProps {
   onFormatText?: (format: string) => void;
   isAiLoading?: boolean;
   hasContent?: boolean;
-}
+};
 
 export function EditorToolbar({
   onGenerateThumbnail,

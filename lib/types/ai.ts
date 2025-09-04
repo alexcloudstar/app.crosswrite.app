@@ -1,45 +1,45 @@
-export interface Suggestion {
+export type Suggestion = {
   id: string;
   type: 'rewrite' | 'tone' | 'summary' | 'improvement';
   title: string;
   description: string;
   suggestion: string;
   applied: boolean;
-}
+};
 
-export interface GenerateSuggestionsRequest {
+export type GenerateSuggestionsRequest = {
   content: string;
   maxSuggestions?: number;
-}
+};
 
-export interface GenerateSuggestionsResponse {
+export type GenerateSuggestionsResponse = {
   suggestions: Suggestion[];
-}
+};
 
-export interface ImproveTextRequest {
+export type ImproveTextRequest = {
   text: string;
   tone?: string;
   style?: string;
-}
+};
 
-export interface ImproveTextResponse {
+export type ImproveTextResponse = {
   improvedText: string;
-}
+};
 
-export interface AdjustToneRequest {
+export type AdjustToneRequest = {
   text: string;
   tone: string;
-}
+};
 
-export interface AdjustToneResponse {
+export type AdjustToneResponse = {
   adjustedText: string;
-}
+};
 
-export interface SummarizeTextRequest {
+export type SummarizeTextRequest = {
   text: string;
   style: 'paragraph' | 'bullet' | 'summary';
-}
+};
 
-export interface SummarizeTextResponse {
+export type SummarizeTextResponse = {
   summary: string;
-}
+};

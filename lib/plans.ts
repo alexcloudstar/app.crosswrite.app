@@ -51,9 +51,9 @@ export type UserPlan = {
 
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
   [PLAN_VALUES.SELF_HOSTED]: {
-    aiEnabled: false,
+    aiEnabled: true,
     monthlyArticles: 'UNLIMITED',
-    monthlyThumbGen: 0,
+    monthlyThumbGen: 'UNLIMITED',
     maxPlatforms: 'ALL',
   },
   [PLAN_VALUES.FREE]: {
@@ -73,6 +73,7 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
 export const PLAN_PRICING = {
   [PLAN_VALUES.FREE]: '$0 / mo',
   [PLAN_VALUES.PRO]: '$14 / mo',
+  [PLAN_VALUES.SELF_HOSTED]: 'Self-hosted',
 } as const;
 
 export const PLAN_FEATURES = {
@@ -89,6 +90,14 @@ export const PLAN_FEATURES = {
     'AI provided by Cross Write',
     'Priority support',
     'Custom scheduling',
+  ],
+  [PLAN_VALUES.SELF_HOSTED]: [
+    'All platforms',
+    'Unlimited articles',
+    'Unlimited AI thumbnails',
+    'AI using your own API key',
+    'Full control & privacy',
+    'No billing required',
   ],
 } as const;
 
@@ -139,6 +148,7 @@ export function canGenerateThumbnail(
   const limits = PLAN_LIMITS[planId];
 
   if (!limits.aiEnabled) return false;
+  if (limits.monthlyThumbGen === 'UNLIMITED') return true;
   if (limits.monthlyThumbGen === 0) return false;
 
   return usage.thumbnailsThisMonth < limits.monthlyThumbGen;
@@ -164,8 +174,9 @@ export function canUseAIFeature(
 
   if (!limits.aiEnabled) return false;
 
-  if (feature === 'thumbnailsGenerated' && limits.monthlyThumbGen === 0) {
-    return false;
+  if (feature === 'thumbnailsGenerated') {
+    if (limits.monthlyThumbGen === 'UNLIMITED') return true;
+    if (limits.monthlyThumbGen === 0) return false;
   }
 
   return true;

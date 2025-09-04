@@ -1,35 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import {
-  Search,
-  Filter,
-  MoreHorizontal,
-  Edit3,
-  Trash2,
-  Calendar,
-  Plus,
-  FileText,
-  X,
-  Clock,
-  Send,
-} from 'lucide-react';
-import Link from 'next/link';
-import toast from 'react-hot-toast';
-import { EmptyState } from '@/components/ui/EmptyState';
-import {
-  formatDate,
-  getPlatformDisplayName,
-  getPlatformColor,
-} from '@/lib/utils';
-import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
-import { publishToPlatforms } from '@/app/actions/integrations/publish';
-import { listDrafts, deleteDraft } from '@/app/actions/drafts';
+import { deleteDraft, listDrafts } from '@/app/actions/drafts';
 import { listIntegrations } from '@/app/actions/integrations';
-import { bulkSchedule, resetScheduledPost } from '@/app/actions/scheduler';
+import { publishToPlatforms } from '@/app/actions/integrations/publish';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { usePlan } from '@/hooks/use-plan';
 import { supportedPlatforms } from '@/lib/config/platforms';
 import { Draft, DraftsResponse } from '@/lib/types/drafts';
-import { usePlan } from '@/hooks/use-plan';
+import {
+  formatDate,
+  getPlatformColor,
+  getPlatformDisplayName,
+} from '@/lib/utils';
+import {
+  Edit3,
+  FileText,
+  Filter,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Send,
+  Trash2,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function DraftsPage() {
   const { refreshPlanData } = usePlan();
@@ -38,13 +34,6 @@ export default function DraftsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedDrafts, setSelectedDrafts] = useState<string[]>([]);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [scheduleDraftId, setScheduleDraftId] = useState<string | null>(null);
-  const [scheduleDate, setScheduleDate] = useState('');
-  const [scheduleTime, setScheduleTime] = useState('');
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
-    ...supportedPlatforms,
-  ]);
   const [publishingDraft, setPublishingDraft] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -137,42 +126,9 @@ export default function DraftsPage() {
       prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]
     );
 
-  const handleBulkSchedule = () => {
-    setScheduleDraftId(null);
-    setShowScheduleModal(true);
-  };
-
-  const handleScheduleDraft = (draftId: string) => {
-    setScheduleDraftId(draftId);
-    setShowScheduleModal(true);
-  };
-
   const handleDeleteDraft = (draftId: string) => {
     setDeleteTarget({ type: 'single', draftId });
     setShowDeleteModal(true);
-    setOpenDropdown(null);
-  };
-
-  const handleResetScheduledPost = async (draftId: string) => {
-    try {
-      const result = await resetScheduledPost({ draftId });
-
-      if (result.success) {
-        toast.success('Scheduled post reset successfully');
-
-        const reloadResult = await listDrafts({
-          page: 1,
-          limit: 100,
-        });
-        if (reloadResult.success && reloadResult.data) {
-          setDrafts((reloadResult.data as DraftsResponse).drafts);
-        }
-      } else {
-        toast.error(`Failed to reset scheduled post: ${result.error}`);
-      }
-    } catch {
-      toast.error('Failed to reset scheduled post');
-    }
     setOpenDropdown(null);
   };
 
@@ -242,7 +198,7 @@ export default function DraftsPage() {
     try {
       const result = await publishToPlatforms({
         draftId,
-        platforms: selectedPlatforms,
+        platforms: supportedPlatforms,
         options: {
           publishAsDraft: false,
         },
@@ -293,6 +249,7 @@ export default function DraftsPage() {
           page: 1,
           limit: 100,
         });
+
         if (reloadResult.success && reloadResult.data) {
           setDrafts((reloadResult.data as DraftsResponse).drafts);
         }
@@ -310,97 +267,9 @@ export default function DraftsPage() {
     }
   };
 
-  const handleScheduleSubmit = async () => {
-    if (!scheduleDate || !scheduleTime) {
-      toast.error('Please select both date and time');
-      return;
-    }
-
-    const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}`);
-
-    if (scheduledDateTime <= new Date()) {
-      toast.error('Scheduled date must be in the future');
-      return;
-    }
-
-    try {
-      const draftIds = scheduleDraftId ? [scheduleDraftId] : selectedDrafts;
-
-      if (draftIds.length === 0) {
-        toast.error('No drafts selected for scheduling');
-        return;
-      }
-
-      const schedules = draftIds.map(draftId => ({
-        draftId,
-        platforms: selectedPlatforms,
-        scheduledAt: scheduledDateTime.toISOString(),
-        userTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      }));
-
-      const result = await bulkSchedule({ schedules });
-
-      if (result.success) {
-        const data = result.data as {
-          results: Array<{
-            success: boolean;
-            draftId: string;
-            error?: string;
-          }>;
-          summary: {
-            total: number;
-            successful: number;
-            failed: number;
-          };
-        };
-
-        const { successful, total } = data.summary;
-
-        if (successful > 0) {
-          toast.success(
-            `Successfully scheduled ${successful} out of ${total} draft(s)!`
-          );
-
-          const reloadResult = await listDrafts({
-            page: 1,
-            limit: 100,
-          });
-          if (reloadResult.success && reloadResult.data) {
-            setDrafts((reloadResult.data as DraftsResponse).drafts);
-          }
-        }
-
-        if (data.summary.failed > 0) {
-          const failedResults = data.results.filter(r => !r.success);
-          const errorMessages = failedResults
-            .map(r => `Draft ${r.draftId}: ${r.error}`)
-            .join('\n');
-          toast.error(
-            `Failed to schedule ${data.summary.failed} draft(s):\n\n${errorMessages}`
-          );
-        }
-      } else {
-        toast.error(`Failed to schedule drafts: ${result.error}`);
-      }
-    } catch {
-      toast.error('Failed to schedule drafts');
-    } finally {
-      setShowScheduleModal(false);
-      setScheduleDraftId(null);
-      setScheduleDate('');
-      setScheduleTime('');
-      setSelectedPlatforms([...supportedPlatforms]);
-
-      if (!scheduleDraftId) {
-        setSelectedDrafts([]);
-      }
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     const config = {
       draft: { color: 'badge-warning', text: 'Draft' },
-      scheduled: { color: 'badge-info', text: 'Scheduled' },
       published: { color: 'badge-success', text: 'Published' },
     };
     const configItem = config[status as keyof typeof config] || config.draft;
@@ -409,34 +278,11 @@ export default function DraftsPage() {
     );
   };
 
-  const getDraftToSchedule = () => {
-    if (scheduleDraftId) {
-      return drafts.find((d: Draft) => d.id === scheduleDraftId);
-    }
-    return null;
-  };
-
   const searchDrafts = (e: React.ChangeEvent<HTMLInputElement>) =>
     setSearchQuery(e.target.value);
 
   const handleStatusFilter = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setStatusFilter(e.target.value);
-
-  const toggleModal = () => setShowScheduleModal(prev => !prev);
-
-  const handlePlatformToggle = (platform: string) => {
-    setSelectedPlatforms(prev =>
-      prev.includes(platform)
-        ? prev.filter(p => p !== platform)
-        : [...prev, platform]
-    );
-  };
-
-  const onScheduleDateChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setScheduleDate(e.target.value);
-
-  const onScheduleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setScheduleTime(e.target.value);
 
   const integrationsNeedingPublicationIds = integrations.filter(
     integration =>
@@ -522,7 +368,6 @@ export default function DraftsPage() {
               >
                 <option value='all'>All Status</option>
                 <option value='draft'>Draft</option>
-                <option value='scheduled'>Scheduled</option>
                 <option value='published'>Published</option>
               </select>
             </div>
@@ -532,13 +377,6 @@ export default function DraftsPage() {
                 <span className='text-sm text-base-content/50'>
                   {selectedDrafts.length} selected
                 </span>
-                <button
-                  onClick={handleBulkSchedule}
-                  className='btn btn-outline btn-sm'
-                >
-                  <Calendar size={16} className='mr-2' />
-                  Schedule
-                </button>
                 <button
                   onClick={handlePublishDraft.bind(null, selectedDrafts[0])}
                   disabled={publishingDraft !== null}
@@ -682,31 +520,6 @@ export default function DraftsPage() {
                               </li>
                               <li>
                                 <button
-                                  onClick={handleScheduleDraft.bind(
-                                    null,
-                                    draft.id
-                                  )}
-                                >
-                                  <Calendar size={16} />
-                                  Schedule
-                                </button>
-                              </li>
-                              {draft.status === 'scheduled' && (
-                                <li>
-                                  <button
-                                    onClick={handleResetScheduledPost.bind(
-                                      null,
-                                      draft.id
-                                    )}
-                                    className='text-warning'
-                                  >
-                                    <Clock size={16} />
-                                    Reset Schedule
-                                  </button>
-                                </li>
-                              )}
-                              <li>
-                                <button
                                   onClick={handleDeleteDraft.bind(
                                     null,
                                     draft.id
@@ -726,101 +539,6 @@ export default function DraftsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-      )}
-
-      {showScheduleModal && (
-        <div className='modal modal-open'>
-          <div className='modal-backdrop' onClick={toggleModal}></div>
-          <div className='modal-box max-w-md'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='font-bold text-lg flex items-center'>
-                <Calendar size={20} className='mr-2' />
-                Schedule Post
-              </h3>
-              <button
-                onClick={toggleModal}
-                className='btn btn-ghost btn-sm btn-circle'
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {scheduleDraftId && getDraftToSchedule() && (
-              <div className='card bg-base-200 p-4 mb-4'>
-                <h4 className='font-medium mb-2'>Draft to Schedule:</h4>
-                <p className='text-sm'>{getDraftToSchedule()?.title}</p>
-              </div>
-            )}
-
-            {!scheduleDraftId && selectedDrafts.length > 0 && (
-              <div className='card bg-base-200 p-4 mb-4'>
-                <h4 className='font-medium mb-2'>Drafts to Schedule:</h4>
-                <p className='text-sm'>
-                  {selectedDrafts.length} selected drafts
-                </p>
-              </div>
-            )}
-
-            <div className='space-y-4'>
-              <div>
-                <label className='label'>
-                  <span className='label-text'>Date</span>
-                </label>
-                <input
-                  type='date'
-                  value={scheduleDate}
-                  onChange={onScheduleDateChange}
-                  className='input input-bordered w-full'
-                  min={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-
-              <div>
-                <label className='label'>
-                  <span className='label-text'>Time</span>
-                </label>
-                <input
-                  type='time'
-                  value={scheduleTime}
-                  onChange={onScheduleTimeChange}
-                  className='input input-bordered w-full'
-                />
-              </div>
-
-              <div>
-                <label className='label'>
-                  <span className='label-text'>Platforms</span>
-                </label>
-                <div className='flex flex-wrap gap-3'>
-                  {supportedPlatforms.map(platform => (
-                    <CustomCheckbox
-                      key={platform}
-                      size='sm'
-                      checked={selectedPlatforms.includes(platform)}
-                      onChange={handlePlatformToggle.bind(null, platform)}
-                    >
-                      <span className='capitalize'>{platform}</span>
-                    </CustomCheckbox>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className='modal-action'>
-              <button onClick={toggleModal} className='btn btn-ghost'>
-                Cancel
-              </button>
-              <button
-                onClick={handleScheduleSubmit}
-                className='btn btn-primary'
-                disabled={!scheduleDate || !scheduleTime}
-              >
-                <Clock size={16} className='mr-2' />
-                Schedule
-              </button>
-            </div>
           </div>
         </div>
       )}

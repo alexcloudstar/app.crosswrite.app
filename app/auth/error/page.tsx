@@ -3,7 +3,6 @@ import Link from 'next/link';
 export default function AuthErrorPage() {
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-base-100 via-base-200 to-base-300 p-4 relative overflow-hidden'>
-      {/* Background decoration */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <div className='absolute -top-40 -right-40 w-80 h-80 bg-error/10 rounded-full blur-3xl'></div>
         <div className='absolute -bottom-40 -left-40 w-80 h-80 bg-warning/10 rounded-full blur-3xl'></div>
@@ -11,7 +10,6 @@ export default function AuthErrorPage() {
 
       <div className='card w-full max-w-md bg-base-100/95 backdrop-blur-sm shadow-2xl border border-base-300/50 relative z-10'>
         <div className='card-body p-8 text-center'>
-          {/* Error Icon */}
           <div className='mb-6'>
             <div className='avatar placeholder'>
               <div className='bg-error/20 text-error rounded-full w-20 h-20 shadow-lg'>
@@ -33,7 +31,6 @@ export default function AuthErrorPage() {
             </div>
           </div>
 
-          {/* Error Content */}
           <div className='mb-8'>
             <h1 className='text-2xl font-bold text-base-content mb-3'>
               Authentication Error
@@ -45,7 +42,6 @@ export default function AuthErrorPage() {
             </p>
           </div>
 
-          {/* Action Buttons */}
           <div className='space-y-4'>
             <Link
               href='/auth/sign-in'
@@ -62,7 +58,6 @@ export default function AuthErrorPage() {
             </Link>
           </div>
 
-          {/* Additional Help */}
           <div className='mt-6 pt-4 border-t border-base-300/50'>
             <p className='text-xs text-base-content/60'>
               Still having trouble?{' '}

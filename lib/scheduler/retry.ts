@@ -6,11 +6,11 @@ import {
 } from './time';
 import logger from '../logger';
 
-export interface RetryResult {
+export type RetryResult = {
   shouldRetry: boolean;
   nextAttemptAt?: Date;
   errorMessage: string;
-}
+};
 
 export function shouldRetry(
   error: unknown,

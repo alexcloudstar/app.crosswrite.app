@@ -10,106 +10,9 @@ import {
   Filter,
 } from 'lucide-react';
 import Link from 'next/link';
-import { NewsItem } from '@/lib/types/news';
+import { CENTRALIZED_UPDATES, type NewsItem } from '@/lib/types/news';
 
-const allNewsItems: NewsItem[] = [
-  {
-    id: '1',
-    title: 'AI-Powered Content Assistant',
-    description:
-      'Advanced AI integration with real-time writing suggestions, content improvement, and SEO optimization.',
-    detailedDescription:
-      'Our AI assistant is now fully integrated with OpenAI, providing real-time writing suggestions, grammar improvements, content optimization, and SEO recommendations. The system analyzes your content as you write and offers contextual suggestions to enhance readability and engagement.',
-    date: '2025-08-28',
-    type: 'feature',
-    link: '/editor',
-    tags: ['AI', 'Writing', 'Productivity'],
-  },
-  {
-    id: '2',
-    title: 'Multi-Platform Publishing',
-    description:
-      'Publish to Dev.to, Hashnode, and Beehiiv with automatic formatting and optimization.',
-    detailedDescription:
-      "We've launched comprehensive platform integrations for Dev.to, Hashnode, and Beehiiv. Write once and publish everywhere with automatic platform-specific formatting, metadata handling, and content optimization. Each platform gets perfectly formatted content tailored to their requirements.",
-    date: '2025-08-25',
-    type: 'feature',
-    link: '/integrations',
-    tags: ['Publishing', 'Platforms', 'Automation'],
-  },
-  {
-    id: '3',
-    title: 'Advanced Content Scheduling',
-    description:
-      'Schedule posts across multiple platforms with intelligent timing and automatic publishing.',
-    detailedDescription:
-      'Our scheduling system now supports cross-platform publishing with intelligent timing recommendations. Schedule posts days, weeks, or months in advance, and our system will automatically publish them at optimal times across all your connected platforms.',
-    date: '2025-08-22',
-    type: 'feature',
-    link: '/scheduler',
-    tags: ['Scheduling', 'Automation', 'Multi-platform'],
-  },
-
-  {
-    id: '5',
-    title: 'Enhanced Draft Management',
-    description:
-      'Organize your content with version control, collaboration features, and advanced organization.',
-    detailedDescription:
-      'Our draft management system now includes version control, collaboration tools, and advanced organization features. Track changes, collaborate with team members, and maintain a clean content workflow with folders, tags, and status management.',
-    date: '2025-08-18',
-    type: 'feature',
-    link: '/drafts',
-    tags: ['Drafts', 'Organization', 'Collaboration'],
-  },
-  {
-    id: '6',
-    title: 'AI Content Generation',
-    description:
-      'Generate SEO metadata, content summaries, and thumbnail suggestions with AI.',
-    detailedDescription:
-      'Our AI can now generate SEO titles and descriptions, create content summaries, suggest thumbnails, and even translate content to other languages. All AI features are rate-limited and usage-tracked for optimal performance.',
-    date: '2025-08-15',
-    type: 'feature',
-    link: '/editor',
-    tags: ['AI', 'SEO', 'Generation'],
-  },
-  {
-    id: '7',
-    title: 'Platform-Specific Optimizations',
-    description:
-      'Automatic content formatting and optimization for each publishing platform.',
-    detailedDescription:
-      'Each platform now receives perfectly formatted content with platform-specific optimizations. Dev.to gets proper frontmatter, Hashnode gets optimized metadata, and Beehiiv gets HTML-converted content with proper styling.',
-    date: '2025-08-12',
-    type: 'update',
-    link: '/integrations',
-    tags: ['Platforms', 'Optimization', 'Formatting'],
-  },
-  {
-    id: '8',
-    title: 'Background Job Processing',
-    description:
-      'Reliable scheduled post processing with retry logic and error handling.',
-    detailedDescription:
-      'Our background job processing system ensures your scheduled posts are published reliably. The system includes retry logic for failed publishes, comprehensive error handling, and job monitoring for maximum reliability.',
-    date: '2025-08-10',
-    type: 'update',
-    link: '/scheduler',
-    tags: ['Scheduling', 'Reliability', 'Background Jobs'],
-  },
-  {
-    id: '9',
-    title: 'Enhanced Security & Performance',
-    description:
-      'Improved authentication, rate limiting, and overall platform performance.',
-    detailedDescription:
-      "We've enhanced our security measures with improved authentication, rate limiting, and data protection. Performance has been optimized with database indexing, caching layers, and efficient query patterns for faster response times.",
-    date: '2025-08-08',
-    type: 'update',
-    tags: ['Security', 'Performance', 'Optimization'],
-  },
-];
+const allNewsItems = CENTRALIZED_UPDATES;
 
 function getTypeIcon(type: NewsItem['type']) {
   switch (type) {
@@ -284,23 +187,11 @@ export default function UpdatesPage() {
         <div className='card-body text-center'>
           <h3 className='text-xl font-bold mb-2'>Stay Updated</h3>
           <p className='text-base-content/70 mb-4'>
-            Get notified about new features and updates directly in your inbox
+            Follow our updates page for the latest features and improvements
           </p>
-          <form
-            className='flex max-w-md mx-auto space-x-2'
-            onSubmit={e => e.preventDefault()}
-          >
-            <input
-              type='email'
-              placeholder='Enter your email'
-              className='input input-bordered flex-1'
-              required
-              pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'
-            />
-            <button type='submit' className='btn btn-primary'>
-              Subscribe
-            </button>
-          </form>
+          <div className='text-sm text-base-content/60'>
+            <p>Email notifications coming soon!</p>
+          </div>
         </div>
       </div>
     </div>

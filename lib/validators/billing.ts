@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { validatePayloadSize } from './common';
+import { INPUT_LIMITS } from '@/lib/constants';
 
 export const createCheckoutSessionSchema = z
   .object({
@@ -13,7 +14,7 @@ export const createCheckoutSessionSchema = z
       .optional()
       .default('/settings/billing'),
   })
-  .refine(data => validatePayloadSize(data, 1000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.billing), {
     message: 'Checkout data too large',
   });
 
@@ -25,7 +26,7 @@ export const createBillingPortalSessionSchema = z
       .optional()
       .default('/settings/billing'),
   })
-  .refine(data => validatePayloadSize(data, 1000), {
+  .refine(data => validatePayloadSize(data, INPUT_LIMITS.billing), {
     message: 'Portal data too large',
   });
 

@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 
-interface MarkdownEditorProps {
+type MarkdownEditorProps = {
   value: string;
   onChangeContent: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
   disabled?: boolean;
-}
+};
 
 export function MarkdownEditor({
   value,

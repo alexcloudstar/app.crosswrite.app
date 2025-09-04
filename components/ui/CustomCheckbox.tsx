@@ -2,14 +2,14 @@
 
 import { Check } from 'lucide-react';
 
-interface CustomCheckboxProps {
+type CustomCheckboxProps = {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   children?: React.ReactNode;
   size?: 'sm' | 'md';
   className?: string;
   [key: string]: unknown;
-}
+};
 
 export function CustomCheckbox({
   checked = false,

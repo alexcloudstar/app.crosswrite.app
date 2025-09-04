@@ -1,14 +1,14 @@
 import { checkRateLimit } from '@/lib/utils/rateLimit';
 
-export interface IntegrationClient {
+export type IntegrationClient = {
   testConnection(): Promise<{ success: boolean; error?: string }>;
   publish(
     content: MappedContent
   ): Promise<{ platformPostId: string; platformUrl: string }>;
   syncStatus?(params?: SyncParams): Promise<void>;
-}
+};
 
-export interface MappedContent {
+export type MappedContent = {
   title: string;
   body: string;
   tags?: string[];
@@ -16,14 +16,14 @@ export interface MappedContent {
   canonicalUrl?: string;
   publicationId?: string;
   publishAsDraft?: boolean;
-}
+};
 
-export interface SyncParams {
+export type SyncParams = {
   since?: Date;
   limit?: number;
-}
+};
 
-export interface PlatformConfig {
+export type PlatformConfig = {
   name: string;
   minTitleLength: number;
   maxTitleLength: number;
@@ -36,7 +36,7 @@ export interface PlatformConfig {
     requests: number;
     windowMs: number;
   };
-}
+};
 
 export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
   devto: {
@@ -115,7 +115,9 @@ export function sanitizeTags(tags: string[], maxTags: number): string[] {
       tag
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9-]/g, '')
+        .replace(/[^a-z0-9\s]/g, '') // Remove all non-alphanumeric except spaces
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim()
     )
     .filter(tag => tag.length > 0)
     .slice(0, maxTags);

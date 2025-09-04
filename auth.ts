@@ -11,6 +11,7 @@ import {
   authenticators,
 } from './db/schema/auth';
 import { eq } from 'drizzle-orm';
+import { planService } from './lib/plan-service';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -50,13 +51,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         .limit(1);
 
       if (userData.length) {
+        let userPlan = null;
+        try {
+          userPlan = await planService.getUserPlan(user.id);
+        } catch {
+          userPlan = {
+            planId: 'free' as const,
+            usage: {
+              articlesThisMonth: 0,
+              thumbnailsThisMonth: 0,
+            },
+          };
+        }
+
         session.user = {
           ...session.user,
           id: userData[0].id,
           name: userData[0].name,
           email: userData[0].email,
           image: userData[0].image,
+          planTier: userData[0].planTier,
         };
+
+        session.userPlan = userPlan;
       }
 
       return session;

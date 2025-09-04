@@ -39,11 +39,6 @@ export function Topbar() {
     setShowUserMenu(false);
   };
 
-  const handleViewAllNotifications = () => {
-    setShowNotifications(false);
-    setShowAllNotifications(true);
-  };
-
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (

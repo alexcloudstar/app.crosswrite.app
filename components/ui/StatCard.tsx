@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-interface StatCardProps {
+type StatCardProps = {
   title: string;
   value: string | number;
   description?: string;
@@ -11,7 +11,7 @@ interface StatCardProps {
     isPositive: boolean;
   };
   className?: string;
-}
+};
 
 export function StatCard({
   title,

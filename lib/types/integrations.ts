@@ -1,4 +1,4 @@
-export interface Integration {
+export type Integration = {
   id: string;
   userId?: string;
   platform: string;
@@ -15,17 +15,17 @@ export interface Integration {
   lastSync?: Date;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
-export interface IntegrationListItem {
+export type IntegrationListItem = {
   id: string;
   platform: string;
   status: string;
   connectedAt?: Date;
   lastSync?: Date;
-}
+};
 
-export interface CreateIntegrationRequest {
+export type CreateIntegrationRequest = {
   platform: string;
   apiKey: string;
   apiSecret?: string;
@@ -35,9 +35,9 @@ export interface CreateIntegrationRequest {
   publicationId?: string;
   autoPublish?: boolean;
   syncInterval?: number;
-}
+};
 
-export interface UpdateIntegrationRequest {
+export type UpdateIntegrationRequest = {
   apiKey?: string;
   apiSecret?: string;
   accessToken?: string;
@@ -47,9 +47,9 @@ export interface UpdateIntegrationRequest {
   status?: string;
   autoPublish?: boolean;
   syncInterval?: number;
-}
+};
 
-export interface PublishResult {
+export type PublishResult = {
   results: Array<{
     platform: string;
     success: boolean;
@@ -63,4 +63,4 @@ export interface PublishResult {
     failed: number;
     draftId: string;
   };
-}
+};
