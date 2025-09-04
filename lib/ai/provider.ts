@@ -1,4 +1,4 @@
-import { OpenAI } from 'openai';
+import OpenAI from 'openai';
 import { checkRateLimit } from '@/lib/utils/rateLimit';
 import {
   getApiKeyForGeneration,
