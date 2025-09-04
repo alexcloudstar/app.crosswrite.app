@@ -21,7 +21,6 @@ import {
   PLAN_PRICING,
   PLAN_FEATURES,
 } from '@/lib/plans';
-import logger from '@/lib/logger';
 
 export function usePlan() {
   const { data: session } = useSession();
@@ -46,7 +45,6 @@ export function usePlan() {
         }
       } catch {
         toast.error('Failed to fetch user plan');
-        logger.error('Failed to fetch user plan');
       }
     }
 
@@ -63,7 +61,6 @@ export function usePlan() {
       }
     } catch {
       toast.error('Failed to fetch user plan');
-      logger.error('Failed to fetch user plan');
     }
   };
 

@@ -29,7 +29,7 @@ type AppState = {
   canPublishArticle: () => boolean;
   getUsageStatus: () => {
     articles: { used: number; limit: number | 'UNLIMITED' };
-    thumbnails: { used: number; limit: number };
+    thumbnails: { used: number; limit: number | 'UNLIMITED' };
   };
 };
 

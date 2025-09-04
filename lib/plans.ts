@@ -35,7 +35,7 @@ export type MonthlyLimit = number | 'UNLIMITED';
 export type PlanLimits = {
   aiEnabled: boolean;
   monthlyArticles: MonthlyLimit;
-  monthlyThumbGen: number;
+  monthlyThumbGen: MonthlyLimit;
   maxPlatforms: number | 'ALL';
 };
 
