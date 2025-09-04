@@ -1,5 +1,6 @@
 import { Draft } from '@/lib/types/drafts';
 import { DraftRow } from './DraftRow';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 
 type DraftsTableProps = {
   drafts: Draft[];
@@ -31,11 +32,10 @@ export function DraftsTable({
           <thead>
             <tr>
               <th>
-                <input
-                  type='checkbox'
-                  className='checkbox checkbox-sm'
+                <CustomCheckbox
+                  size='sm'
                   checked={selectedDrafts.length === drafts.length}
-                  onChange={onSelectAll}
+                  onChange={() => onSelectAll()}
                 />
               </th>
               <th>Title</th>

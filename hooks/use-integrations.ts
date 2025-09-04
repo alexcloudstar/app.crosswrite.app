@@ -170,21 +170,13 @@ export function useIntegrations() {
         publicationId?: string;
       } = {
         platform,
-        apiKey: '',
+        apiKey: apiKey.trim(),
       };
 
       switch (platform) {
-        case 'devto':
-          integrationData = {
-            ...integrationData,
-            apiKey: apiKey.trim(),
-          };
-          break;
-
         case 'hashnode':
           integrationData = {
             ...integrationData,
-            apiKey: apiKey.trim(),
             publicationId: publicationId?.trim() || undefined,
           };
           break;

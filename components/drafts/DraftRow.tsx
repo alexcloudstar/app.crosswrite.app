@@ -6,6 +6,7 @@ import {
   getPlatformColor,
   getPlatformDisplayName,
 } from '@/lib/utils';
+import { CustomCheckbox } from '@/components/ui/CustomCheckbox';
 
 type DraftRowProps = {
   draft: Draft;
@@ -46,11 +47,10 @@ export function DraftRow({
   return (
     <tr className='hover:bg-base-200'>
       <td>
-        <input
-          type='checkbox'
-          className='checkbox checkbox-sm'
+        <CustomCheckbox
+          size='sm'
           checked={isSelected}
-          onChange={onSelectHandler}
+          onChange={() => onSelectHandler()}
         />
       </td>
       <td>
