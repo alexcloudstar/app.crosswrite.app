@@ -9,10 +9,11 @@ const PlanInitializer = () => {
   const { setUserPlan } = useAppStore();
 
   useEffect(() => {
-    if (session?.userPlan) {
-      setUserPlan(session.userPlan);
+    if (session && 'userPlan' in session) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setUserPlan((session as any).userPlan);
     }
-  }, [session?.userPlan, setUserPlan]);
+  }, [session, setUserPlan]);
 
   return null;
 };

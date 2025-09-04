@@ -71,9 +71,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: userData[0].email,
           image: userData[0].image,
           planTier: userData[0].planTier,
-        };
+        } as any;
 
-        session.userPlan = userPlan;
+        (session as any).userPlan = userPlan;
       }
 
       return session;

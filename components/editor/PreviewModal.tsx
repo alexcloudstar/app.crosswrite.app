@@ -1,5 +1,6 @@
 'use client';
 
+import ReactMarkdown from 'react-markdown';
 import { useState } from 'react';
 import { X, Smartphone, Tablet, Monitor } from 'lucide-react';
 
@@ -18,23 +19,6 @@ export function PreviewModal({ title, content, onClose }: PreviewModalProps) {
     mobile: { width: '375px', icon: Smartphone },
     tablet: { width: '768px', icon: Tablet },
     desktop: { width: '100%', icon: Monitor },
-  };
-
-  const renderMarkdown = (text: string) => {
-    return text
-      .replace(
-        /^### (.*$)/gim,
-        '<h3 class="text-lg font-semibold mb-2">$1</h3>'
-      )
-      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mb-3">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mb-4">$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code class="bg-base-200 px-1 rounded">$1</code>')
-      .replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>')
-      .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-4">$2</li>')
-      .replace(/\n\n/g, '</p><p class="mb-4">')
-      .replace(/^(?!<[h|li|p|code])(.*$)/gim, '<p class="mb-4">$1</p>');
   };
 
   return (
@@ -87,12 +71,9 @@ export function PreviewModal({ title, content, onClose }: PreviewModalProps) {
 
             <div className='p-6'>
               <h1 className='text-2xl font-bold mb-6'>{title}</h1>
-              <div
-                className='prose prose-sm max-w-none'
-                dangerouslySetInnerHTML={{
-                  __html: renderMarkdown(content),
-                }}
-              />
+              <div className='prose prose-sm max-w-none'>
+                <ReactMarkdown>{content}</ReactMarkdown>
+              </div>
             </div>
           </div>
         </div>
