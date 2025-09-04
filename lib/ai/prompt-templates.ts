@@ -6,7 +6,11 @@ export const PROMPT_TEMPLATES = {
     const goalsText = goals?.length ? `\n\nGoals: ${goals.join(', ')}` : '';
     return `Please improve the following text to make it more engaging, clear, and professional. Focus on better flow, stronger language, and improved readability.${goalsText}
 
-Important: Use regular hyphens (-) instead of em dashes (—) or en dashes (–).
+Important formatting rules:
+- Use regular hyphens (-) instead of em dashes (—) or en dashes (–)
+- Maintain proper heading hierarchy: use # for main titles, ## for major sections, ### for subsections, #### for sub-subsections
+- Do NOT convert all headings to the same level (e.g., don't make everything ###)
+- Preserve the original heading structure and only improve the content
 
 Text to improve:
 ${text}
@@ -28,7 +32,11 @@ Improved version:`;
 
     return `Please rewrite the following text to have a ${instruction} tone while maintaining the same meaning and key information.
 
-Important: Use regular hyphens (-) instead of em dashes (—) or en dashes (–).
+Important formatting rules:
+- Use regular hyphens (-) instead of em dashes (—) or en dashes (–)
+- Maintain proper heading hierarchy: use # for main titles, ## for major sections, ### for subsections, #### for sub-subsections
+- Do NOT convert all headings to the same level (e.g., don't make everything ###)
+- Preserve the original heading structure and only adjust the tone
 
 Original text:
 ${text}
