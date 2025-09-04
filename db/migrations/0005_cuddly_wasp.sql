@@ -1,0 +1,1 @@
+ALTER TABLE "integrations" ADD COLUMN "publication_id" text;
