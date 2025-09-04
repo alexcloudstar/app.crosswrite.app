@@ -134,14 +134,7 @@ export default function SettingsPage() {
                   setIsSaving={setIsSaving}
                 />
               )}
-              {activeTab === 'publishing' && (
-                <PublishingSettings
-                  settings={settings}
-                  onSave={loadUserSettings}
-                  isSaving={isSaving}
-                  setIsSaving={setIsSaving}
-                />
-              )}
+              {activeTab === 'publishing' && <PublishingSettings />}
               {activeTab === 'notifications' && (
                 <div className='text-center py-12'>
                   <div className='inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6'>
