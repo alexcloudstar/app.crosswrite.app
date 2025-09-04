@@ -107,11 +107,6 @@ export function TagManager({
     setShowSuggestions(false);
   };
 
-  const handleRemoveTagHandler = (tagToRemove: string) =>
-    handleRemoveTag(tagToRemove);
-  const handleAddSuggestedTagHandler = (tag: string) =>
-    handleAddSuggestedTag(tag);
-
   return (
     <div className='space-y-4'>
       <div className='flex items-center justify-between'>
@@ -166,7 +161,7 @@ export function TagManager({
               {tag}
               <button
                 type='button'
-                onClick={handleRemoveTagHandler.bind(null, tag)}
+                onClick={handleRemoveTag.bind(null, tag)}
                 disabled={disabled}
                 className='hover:text-primary-focus'
               >
@@ -216,7 +211,7 @@ export function TagManager({
               <button
                 key={tag}
                 type='button'
-                onClick={handleAddSuggestedTagHandler.bind(null, tag)}
+                onClick={handleAddSuggestedTag.bind(null, tag)}
                 disabled={disabled || tags.includes(tag)}
                 className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
                   tags.includes(tag)
