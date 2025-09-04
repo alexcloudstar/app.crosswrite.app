@@ -109,13 +109,8 @@ export function TagManager({
 
   const handleRemoveTagHandler = (tagToRemove: string) =>
     handleRemoveTag(tagToRemove);
-  const handleExtractTagsHandler = () => handleExtractTags();
   const handleAddSuggestedTagHandler = (tag: string) =>
     handleAddSuggestedTag(tag);
-  const handleAddAllSuggestedTagsHandler = () => handleAddAllSuggestedTags();
-  const handleAddTagHandler = () => handleAddTag();
-
-  const handleSetShowSuggestionsHandler = () => setShowSuggestions(false);
 
   return (
     <div className='space-y-4'>
@@ -128,7 +123,7 @@ export function TagManager({
           {showSuggestions && (
             <button
               type='button'
-              onClick={handleExtractTagsHandler}
+              onClick={handleExtractTags}
               disabled={disabled || isExtracting || !content.trim()}
               className='btn btn-xs btn-ghost'
               title='Refresh suggestions'
@@ -195,7 +190,7 @@ export function TagManager({
         />
         <button
           type='button'
-          onClick={handleAddTagHandler}
+          onClick={handleAddTag}
           disabled={disabled || !newTag.trim() || tags.length >= 5}
           className='btn btn-sm btn-primary'
         >
@@ -210,7 +205,7 @@ export function TagManager({
             <button
               type='button'
               className='btn btn-xs btn-ghost'
-              onClick={handleSetShowSuggestionsHandler}
+              onClick={() => setShowSuggestions(false)}
             >
               <X className='w-3 h-3' />
             </button>
@@ -237,7 +232,7 @@ export function TagManager({
 
           <button
             type='button'
-            onClick={handleAddAllSuggestedTagsHandler}
+            onClick={handleAddAllSuggestedTags}
             disabled={disabled}
             className='btn btn-xs btn-primary'
           >

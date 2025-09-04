@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import {
   type PlanId,
   type UserUsage,
+  type UserPlan,
   PlanIdEnum,
   canUseAI,
   canGenerateThumbnail,
@@ -33,8 +34,9 @@ export function usePlan() {
 
   useEffect(() => {
     if (session && 'userPlan' in session) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setUserPlan((session as any).userPlan);
+      setUserPlan(
+        (session as typeof session & { userPlan: UserPlan }).userPlan
+      );
       return;
     }
 
