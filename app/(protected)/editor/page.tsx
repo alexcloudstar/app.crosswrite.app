@@ -39,6 +39,9 @@ export default function EditorPage() {
   const router = useRouter();
   const { userPlan } = usePlan();
   const [draftId, setDraftId] = useState<string | null>(null);
+  const [draftStatus, setDraftStatus] = useState<'draft' | 'published'>(
+    'draft'
+  );
   const [title, setTitle] = useState('Untitled Draft');
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
@@ -495,11 +498,23 @@ export default function EditorPage() {
       toast.error('Please select at least one platform to publish to.');
       return;
     }
+
+    if (draftStatus === 'published') {
+      toast.error('This draft has already been published');
+      return;
+    }
+
     setShowPublishModal(true);
   };
 
   const handlePublishSubmit = async () => {
-    if (!title.trim() || !content.trim() || publishing) return;
+    if (
+      !title.trim() ||
+      !content.trim() ||
+      publishing ||
+      draftStatus === 'published'
+    )
+      return;
 
     setPublishing(true);
     try {
@@ -546,6 +561,7 @@ export default function EditorPage() {
 
       if (result?.success) {
         setShowPublishModal(false);
+        setDraftStatus('published');
 
         toast.success(
           `Successfully published to ${
@@ -589,6 +605,7 @@ export default function EditorPage() {
             const draft = result.data as Draft;
             setTitle(draft.title);
             setContent(draft.content);
+            setDraftStatus(draft.status);
             setThumbnailUrl(draft.thumbnailUrl || null);
             setTags(draft.tags || []);
           } else {
@@ -768,16 +785,20 @@ export default function EditorPage() {
               </button>
               <button
                 onClick={handlePublish}
-                className='btn btn-primary btn-sm'
-                disabled={isLoading || !content.trim()}
+                className={`btn btn-primary btn-sm ${draftStatus === 'published' ? 'cursor-not-allowed opacity-50' : ''}`}
+                disabled={
+                  isLoading || !content.trim() || draftStatus === 'published'
+                }
                 title={
                   !content.trim()
                     ? 'Add some content to publish'
-                    : 'Publish to platforms'
+                    : draftStatus === 'published'
+                      ? 'This draft has already been published'
+                      : 'Publish to platforms'
                 }
               >
                 <Send size={16} className='mr-2' />
-                Publish
+                {draftStatus === 'published' ? 'Published' : 'Publish'}
               </button>
             </div>
           </div>

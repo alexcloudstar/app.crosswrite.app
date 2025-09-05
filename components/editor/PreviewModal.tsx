@@ -104,8 +104,117 @@ export function PreviewModal({ title, content, onClose }: PreviewModalProps) {
                   </div>
                 </header>
 
-                <div className='prose prose-lg max-w-none prose-headings:text-base-content prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-base-content prose-p:leading-relaxed prose-p:mb-4 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-base-content prose-strong:font-semibold prose-code:text-sm prose-code:bg-base-200 prose-code:text-base-content prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:font-mono prose-pre:bg-base-300 prose-pre:text-base-content prose-pre:border prose-pre:border-base-300 prose-pre:rounded-lg prose-pre:p-4 prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:bg-base-200/50 prose-blockquote:py-2 prose-ul:list-disc prose-ol:list-decimal prose-li:text-base-content prose-li:mb-1 prose-hr:border-base-300 prose-table:text-sm prose-th:bg-base-200 prose-th:text-base-content prose-td:border-base-300 prose-td:text-base-content'>
-                  <ReactMarkdown>{content}</ReactMarkdown>
+                <div className='markdown-content'>
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ children }) => (
+                        <h1 className='text-3xl md:text-4xl font-bold text-base-content mb-6 mt-8 first:mt-0'>
+                          {children}
+                        </h1>
+                      ),
+                      h2: ({ children }) => (
+                        <h2 className='text-2xl md:text-3xl font-bold text-base-content mb-4 mt-6'>
+                          {children}
+                        </h2>
+                      ),
+                      h3: ({ children }) => (
+                        <h3 className='text-xl md:text-2xl font-bold text-base-content mb-3 mt-5'>
+                          {children}
+                        </h3>
+                      ),
+                      h4: ({ children }) => (
+                        <h4 className='text-lg md:text-xl font-bold text-base-content mb-2 mt-4'>
+                          {children}
+                        </h4>
+                      ),
+                      h5: ({ children }) => (
+                        <h5 className='text-base md:text-lg font-bold text-base-content mb-2 mt-3'>
+                          {children}
+                        </h5>
+                      ),
+                      h6: ({ children }) => (
+                        <h6 className='text-sm md:text-base font-bold text-base-content mb-2 mt-3'>
+                          {children}
+                        </h6>
+                      ),
+                      p: ({ children }) => (
+                        <p className='text-base-content leading-relaxed mb-4'>
+                          {children}
+                        </p>
+                      ),
+                      strong: ({ children }) => (
+                        <strong className='font-semibold text-base-content'>
+                          {children}
+                        </strong>
+                      ),
+                      em: ({ children }) => (
+                        <em className='italic text-base-content'>{children}</em>
+                      ),
+                      a: ({ href, children }) => (
+                        <a
+                          href={href}
+                          className='text-primary hover:underline no-underline'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          {children}
+                        </a>
+                      ),
+                      code: ({ children }) => (
+                        <code className='text-sm bg-base-200 text-base-content px-2 py-1 rounded font-mono'>
+                          {children}
+                        </code>
+                      ),
+                      pre: ({ children }) => (
+                        <pre className='bg-base-300 text-base-content border border-base-300 rounded-lg p-4 overflow-x-auto mb-4'>
+                          {children}
+                        </pre>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className='border-l-4 border-primary pl-4 italic bg-base-200/50 py-2 mb-4'>
+                          {children}
+                        </blockquote>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className='list-disc list-inside mb-4 text-base-content'>
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className='list-decimal list-inside mb-4 text-base-content'>
+                          {children}
+                        </ol>
+                      ),
+                      li: ({ children }) => (
+                        <li className='mb-1 text-base-content'>{children}</li>
+                      ),
+                      hr: () => <hr className='border-base-300 my-6' />,
+                      table: ({ children }) => (
+                        <div className='overflow-x-auto mb-4'>
+                          <table className='table table-zebra w-full text-sm'>
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      thead: ({ children }) => (
+                        <thead className='bg-base-200'>{children}</thead>
+                      ),
+                      tbody: ({ children }) => <tbody>{children}</tbody>,
+                      tr: ({ children }) => <tr>{children}</tr>,
+                      th: ({ children }) => (
+                        <th className='bg-base-200 text-base-content font-semibold px-4 py-2 text-left'>
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td className='border-base-300 text-base-content px-4 py-2'>
+                          {children}
+                        </td>
+                      ),
+                    }}
+                  >
+                    {content}
+                  </ReactMarkdown>
                 </div>
               </article>
             </div>

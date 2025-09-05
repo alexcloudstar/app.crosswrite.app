@@ -41,7 +41,12 @@ export function DraftRow({
   };
 
   const onSelectHandler = () => onSelect(draft.id);
-  const onPublishHandler = () => onPublish(draft.id);
+  const onPublishHandler = () => {
+    if (draft.status === 'published') {
+      return; // Don't publish if already published
+    }
+    onPublish(draft.id);
+  };
   const onDeleteHandler = () => onDelete(draft.id);
 
   return (
@@ -100,11 +105,24 @@ export function DraftRow({
                 <li>
                   <button
                     onClick={onPublishHandler}
-                    disabled={isPublishing}
-                    className={isPublishing ? 'opacity-50' : ''}
+                    disabled={isPublishing || draft.status === 'published'}
+                    className={
+                      isPublishing || draft.status === 'published'
+                        ? 'opacity-50'
+                        : ''
+                    }
+                    title={
+                      draft.status === 'published'
+                        ? 'This draft has already been published'
+                        : ''
+                    }
                   >
                     <Send size={16} />
-                    {isPublishing ? 'Publishing...' : 'Publish'}
+                    {isPublishing
+                      ? 'Publishing...'
+                      : draft.status === 'published'
+                        ? 'Published'
+                        : 'Publish'}
                   </button>
                 </li>
                 <li>
