@@ -51,19 +51,15 @@ export function BillingSettings() {
                   mode={deploymentConfig.mode}
                   hasRequiredKey={deploymentConfig.hasRequiredKey}
                 />
-                {deploymentConfig.mode === 'HOSTED' ? (
-                  <div className='alert alert-info'>
-                    <span>
-                      AI features are provided by Cross Write using server-side
-                      API keys. No additional setup required.
-                    </span>
+                {deploymentConfig.hasRequiredKey ? (
+                  <div className='alert alert-success'>
+                    <span>AI features are enabled and ready to use.</span>
                   </div>
                 ) : (
                   <div className='alert alert-warning'>
                     <span>
-                      AI features require your own OpenAI API key. Set
-                      OPENAI_API_KEY in your environment variables to enable AI
-                      functionality.
+                      AI features require an OpenAI API key. Set OPENAI_API_KEY
+                      in your environment variables to enable AI functionality.
                     </span>
                   </div>
                 )}

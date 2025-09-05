@@ -1,12 +1,12 @@
 // Input size limits for validation across the application
 export const INPUT_LIMITS: Record<string, number> = {
   // AI-related limits
-  improveText: 8000,
-  adjustTone: 6000,
-  summarizeText: 10000,
-  generateSuggestions: 8000,
-  extractTags: 12000,
-  generateThumbnail: 20000,
+  improveText: 20000,
+  adjustTone: 15000,
+  summarizeText: 25000,
+  generateSuggestions: 15000,
+  extractTags: 20000,
+  generateThumbnail: 30000,
 
   // Draft-related limits
   draft: 20000,

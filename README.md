@@ -2,9 +2,9 @@
 
 Cross Write is a modern, AI-assisted writing and publishing application that helps content creators write once and publish everywhere. Built with Next.js 15, TypeScript, and DaisyUI, it provides a seamless experience for managing content across multiple platforms.
 
-## 🚀 Deployment Modes & Keys (ENV-ONLY)
+## 🚀 Deployment Modes & API Key
 
-Cross Write supports two deployment modes with environment-only API key management:
+Cross Write supports two deployment modes with a single, unified API key approach:
 
 ### HOSTED Mode
 
@@ -12,7 +12,7 @@ For hosted deployments (free & paid plans):
 
 ```bash
 CROSSWRITE_DEPLOYMENT_MODE=HOSTED
-OPENAI_API_KEY_APP=sk-hosted-...  # Cross Write's server app key
+OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 ```
 
 ### SELF_HOST Mode
@@ -21,14 +21,14 @@ For self-hosted deployments:
 
 ```bash
 CROSSWRITE_DEPLOYMENT_MODE=SELF_HOST
-OPENAI_API_KEY=sk-selfhost-...    # Instance admin-provided key
+OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 ```
 
 **Key Features:**
 
+- **Single API key**: One `OPENAI_API_KEY` for all deployment modes
 - **No client-side secrets**: All API keys stay server-side
 - **No in-app BYOK forms**: Keys are managed via environment variables only
-- **Automatic key selection**: Server picks the appropriate key based on deployment mode
 - **Client key rejection**: Any client-supplied keys are rejected with 400 error
 
 **Why ENV-ONLY?**
@@ -89,10 +89,9 @@ RESEND_API_KEY=your_resend_api_key
 EMAIL_FROM=noreply@yourdomain.com
 AUTH_DEBUG=true
 
-# Deployment Mode & API Keys (ENV-ONLY)
+# Deployment Mode & API Key
 CROSSWRITE_DEPLOYMENT_MODE=HOSTED
-OPENAI_API_KEY_APP=sk-hosted-...  # For HOSTED mode
-# OPENAI_API_KEY=sk-selfhost-...  # For SELF_HOST mode
+OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 ```
 
 4. Set up the database:

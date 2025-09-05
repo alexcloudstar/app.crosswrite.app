@@ -92,6 +92,36 @@ export const validatePayloadSize = (
   return inputStr.length <= maxSize;
 };
 
+export function chunkTextForAI(
+  text: string,
+  maxChunkSize: number = 15000
+): string[] {
+  if (text.length <= maxChunkSize) {
+    return [text];
+  }
+
+  const chunks: string[] = [];
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  let currentChunk = '';
+
+  for (const sentence of sentences) {
+    if (currentChunk.length + sentence.length + 1 <= maxChunkSize) {
+      currentChunk += (currentChunk ? ' ' : '') + sentence;
+    } else {
+      if (currentChunk) {
+        chunks.push(currentChunk);
+      }
+      currentChunk = sentence;
+    }
+  }
+
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
+
+  return chunks;
+}
+
 export const validationErrors = {
   required: 'This field is required',
   invalidFormat: 'Invalid format',

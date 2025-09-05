@@ -1,10 +1,6 @@
 'use server';
 
-import {
-  isHosted,
-  getHostedAppKey,
-  getSelfHostKey,
-} from '@/lib/config/serverConfig';
+import { isHosted, getApiKey } from '@/lib/config/serverConfig';
 
 export type DeploymentConfig = {
   mode: 'HOSTED' | 'SELF_HOST';
@@ -17,13 +13,8 @@ export async function getDeploymentConfig(): Promise<DeploymentConfig> {
 
     let hasRequiredKey = false;
     try {
-      if (isHosted()) {
-        getHostedAppKey();
-        hasRequiredKey = true;
-      } else {
-        getSelfHostKey();
-        hasRequiredKey = true;
-      }
+      getApiKey();
+      hasRequiredKey = true;
     } catch {
       hasRequiredKey = false;
     }

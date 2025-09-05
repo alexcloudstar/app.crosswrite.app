@@ -4,6 +4,7 @@ import { PROMPT_TEMPLATES } from '@/lib/ai/prompt-templates';
 import { aiProvider } from '@/lib/ai/provider';
 import { assertWithinLimits } from '@/lib/billing/usage';
 import logger from '@/lib/logger';
+import { chunkTextForAI } from '@/lib/validators/common';
 import {
   adjustToneSchema,
   extractTagsSchema,
@@ -40,6 +41,34 @@ export async function improveText(input: ImproveTextInput) {
 
     const warning = await checkAndTrackUsage(user.id, 'aiSuggestionsUsed');
 
+    // Check if text needs to be chunked
+    const textChunks = chunkTextForAI(validatedInput.text, 15000);
+
+    if (textChunks.length > 1) {
+      // For very long articles, process the first chunk and inform user
+      logger.info(
+        `Processing long article in ${textChunks.length} chunks, showing first chunk`
+      );
+      const prompt = PROMPT_TEMPLATES.improveText(
+        textChunks[0],
+        validatedInput.goals
+      );
+
+      const improvedText = await aiProvider.invoke({
+        purpose: 'improveText',
+        input: prompt,
+        modelConfig: { temperature: 0.7, maxTokens: 2000 },
+      });
+
+      return await successResult({
+        improvedText:
+          improvedText +
+          '\n\n[Note: This is the first part of a long article. Consider breaking it into smaller sections for better AI processing.]',
+        warning,
+      });
+    }
+
+    // Normal processing for shorter articles
     const prompt = PROMPT_TEMPLATES.improveText(
       validatedInput.text,
       validatedInput.goals
