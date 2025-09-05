@@ -1,7 +1,32 @@
 {
-  "name": "app",
-  "version": "0.1.0",
-  "private": true,
+  "name": "cross-write",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Cross Write - an open-source tool to publish and sync your articles across multiple platforms (Hashnode, Dev.to, etc.)",
+  "author": {
+    "name": "Alex Cloudstar",
+    "email": "alexcloudstar@gmail.com",
+    "url": "https://alexcloudstar.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/alexcloudstar/app.crosswrite.app#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexcloudstar/app.crosswrite.app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alexcloudstar/app.crosswrite.app/issues"
+  },
+  "keywords": [
+    "cross write",
+    "content publishing",
+    "hashnode",
+    "dev.to",
+    "open source",
+    "nextjs",
+    "drizzle",
+    "tailwindcss"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
