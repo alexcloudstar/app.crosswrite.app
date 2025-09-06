@@ -1,0 +1,86 @@
+import NextAuth from 'next-auth';
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import Google from 'next-auth/providers/google';
+import Resend from 'next-auth/providers/resend';
+import { db } from './db/client';
+import {
+  users,
+  accounts,
+  sessions,
+  verificationTokens,
+  authenticators,
+} from './db/schema/auth';
+import { eq } from 'drizzle-orm';
+import { planService } from './lib/plan-service';
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: DrizzleAdapter(db, {
+    usersTable: users,
+    accountsTable: accounts,
+    sessionsTable: sessions,
+    verificationTokensTable: verificationTokens,
+    authenticatorsTable: authenticators,
+  }),
+  providers: [
+    ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
+    ...(process.env.RESEND_API_KEY
+      ? [
+          Resend({
+            apiKey: process.env.RESEND_API_KEY,
+            from: process.env.EMAIL_FROM || 'noreply@yourdomain.com',
+          }),
+        ]
+      : []),
+  ],
+  session: {
+    strategy: 'database',
+  },
+  callbacks: {
+    async session({ session, user }) {
+      const userData = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, user.id))
+        .limit(1);
+
+      if (userData.length) {
+        let userPlan = null;
+        try {
+          userPlan = await planService.getUserPlan(user.id);
+        } catch {
+          userPlan = {
+            planId: 'free' as const,
+            usage: {
+              articlesThisMonth: 0,
+              thumbnailsThisMonth: 0,
+            },
+          };
+        }
+
+        session.user = {
+          ...session.user,
+          id: userData[0].id,
+          name: userData[0].name,
+          email: userData[0].email,
+          image: userData[0].image,
+          planTier: userData[0].planTier,
+        } as any;
+
+        (session as any).userPlan = userPlan;
+      }
+
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/auth/sign-in',
+    error: '/auth/error',
+  },
+});

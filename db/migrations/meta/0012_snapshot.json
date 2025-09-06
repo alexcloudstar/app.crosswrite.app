@@ -1,0 +1,152 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "id": "0012_security_performance_indexes",
+  "prevId": "0011_friendly_rhino",
+  "tables": {
+    "drafts": {
+      "name": "drafts",
+      "schema": "",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        {
+          "name": "content_preview",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        {
+          "name": "platforms",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "[]"
+        },
+        {
+          "name": "thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        {
+          "name": "seo_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        {
+          "name": "seo_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "[]"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        {
+          "name": "published_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        {
+          "name": "scheduled_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "drafts_user_id_idx",
+          "columns": ["user_id"]
+        },
+        {
+          "name": "drafts_status_idx",
+          "columns": ["status"]
+        },
+        {
+          "name": "drafts_created_at_idx",
+          "columns": ["created_at"]
+        },
+        {
+          "name": "drafts_user_status_updated_idx",
+          "columns": ["user_id", "status", "updated_at"]
+        },
+        {
+          "name": "drafts_user_search_idx",
+          "columns": ["user_id", "title", "content_preview"]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "drafts_user_id_users_id_fk",
+          "tableName": "drafts",
+          "columns": ["user_id"],
+          "referencedTableName": "users",
+          "referencedColumns": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      ]
+    }
+  }
+}
